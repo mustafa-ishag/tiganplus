@@ -1,0 +1,54 @@
+{
+    "name": "tiqan/erp-system",
+    "description": "نظام تِقان لإدارة أعمال شركة المقاولات - Tiqan ERP System for Construction Company Management",
+    "type": "project",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Tiqan Development Team",
+            "email": "dev@tiqan.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "ext-fileinfo": "*",
+        "ext-gd": "*",
+        "ext-mbstring": "*",
+        "ext-openssl": "*",
+        "ext-pdo": "*",
+        "ext-xml": "*",
+        "ext-zip": "*",
+        "intervention/image": "^3.11",
+        "phpmailer/phpmailer": "^7.0",
+        "phpoffice/phpspreadsheet": "^5.1",
+        "tecnickcom/tcpdf": "^6.10"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0",
+        "phpstan/phpstan": "^1.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "TiqanERP\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "TiqanERP\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "scripts": {
+        "test": "phpunit",
+        "analyse": "phpstan analyse src --level=8",
+        "check": [
+            "@analyse",
+            "@test"
+        ]
+    }
+}

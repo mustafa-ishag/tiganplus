@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:hdr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du wp14">
+  <w:p w14:paraId="2A977728" w14:textId="56B7018B" w:rsidR="00D664BC" w:rsidRDefault="00A6612F">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+    <w:r>
+      <w:rPr>
+        <w:noProof/>
+      </w:rPr>
+      <mc:AlternateContent>
+        <mc:Choice Requires="wps">
+          <w:drawing>
+            <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251663360" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="45C31EBE" wp14:editId="24244CDA">
+              <wp:simplePos x="0" y="0"/>
+              <wp:positionH relativeFrom="page">
+                <wp:align>left</wp:align>
+              </wp:positionH>
+              <wp:positionV relativeFrom="page">
+                <wp:align>top</wp:align>
+              </wp:positionV>
+              <wp:extent cx="5080000" cy="317500"/>
+              <wp:effectExtent l="0" t="0" r="0" b="0"/>
+              <wp:wrapNone/>
+              <wp:docPr id="1973097238" name="GVHeader_Section1_11020735167"/>
+              <wp:cNvGraphicFramePr/>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                  <wps:wsp>
+                    <wps:cNvSpPr txBox="1"/>
+                    <wps:spPr>
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="5080000" cy="317500"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:noFill/>
+                      <a:ln w="6350">
+                        <a:noFill/>
+                      </a:ln>
+                      <a:extLst>
+                        <a:ext uri="{91240B29-F687-4F45-9708-019B960494DF}">
+                          <a14:hiddenLine xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" w="6350">
+                            <a:solidFill>
+                              <a:prstClr val="black"/>
+                            </a:solidFill>
+                          </a14:hiddenLine>
+                        </a:ext>
+                      </a:extLst>
+                    </wps:spPr>
+                    <wps:txbx>
+                      <w:txbxContent>
+                        <w:p w14:paraId="4FBE1314" w14:textId="3DF46005" w:rsidR="00A6612F" w:rsidRDefault="00A6612F" w:rsidP="00A6612F">
+                          <w:pPr>
+                            <w:bidi w:val="0"/>
+                          </w:pPr>
+                          <w:r w:rsidRPr="00A6612F">
+                            <w:rPr>
+                              <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                              <w:color w:val="008004"/>
+                              <w:sz w:val="20"/>
+                              <w:szCs w:val="20"/>
+                            </w:rPr>
+                            <w:t xml:space="preserve">Public Internal - </w:t>
+                          </w:r>
+                          <w:r w:rsidRPr="00A6612F">
+                            <w:rPr>
+                              <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                              <w:color w:val="008004"/>
+                              <w:sz w:val="20"/>
+                              <w:szCs w:val="20"/>
+                              <w:rtl/>
+                            </w:rPr>
+                            <w:t>عام (داخلي)</w:t>
+                          </w:r>
+                          <w:r w:rsidRPr="00A6612F">
+                            <w:rPr>
+                              <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                              <w:color w:val="008004"/>
+                              <w:sz w:val="20"/>
+                              <w:szCs w:val="20"/>
+                            </w:rPr>
+                            <w:t xml:space="preserve"> </w:t>
+                          </w:r>
+                        </w:p>
+                      </w:txbxContent>
+                    </wps:txbx>
+                    <wps:bodyPr rot="0" spcFirstLastPara="0" vertOverflow="overflow" horzOverflow="overflow" vert="horz" wrap="square" lIns="91440" tIns="45720" rIns="91440" bIns="45720" numCol="1" spcCol="0" rtlCol="0" fromWordArt="0" anchor="t" anchorCtr="0" forceAA="0" compatLnSpc="1">
+                      <a:prstTxWarp prst="textNoShape">
+                        <a:avLst/>
+                      </a:prstTxWarp>
+                      <a:spAutoFit/>
+                    </wps:bodyPr>
+                  </wps:wsp>
+                </a:graphicData>
+              </a:graphic>
+            </wp:anchor>
+          </w:drawing>
+        </mc:Choice>
+        <mc:Fallback>
+          <w:pict>
+            <v:shapetype w14:anchorId="45C31EBE" id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe">
+              <v:stroke joinstyle="miter"/>
+              <v:path gradientshapeok="t" o:connecttype="rect"/>
+            </v:shapetype>
+            <v:shape id="GVHeader_Section1_11020735167" o:spid="_x0000_s1030" type="#_x0000_t202" style="position:absolute;left:0;text-align:left;margin-left:0;margin-top:0;width:400pt;height:25pt;z-index:251663360;visibility:visible;mso-wrap-style:square;mso-wrap-distance-left:9pt;mso-wrap-distance-top:0;mso-wrap-distance-right:9pt;mso-wrap-distance-bottom:0;mso-position-horizontal:left;mso-position-horizontal-relative:page;mso-position-vertical:top;mso-position-vertical-relative:page;v-text-anchor:top" o:gfxdata="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&#10;AAB0BQAAAAA=&#10;" filled="f" stroked="f" strokeweight=".5pt">
+              <v:textbox style="mso-fit-shape-to-text:t">
+                <w:txbxContent>
+                  <w:p w14:paraId="4FBE1314" w14:textId="3DF46005" w:rsidR="00A6612F" w:rsidRDefault="00A6612F" w:rsidP="00A6612F">
+                    <w:pPr>
+                      <w:bidi w:val="0"/>
+                    </w:pPr>
+                    <w:r w:rsidRPr="00A6612F">
+                      <w:rPr>
+                        <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                        <w:color w:val="008004"/>
+                        <w:sz w:val="20"/>
+                        <w:szCs w:val="20"/>
+                      </w:rPr>
+                      <w:t xml:space="preserve">Public Internal - </w:t>
+                    </w:r>
+                    <w:r w:rsidRPr="00A6612F">
+                      <w:rPr>
+                        <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                        <w:color w:val="008004"/>
+                        <w:sz w:val="20"/>
+                        <w:szCs w:val="20"/>
+                        <w:rtl/>
+                      </w:rPr>
+                      <w:t>عام (داخلي)</w:t>
+                    </w:r>
+                    <w:r w:rsidRPr="00A6612F">
+                      <w:rPr>
+                        <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                        <w:color w:val="008004"/>
+                        <w:sz w:val="20"/>
+                        <w:szCs w:val="20"/>
+                      </w:rPr>
+                      <w:t xml:space="preserve"> </w:t>
+                    </w:r>
+                  </w:p>
+                </w:txbxContent>
+              </v:textbox>
+              <w10:wrap anchorx="page" anchory="page"/>
+            </v:shape>
+          </w:pict>
+        </mc:Fallback>
+      </mc:AlternateContent>
+    </w:r>
+  </w:p>
+</w:hdr>

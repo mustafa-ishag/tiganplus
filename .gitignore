@@ -1,0 +1,148 @@
+# etganplus - Git Ignore File
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+
+# Composer
+/vendor/
+composer.lock
+
+# Node modules (if using npm)
+node_modules/
+package-lock.json
+
+# Logs
+*.log
+error.log
+debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Uploads and temporary files
+/uploads/*
+!/uploads/.gitkeep
+/public/uploads/*
+!/public/uploads/.gitkeep
+/uploads/extracts/*
+!/uploads/extracts/.gitkeep
+/uploads/logos/*
+!/uploads/logos/.gitkeep
+
+# Cache and temporary files
+/cache/
+/tmp/
+*.tmp
+*.cache
+*.bak
+*.swp
+*~
+
+# Test files
+test_*.php
+*_test.php
+debug_*.php
+*_debug.php
+check_*.php
+*_check.php
+quick_*.php
+sample_*.php
+
+# Documentation files (except in docs/)
+/*_SUMMARY.md
+/*_GUIDE.md
+/*_README.md
+/*_CHANGELOG.md
+/*_FIX.md
+/*_UPDATE.md
+/FIX_*.md
+/TEST_*.md
+/SETUP_*.md
+/SOLUTION_*.md
+/DEPLOYMENT_*.md
+/ANALYSIS_*.md
+/ALTERNATIVE_*.md
+/CORRECTED_*.md
+/COMPLETE_*.md
+/FINAL_*.md
+/IMPORT_*.md
+/EXTRACT_*.md
+/WORK_ORDER*.md
+/SAR_ICON*.md
+/PRODUCTIVITY*.md
+/LOCATION*.md
+/NON_DISBURSED*.md
+/PARTIAL*.md
+/QUICK*.md
+/ADD_*.md
+/AUTO_*.md
+/CALCULATION*.md
+/CHANGELOG*.md
+/DISBURSEMENT*.md
+/EXTRACTS*.md
+
+# Cleanup files
+cleanup_*.ps1
+cleanup_*.sh
+CLEANUP_LOG_*.txt
+
+# Database dumps (except main schema)
+*.sql
+!database/etgan_erp.sql
+!database/schema.sql
+!database/*.sql
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# PHP
+*.php~
+*.php.bak
+
+# Backup files
+*.backup
+*_backup.*
+backup_*
+
+# Config files (keep examples)
+/config/config.php
+/config/database.php
+!/config/*.example.php
+
+# Lock files
+/config/installed.lock
+
+# Error logs
+/public/error.log
+error_log
+
+# Temporary fix files
+fix_*.php
+refresh_*.php
+update_*.php
+cleanup_*.php
+
+# Arabic named files (temporary documentation)
+تعديلات_*.md
+تعليمات_*.txt
+
+# Specific files to ignore
+NUL
+default.php
+

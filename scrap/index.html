@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نظام إدارة أوامر العمل | Work Orders System</title>
+  <meta name="description" content="نظام متكامل لإدارة أوامر العمل الكهربائية وتوثيق المواد المُزالة" />
+
+  <!-- Google Fonts - Cairo for Arabic -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <!-- PapaParse CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+  <!-- ExcelJS CDN - للحفاظ على تنسيقات Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+
+  <!-- PizZip + docxtemplater CDN - لتعديل ملفات Word -->
+  <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.50.0/build/docxtemplater.js"></script>
+
+  <!-- jsPDF - لتوليد PDF مباشرة في المتصفح -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- html2pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- مؤشر التحميل -->
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>جارِ المعالجة...</p>
+  </div>
+
+  <!-- الإشعارات -->
+  <div id="notification" class="notification"></div>
+
+  <!-- الرأس -->
+  <header class="app-header">
+    <div class="header-content">
+      <div class="logo-area">
+        <div class="logo-icon">⚡</div>
+        <div>
+          <h1>نظام أوامر العمل</h1>
+          <p class="subtitle">إدارة وتوثيق المواد الكهربائية</p>
+        </div>
+      </div>
+      <div class="header-stats" id="header-stats">
+        <div class="stat-chip">
+          <span class="stat-icon">📋</span>
+          <span>النظام جاهز</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- التبويبات الرئيسية -->
+  <nav class="tabs-nav">
+    <div class="tabs-container">
+      <button class="tab-btn active" data-tab="tab-workorders" id="tab-btn-workorders">
+        <span class="tab-icon">🔧</span>
+        <span>أوامر العمل</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-materials" id="tab-btn-materials">
+        <span class="tab-icon">📦</span>
+        <span>دليل المواد</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- المحتوى الرئيسي -->
+  <main class="main-content">
+
+    <!-- ============================== -->
+    <!-- تبويب 1: أوامر العمل -->
+    <!-- ============================== -->
+    <section id="tab-workorders" class="tab-panel active">
+
+      <!-- شريط علوي: إنشاء + بحث + فلاتر -->
+      <div class="card glass-card">
+        <div class="card-header">
+          <h2><span class="card-icon">🔧</span> أوامر العمل</h2>
+          <div class="card-actions">
+            <button id="btn-new-wo" class="btn btn-primary" type="button">
+              <span>➕</span> أمر عمل جديد
+            </button>
+          </div>
+        </div>
+
+        <!-- شريط البحث والفلاتر -->
+        <div class="wo-toolbar">
+          <div class="wo-search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="wo-search" placeholder="بحث في أوامر العمل..." autocomplete="off" />
+          </div>
+          <div class="wo-filter-tabs">
+            <button class="wo-filter-btn active" data-filter="all">الكل</button>
+            <button class="wo-filter-btn" data-filter="جاري">🔄 جاري</button>
+            <button class="wo-filter-btn" data-filter="مكتمل">✅ مكتمل</button>
+          </div>
+        </div>
+
+        <!-- جدول أوامر العمل -->
+        <div class="table-wrapper">
+          <table class="data-table wo-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>رقم أمر العمل</th>
+                <th>النوع</th>
+                <th>القسم</th>
+                <th>المكان</th>
+                <th>الحالة</th>
+                <th>التاريخ</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="wo-list">
+              <!-- سيتم ملؤها ديناميكياً -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- تبويب 2: دليل المواد -->
+    <!-- ============================== -->
+    <section id="tab-materials" class="tab-panel">
+      <div class="card glass-card">
+        <div class="card-header">
+          <h2><span class="card-icon">📦</span> الدليل الرئيسي للمواد</h2>
+          <div class="card-actions">
+            <span class="materials-counter">
+              العدد: <strong id="materials-count">0</strong>
+            </span>
+            <button id="import-btn" class="btn btn-secondary" type="button">
+              <span>📥</span> استيراد CSV
+            </button>
+            <input type="file" id="import-file" accept=".csv" style="display:none" />
+            <button id="export-btn" class="btn btn-secondary" type="button">
+              <span>📤</span> تصدير CSV
+            </button>
+            <button id="template-btn" class="btn btn-secondary" type="button">
+              <span>📄</span> تنزيل النموذج
+            </button>
+            <button id="add-material-toggle" class="btn btn-primary" type="button">
+              <span>➕</span> إضافة مادة
+            </button>
+          </div>
+        </div>
+
+        <!-- نموذج إضافة مادة يدوياً -->
+        <div id="add-material-section" class="add-material-section">
+          <form id="add-material-form" class="form-modern">
+            <div class="form-row form-row-4">
+              <div class="form-group">
+                <label for="mat-item-number">رقم البند</label>
+                <input type="text" id="mat-item-number" placeholder="رقم البند" required autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label for="mat-assembly">رقم التجميع</label>
+                <input type="text" id="mat-assembly" placeholder="رقم التجميع" autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label for="mat-description">الوصف</label>
+                <input type="text" id="mat-description" placeholder="وصف المادة" autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label for="mat-unit">الوحدة</label>
+                <input type="text" id="mat-unit" placeholder="مثل: قطعة، متر، كغ" autocomplete="off" />
+              </div>
+            </div>
+            <div class="form-actions-inline">
+              <button type="submit" class="btn btn-accent">
+                <span>حفظ المادة</span>
+                <span class="btn-icon-right">✅</span>
+              </button>
+              <button type="button" id="cancel-add-material" class="btn btn-secondary">
+                إلغاء
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>رقم البند</th>
+                <th>رقم التجميع</th>
+                <th>الوصف</th>
+                <th>الوحدة</th>
+              </tr>
+            </thead>
+            <tbody id="materials-table-body">
+              <!-- سيتم ملؤها ديناميكياً -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================== -->
+  <!-- Modal: إنشاء أمر عمل جديد -->
+  <!-- ============================== -->
+  <div id="modal-create-wo" class="modal-overlay">
+    <div class="modal-content modal-sm">
+      <div class="modal-header">
+        <h3>⚡ إنشاء أمر عمل جديد</h3>
+        <button class="modal-close" data-close-modal="modal-create-wo">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="wo-form" class="form-modern">
+          <div class="form-group">
+            <label for="wo-number">رقم أمر العمل</label>
+            <input type="text" id="wo-number" placeholder="123456789" maxlength="9" pattern="\d{9}" required
+              autocomplete="off" />
+          </div>
+          <div class="form-group">
+            <label for="wo-type">النوع</label>
+            <input type="text" id="wo-type" placeholder="101" maxlength="3" pattern="\d{3}" required
+              autocomplete="off" />
+          </div>
+          <div class="form-group">
+            <label for="wo-location">المكان</label>
+            <input type="text" id="wo-location" placeholder="المكان" autocomplete="off" />
+          </div>
+          <div class="form-group">
+            <label for="wo-department">القسم</label>
+            <select id="wo-department" required>
+              <option value="" disabled selected>اختر القسم</option>
+              <option value="توصيلات">توصيلات</option>
+              <option value="مشاريع">مشاريع</option>
+              <option value="صيانة">صيانة</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">
+            <span>إنشاء أمر العمل</span>
+            <span class="btn-icon-right">⚡</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== -->
+  <!-- Modal: تفاصيل أمر العمل (المواد المزالة) -->
+  <!-- ============================== -->
+  <div id="modal-wo-details" class="modal-overlay">
+    <div class="modal-content modal-xl">
+      <div class="modal-header">
+        <h3 id="modal-wo-title">🔩 المواد المُزالة</h3>
+        <button class="modal-close" data-close-modal="modal-wo-details">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- أزرار التصدير وإضافة مادة -->
+        <div class="modal-actions-bar">
+          <button id="btn-add-removed" class="btn btn-accent" type="button">
+            <span>➕</span> إضافة مادة مُزالة
+          </button>
+          <button id="export-mdr-btn" class="btn btn-secondary mdr-btn" type="button" style="display:none">
+            <span>📃</span> تصدير MDR
+          </button>
+          <button id="export-mdr-pdf-btn" class="btn btn-secondary mdr-pdf-btn" type="button" style="display:none">
+            <span>📕</span> MDR PDF
+          </button>
+          <button id="export-ir-btn" class="btn btn-secondary ir-btn" type="button" style="display:none">
+            <span>📝</span> تصدير IR
+          </button>
+          <button id="export-ir-pdf-btn" class="btn btn-secondary ir-pdf-btn" type="button" style="display:none">
+            <span>📕</span> IR PDF
+          </button>
+          <button id="export-fatra-btn" class="btn btn-secondary fatra-btn" type="button" style="display:none">
+            <span>📄</span> تصدير FATRA
+          </button>
+          <button id="export-fatra-pdf-btn" class="btn btn-secondary fatra-pdf-btn" type="button" style="display:none">
+            <span>📕</span> FATRA PDF
+          </button>
+          <button id="export-mrr-btn" class="btn btn-secondary mrr-btn" type="button" style="display:none">
+            <span>📋</span> تصدير MRR
+          </button>
+          <button id="export-mrr-pdf-btn" class="btn btn-secondary mrr-pdf-btn" type="button" style="display:none">
+            <span>📕</span> MRR PDF
+          </button>
+          <button id="toggle-extra-cols" class="btn btn-secondary toggle-cols-btn" type="button">
+            <span>📊</span> عرض التفاصيل
+          </button>
+        </div>
+
+        <!-- جدول المواد المُزالة -->
+        <div class="table-wrapper">
+          <table class="data-table" id="removed-items-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="select-all-removed" title="تحديد الكل" /></th>
+                <th>#</th>
+                <th>رقم البند</th>
+                <th>رقم التجميع</th>
+                <th>الوصف</th>
+                <th>الوحدة</th>
+                <th class="col-extra">الرقم الوظيفي</th>
+                <th class="col-extra">Equipment</th>
+                <th class="col-extra">Cap. KVA</th>
+                <th class="col-extra">المصنعة</th>
+                <th class="col-extra">Prim/Sec V</th>
+                <th class="col-extra">سنة الصنع</th>
+                <th class="col-extra">الرقم التسلسلي</th>
+                <th>الكمية</th>
+                <th>النوع</th>
+                <th>الحالة</th>
+                <th>مكتمل</th>
+                <th>الصورة</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="removed-table-body">
+              <!-- سيتم ملؤها ديناميكياً -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- قسم المرفقات -->
+        <div class="attachments-section">
+          <div class="attachments-header">
+            <h3><span>📎</span> المرفقات</h3>
+            <label class="btn btn-secondary btn-sm upload-btn" for="attachment-input">
+              <span>📤</span> رفع ملف PDF
+            </label>
+            <input type="file" id="attachment-input" accept=".pdf" multiple class="hidden-input" />
+          </div>
+          <div id="attachments-list" class="attachments-list">
+            <!-- سيتم ملؤها ديناميكياً -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== -->
+  <!-- Modal: إضافة/تعديل مادة مُزالة -->
+  <!-- ============================== -->
+  <div id="modal-add-removed" class="modal-overlay">
+    <div class="modal-content modal-md">
+      <div class="modal-header">
+        <h3 id="modal-removed-title">➕ إضافة مادة مُزالة</h3>
+        <button class="modal-close" data-close-modal="modal-add-removed">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="removed-form" class="form-modern">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="removed-item-type">النوع</label>
+              <select id="removed-item-type">
+                <option value="تشغيلي" selected>تشغيلي</option>
+                <option value="رأس مالي">رأس مالي</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group autocomplete-wrapper">
+              <label for="removed-item-number">رقم البند</label>
+              <input type="text" id="removed-item-number" placeholder="ابحث برقم البند أو الوصف أو رقم التجميع..." required
+                autocomplete="off" />
+              <div id="autocomplete-list" class="autocomplete-list"></div>
+              <span class="input-hint">ابدأ الكتابة للبحث بالرقم أو الوصف أو رقم التجميع</span>
+            </div>
+            <div class="form-group">
+              <label for="removed-assembly">رقم التجميع</label>
+              <input type="text" id="removed-assembly" placeholder="رقم التجميع" autocomplete="off" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="removed-description">الوصف</label>
+              <input type="text" id="removed-description" placeholder="وصف المادة (يتم جلبه تلقائياً)"
+                autocomplete="off" />
+            </div>
+            <div class="form-group">
+              <label for="removed-unit">الوحدة</label>
+              <input type="text" id="removed-unit" placeholder="الوحدة (يتم جلبها تلقائياً)" autocomplete="off" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="removed-quantity">الكمية</label>
+              <input type="number" id="removed-quantity" placeholder="1" min="1" value="1" required
+                autocomplete="off" />
+            </div>
+            <div class="form-group">
+              <label for="removed-status">الحالة</label>
+              <select id="removed-status" required>
+                <option value="تخريد" selected>تخريد</option>
+                <option value="إرجاع">إرجاع</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row form-row-3">
+            <div class="form-group">
+              <label for="removed-disposal-reason">سبب التخلص</label>
+              <input type="text" id="removed-disposal-reason" placeholder="مثل: معطوب ومستهلك" value="معطوب ومستهلك" autocomplete="off" />
+            </div>
+            <div class="form-group">
+              <label for="removed-material-condition">حالة المادة</label>
+              <input type="text" id="removed-material-condition" placeholder="مثل: Damaged" autocomplete="off" />
+            </div>
+            <div class="form-group">
+              <label for="removed-remarks">ملاحظات</label>
+              <input type="text" id="removed-remarks" placeholder="ملاحظات إضافية" autocomplete="off" />
+            </div>
+          </div>
+
+          <!-- الحقول الخاصة بالمواد الرأسمالية (تظهر فقط عند اختيار رأس مالي) -->
+          <div id="capital-fields" style="display: none;">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="removed-functional-location">الرقم الوظيفي</label>
+                <input type="text" id="removed-functional-location" placeholder="Functional Location"
+                  autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label for="removed-equipment">Equipment</label>
+                <input type="text" id="removed-equipment" placeholder="Equipment" autocomplete="off" />
+              </div>
+            </div>
+
+            <div class="form-row form-row-3">
+              <div class="form-group">
+                <label for="removed-capacity-kva">Capacity KVA</label>
+                <input type="text" id="removed-capacity-kva" placeholder="مثل: 500 KVA" autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label for="removed-manufacturer">الشركة المصنعة</label>
+                <input type="text" id="removed-manufacturer" placeholder="Manufacturer" autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label for="removed-prim-sec-volt">Prim/Sec. Volt</label>
+                <input type="text" id="removed-prim-sec-volt" placeholder="مثل: 13.8/0.4 KV" autocomplete="off" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="removed-year">سنة الصنع</label>
+                <input type="number" id="removed-year" placeholder="2020" min="1950" max="2099" autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label for="removed-serial">الرقم التسلسلي</label>
+                <input type="text" id="removed-serial" placeholder="SN-XXXXX" autocomplete="off" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="removed-image">صورة المادة</label>
+            <input type="file" id="removed-image" accept="image/*" class="file-input" multiple />
+          </div>
+
+          <button type="submit" class="btn btn-accent btn-full">
+            <span>إضافة مادة مُزالة</span>
+            <span class="btn-icon-right">➕</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== -->
+  <!-- Modal: تعديل المكان -->
+  <!-- ============================== -->
+  <div id="modal-edit-location" class="modal-overlay">
+    <div class="modal-content modal-sm">
+      <div class="modal-header">
+        <h3>📍 تعديل المكان</h3>
+        <button class="modal-close" data-close-modal="modal-edit-location">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-location-form" class="form-modern">
+          <div class="form-group">
+            <label for="edit-location-input">المكان</label>
+            <input type="text" id="edit-location-input" placeholder="أدخل المكان" autocomplete="off" />
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">
+            <span>حفظ</span>
+            <span class="btn-icon-right">✅</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== -->
+  <!-- Modal: عارض الصور -->
+  <!-- ============================== -->
+  <div id="modal-image-viewer" class="modal-overlay">
+    <div class="modal-content modal-lg" style="background: transparent; box-shadow: none; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
+      <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: rgba(0,0,0,0.7); border-radius: 8px 8px 0 0;">
+        <h3 id="iv-title" style="color: white; margin: 0; font-size: 1.2rem;">الصورة</h3>
+        <button class="modal-close" data-close-modal="modal-image-viewer" style="color: white; font-size: 1.5rem; background: none; border: none; cursor: pointer;">&times;</button>
+      </div>
+      <div style="position: relative; max-width: 100%; max-height: 80vh; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.9); padding: 20px; border-radius: 0 0 8px 8px; width: 100%;">
+        <button id="iv-prev" class="btn-icon" style="position: absolute; left: 10px; font-size: 2rem; color: white; background: rgba(255,255,255,0.2); border-radius: 50%; padding: 10px; z-index: 10;">&#10094;</button>
+        <img id="iv-image" src="" alt="المادة المزالة" style="max-width: 100%; max-height: 70vh; object-fit: contain; border-radius: 4px;" />
+        <button id="iv-next" class="btn-icon" style="position: absolute; right: 10px; font-size: 2rem; color: white; background: rgba(255,255,255,0.2); border-radius: 50%; padding: 10px; z-index: 10;">&#10095;</button>
+      </div>
+      <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+        <button id="iv-download" class="btn btn-primary" type="button">
+          <span>⬇️</span> تحميل الصورة
+        </button>
+        <span id="iv-counter" style="color: white; align-self: center; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 12px; font-size: 0.9rem;"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- تذييل الصفحة -->
+  <footer class="app-footer">
+    <p>نظام إدارة أوامر العمل &copy; 2026 — مبني بتقنية Supabase + Vanilla JS</p>
+  </footer>
+
+  <!-- مولّد PDF للنماذج -->
+  <script src="./utils/MDRPdfGenerator.js"></script>
+  <script src="./utils/MRRPdfGenerator.js"></script>
+  <script src="./utils/FATRAPdfGenerator.js"></script>
+
+  <!-- نقطة البداية - AppController -->
+  <script type="module" src="./controllers/AppController.js"></script>
+
+</body>
+
+</html>

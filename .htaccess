@@ -1,0 +1,37 @@
+# نظام تقان - ملف .htaccess للإنتاج
+# Etgan ERP System - Production .htaccess
+
+# تفعيل محرك إعادة الكتابة
+RewriteEngine On
+
+# إعادة توجيه الجذر إلى مجلد public
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ public/$1 [L]
+
+# إعادة توجيه الجذر المباشر
+RewriteCond %{REQUEST_URI} ^/$
+RewriteRule ^(.*)$ public/index.php [L]
+
+# إعدادات أساسية للتطوير
+# Basic settings for development
+
+# منع عرض محتويات المجلدات
+Options -Indexes
+
+# إعدادات MIME types
+<IfModule mod_mime.c>
+    AddType application/javascript .js
+    AddType text/css .css
+</IfModule>
+
+# إعدادات PHP للتطوير
+<IfModule mod_php8.c>
+    php_flag display_errors On
+    php_flag log_errors On
+    php_value max_execution_time 300
+    php_value memory_limit 256M
+    php_value post_max_size 50M
+    php_value upload_max_filesize 10M
+</IfModule>
