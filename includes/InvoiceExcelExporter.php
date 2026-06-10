@@ -331,7 +331,7 @@ class InvoiceExcelExporter {
         // رقم العقد (H-J)
         $this->sheet->setCellValue('H' . $this->currentRow, 'رقم العقد');
         $this->sheet->mergeCells('I' . $this->currentRow . ':J' . $this->currentRow);
-        $this->sheet->setCellValue('I' . $this->currentRow, $this->settings['contract_number']);
+        $this->sheet->setCellValue('I' . $this->currentRow, $this->invoiceData['contract_number'] ?? '');
 
         // تنسيق الصف
         $this->sheet->getStyle('A' . $this->currentRow . ':J' . $this->currentRow)

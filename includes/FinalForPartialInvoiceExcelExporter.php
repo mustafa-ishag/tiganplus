@@ -227,7 +227,7 @@ class FinalForPartialInvoiceExcelExporter {
 
         $this->sheet->setCellValue('H' . $this->currentRow, 'رقم العقد');
         $this->sheet->mergeCells('I' . $this->currentRow . ':L' . $this->currentRow);
-        $this->sheet->setCellValue('I' . $this->currentRow, $this->settings['contract_number']);
+        $this->sheet->setCellValue('I' . $this->currentRow, $this->invoiceData['contract_number'] ?? '');
 
         $this->applyDetailsRowStyle($this->currentRow);
         $this->currentRow++;

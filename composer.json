@@ -19,6 +19,7 @@
         "ext-xml": "*",
         "ext-zip": "*",
         "intervention/image": "^3.11",
+        "mpdf/mpdf": "^8.3",
         "phpmailer/phpmailer": "^7.0",
         "phpoffice/phpspreadsheet": "^5.1",
         "tecnickcom/tcpdf": "^6.10"

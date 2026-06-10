@@ -24,7 +24,7 @@ try {
 /**
  * دالة لإنشاء HTML للمعاينة
  */
-function generatePreviewHTML($extract, $settings, $workOrders) {
+function generatePreviewHTML($extract, $settings, $workOrders, $contractNumber) {
     ob_start();
     ?>
     <!DOCTYPE html>
@@ -204,7 +204,7 @@ function generatePreviewHTML($extract, $settings, $workOrders) {
                     </div>
                     <div class="info-box">
                         <div class="info-label">رقم العقد:</div>
-                        <div class="info-value"><?php echo htmlspecialchars($settings['contract_number']); ?></div>
+                        <div class="info-value"><?php echo htmlspecialchars($contractNumber); ?></div>
                     </div>
                     <div class="info-box">
                         <div class="info-label">صافي المستخلص:</div>
@@ -383,9 +383,23 @@ try {
         throw new Exception('لم يتم العثور على إعدادات الفواتير. يرجى إعداد بيانات الشركة والعميل أولاً.');
     }
 
+    // جلب رقم العقد
+    $contractQuery = "
+        SELECT con.contract_number 
+        FROM partial_extract_work_orders pewo
+        JOIN work_orders wo ON pewo.work_order_id = wo.id
+        JOIN contracts con ON wo.contract_id = con.id
+        WHERE pewo.partial_extract_id = ?
+        LIMIT 1
+    ";
+    $contractStmt = $db->prepare($contractQuery);
+    $contractStmt->execute([$extract['id']]);
+    $contractRow = $contractStmt->fetch();
+    $contractNumber = $contractRow ? $contractRow['contract_number'] : '';
+
     // إنشاء HTML للمعاينة (بدون استخدام PhpSpreadsheet)
     // سنقوم بإنشاء HTML بسيط للمعاينة
-    $invoiceHTML = generatePreviewHTML($extract, $settings, $workOrders);
+    $invoiceHTML = generatePreviewHTML($extract, $settings, $workOrders, $contractNumber);
 
 } catch (Exception $e) {
     $error = $e->getMessage();

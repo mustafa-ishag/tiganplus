@@ -159,12 +159,23 @@ try {
         'status' => $status
     ]));
 
+    // البحث عن العقد المطابق لتاريخ التكليف
+    $contractId = null;
+    if (!empty($assignmentDate)) {
+        $contractStmt = $db->prepare("SELECT id FROM contracts WHERE ? BETWEEN start_date AND end_date LIMIT 1");
+        $contractStmt->execute([$assignmentDate]);
+        $contractRow = $contractStmt->fetch();
+        if ($contractRow) {
+            $contractId = $contractRow['id'];
+        }
+    }
+
     $insertStmt = $db->prepare("
         INSERT INTO work_orders (
             work_order_number, work_order_type_id, department, branch_id, location,
             assignment_date, receipt_date, estimated_value, actual_value,
-            disbursement_status, notes, status, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            disbursement_status, notes, status, contract_id, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     ");
 
     $result = $insertStmt->execute([
@@ -179,7 +190,8 @@ try {
         $actualValue,
         $disbursementStatus,
         $notes,
-        $status
+        $status,
+        $contractId
     ]);
 
     error_log("Insert result: " . ($result ? 'success' : 'failed'));

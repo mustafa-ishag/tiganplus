@@ -19,7 +19,7 @@ set_exception_handler(function ($e) {
     die('خطأ: ' . $e->getMessage());
 });
 
-require __DIR__ . '/../../../../scrap/vendor/autoload.php';
+require __DIR__ . '/../../../vendor/autoload.php';
 
 $loanId = (int)($_GET['id'] ?? 0);
 if ($loanId <= 0) {

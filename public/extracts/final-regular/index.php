@@ -41,7 +41,12 @@ $extractsQuery = "
            COUNT(DISTINCT frewo.id) as work_orders_count,
            -- إحصائيات التخريد
            COUNT(DISTINCT CASE WHEN (df.status = 'not_applicable' OR df.status = 'attached') THEN frewo.id END) as completed_demolition,
-           COUNT(DISTINCT CASE WHEN df.status = 'not_attached' THEN frewo.id END) as pending_demolition
+           COUNT(DISTINCT CASE WHEN df.status = 'not_attached' THEN frewo.id END) as pending_demolition,
+           -- رقم العقد (من أول أمر عمل)
+           (SELECT con.contract_number FROM work_orders wo2 
+            JOIN contracts con ON wo2.contract_id = con.id 
+            JOIN final_regular_extract_work_orders frewo2 ON wo2.id = frewo2.work_order_id 
+            WHERE frewo2.final_regular_extract_id = fre.id LIMIT 1) as contract_number
     FROM final_regular_extracts fre
     LEFT JOIN branches b ON fre.branch_id = b.id
     LEFT JOIN users u ON fre.created_by = u.id
@@ -507,6 +512,7 @@ ob_start();
                     <thead>
                         <tr>
                             <th>رقم المستخلص</th>
+                            <th>رقم العقد</th>
                             <th>رقم PO</th>
                             <th>رقم الفاتورة</th>
                             <th>الفرع</th>
@@ -525,6 +531,13 @@ ob_start();
                         <tr>
                             <td>
                                 <span class="badge bg-success"><?php echo htmlspecialchars($extract['extract_number']); ?></span>
+                            </td>
+                            <td>
+                                <?php if (!empty($extract['contract_number'])): ?>
+                                    <span class="badge bg-dark"><?php echo htmlspecialchars($extract['contract_number']); ?></span>
+                                <?php else: ?>
+                                    <span class="text-muted small">-</span>
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <?php if (!empty($extract['po_number'])): ?>

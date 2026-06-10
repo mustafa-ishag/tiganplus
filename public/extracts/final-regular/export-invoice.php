@@ -86,6 +86,20 @@ try {
         die('لم يتم العثور على إعدادات الفاتورة. يرجى إعداد الفاتورة أولاً من صفحة الإعدادات.');
     }
     
+    // جلب رقم العقد من أوامر العمل المرتبطة
+    $contractQuery = "
+        SELECT con.contract_number 
+        FROM final_regular_extract_work_orders frewo
+        JOIN work_orders wo ON frewo.work_order_id = wo.id
+        JOIN contracts con ON wo.contract_id = con.id
+        WHERE frewo.final_regular_extract_id = ?
+        LIMIT 1
+    ";
+    $contractStmt = $db->prepare($contractQuery);
+    $contractStmt->execute([$extract_id]);
+    $contractRow = $contractStmt->fetch();
+    $contractNumber = $contractRow ? $contractRow['contract_number'] : ($settings['contract_number'] ?? '');
+
     // تحضير بيانات الفاتورة
     $invoiceData = [
         'extract_number' => $extract['extract_number'],
@@ -94,7 +108,8 @@ try {
         'total_amount' => $extract['total_amount'],
         'tax_amount' => $extract['tax_amount'],
         'net_amount' => $extract['net_amount'],
-        'total_penalty_amount' => $extract['total_penalty_amount']
+        'total_penalty_amount' => $extract['total_penalty_amount'],
+        'contract_number' => $contractNumber
     ];
     
     // إنشاء المصدر وتصدير الفاتورة

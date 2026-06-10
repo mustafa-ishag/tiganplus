@@ -45,7 +45,12 @@ $extractsQuery = "
            COUNT(DISTINCT CASE WHEN cc.completion_certificate_confirmation = 'confirmed' THEN ffpewo.id END) as confirmed_certificates,
            -- إحصائيات التخريد
            COUNT(DISTINCT CASE WHEN (df.status = 'not_applicable' OR df.status = 'attached') THEN ffpewo.id END) as completed_demolition,
-           COUNT(DISTINCT CASE WHEN df.status = 'not_attached' THEN ffpewo.id END) as pending_demolition
+           COUNT(DISTINCT CASE WHEN df.status = 'not_attached' THEN ffpewo.id END) as pending_demolition,
+           -- رقم العقد (من أول أمر عمل)
+           (SELECT con.contract_number FROM work_orders wo2 
+            JOIN contracts con ON wo2.contract_id = con.id 
+            JOIN final_for_partial_extract_work_orders ffpewo2 ON wo2.id = ffpewo2.work_order_id 
+            WHERE ffpewo2.final_for_partial_extract_id = ffpe.id LIMIT 1) as contract_number
     FROM final_for_partial_extracts ffpe
     LEFT JOIN branches b ON ffpe.branch_id = b.id
     LEFT JOIN users u ON ffpe.created_by = u.id
@@ -501,6 +506,7 @@ ob_start();
                     <thead>
                         <tr>
                             <th>رقم المستخلص</th>
+                            <th>رقم العقد</th>
                             <th>رقم PO</th>
                             <th>رقم الفاتورة</th>
                             <th>الفرع</th>
@@ -542,6 +548,13 @@ ob_start();
                         <tr>
                             <td>
                                 <span class="badge bg-warning text-dark"><?php echo htmlspecialchars($extract['extract_number']); ?></span>
+                            </td>
+                            <td>
+                                <?php if (!empty($extract['contract_number'])): ?>
+                                    <span class="badge bg-dark"><?php echo htmlspecialchars($extract['contract_number']); ?></span>
+                                <?php else: ?>
+                                    <span class="text-muted small">-</span>
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <?php if (!empty($extract['po_number'])): ?>

@@ -22,7 +22,7 @@ set_exception_handler(function ($e) {
 });
 
 // تحميل مكتبة mPDF من مجلد scrap
-require __DIR__ . '/../../../../scrap/vendor/autoload.php';
+require __DIR__ . '/../../../../vendor/autoload.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
 if (!$data || !isset($data['item'])) {

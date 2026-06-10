@@ -1048,6 +1048,12 @@ if (!function_exists('hasAnyMenuPermission')) {
                                 </a>
                             <?php endif; ?>
 
+                                <a class="nav-dropdown-item <?= $currentPage === 'contracts' ? 'active' : '' ?>"
+                                    href="<?= path('contracts/index.php') ?>">
+                                    <i class="fas fa-file-contract"></i>
+                                    <span>إدارة العقود</span>
+                                </a>
+
                             <?php if (hasPermission('menu_site_reference')): ?>
                                 <a class="nav-dropdown-item <?= $currentPage === 'reference-data' ? 'active' : '' ?>"
                                     href="<?= path('reference-data/index.php') ?>">

@@ -71,13 +71,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_import'])) {
         try {
             // معالجة جميع السجلات باستخدام INSERT ... ON DUPLICATE KEY UPDATE
             foreach ($preview['valid_records'] as $record) {
+                // البحث عن العقد المطابق لتاريخ التكليف
+                $contractId = null;
+                if (!empty($record['assignment_date'])) {
+                    $contractStmt = $db->prepare("SELECT id FROM contracts WHERE ? BETWEEN start_date AND end_date LIMIT 1");
+                    $contractStmt->execute([$record['assignment_date']]);
+                    $contractRow = $contractStmt->fetch();
+                    if ($contractRow) {
+                        $contractId = $contractRow['id'];
+                    }
+                }
+
                 $upsertStmt = $db->prepare("
                     INSERT INTO work_orders (
                         work_order_number, work_order_type_id, department, current_entity_id, 
                         branch_id, location, assignment_date, receipt_date, estimated_value, 
-                        actual_value, disbursement_status, status, notes, created_at, updated_at
+                        actual_value, disbursement_status, status, notes, contract_id, created_at, updated_at
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
                     ON DUPLICATE KEY UPDATE
                         work_order_type_id = VALUES(work_order_type_id),
                         department = VALUES(department),
@@ -91,6 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_import'])) {
                         disbursement_status = VALUES(disbursement_status),
                         status = VALUES(status),
                         notes = VALUES(notes),
+                        contract_id = VALUES(contract_id),
                         updated_at = NOW()
                 ");
 
@@ -107,7 +119,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_import'])) {
                     $record['actual_value'],
                     $record['disbursement_status'],
                     $record['status'],
-                    $record['notes']
+                    $record['notes'],
+                    $contractId
                 ])) {
                     // الحصول على معرف أمر العمل
                     $workOrderId = $db->lastInsertId();

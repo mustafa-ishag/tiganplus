@@ -99,6 +99,20 @@ try {
         throw new Exception('لم يتم العثور على إعدادات الفواتير. يرجى إعداد بيانات الشركة والعميل أولاً.');
     }
 
+    // جلب رقم العقد من أوامر العمل المرتبطة
+    $contractQuery = "
+        SELECT con.contract_number 
+        FROM partial_extract_work_orders pewo
+        JOIN work_orders wo ON pewo.work_order_id = wo.id
+        JOIN contracts con ON wo.contract_id = con.id
+        WHERE pewo.partial_extract_id = ?
+        LIMIT 1
+    ";
+    $contractStmt = $db->prepare($contractQuery);
+    $contractStmt->execute([$extract_id]);
+    $contractRow = $contractStmt->fetch();
+    $contractNumber = $contractRow ? $contractRow['contract_number'] : ($settings['contract_number'] ?? '');
+
     // تحضير بيانات الفاتورة
     $invoiceData = [
         'extract_number' => $extract['extract_number'],
@@ -110,7 +124,8 @@ try {
         'tax_amount' => $extract['tax_amount'],
         'net_amount' => $extract['net_amount'],
         'created_by_name' => $extract['created_by_name'],
-        'approval_stage' => $extract['approval_stage']
+        'approval_stage' => $extract['approval_stage'],
+        'contract_number' => $contractNumber
     ];
 
     // إنشاء مصدر الفاتورة

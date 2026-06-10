@@ -42,7 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $client_name = trim($_POST['client_name']);
         $client_address = trim($_POST['client_address']);
         $client_tax_number = trim($_POST['client_tax_number']);
-        $contract_number = trim($_POST['contract_number']);
         $contract_date = !empty($_POST['contract_date']) ? $_POST['contract_date'] : null;
         $invoice_title = trim($_POST['invoice_title']);
         $tax_rate = floatval($_POST['tax_rate']);
@@ -57,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // التحقق من صحة البيانات
         if (empty($supplier_name) || empty($supplier_address) || empty($supplier_tax_number) ||
             empty($client_name) || empty($client_address) || empty($client_tax_number) ||
-            empty($contract_number) || empty($invoice_title) || empty($currency)) {
+            empty($invoice_title) || empty($currency)) {
             throw new Exception('جميع الحقول مطلوبة');
         }
 
@@ -135,7 +134,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     client_name = ?,
                     client_address = ?,
                     client_tax_number = ?,
-                    contract_number = ?,
                     contract_date = ?,
                     invoice_title = ?,
                     tax_rate = ?,
@@ -154,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([
                 $supplier_name, $supplier_address, $supplier_tax_number, $logo_path, $stamp_path,
                 $client_name, $client_address, $client_tax_number,
-                $contract_number, $contract_date, $invoice_title, $tax_rate, $currency,
+                $contract_date, $invoice_title, $tax_rate, $currency,
                 $header_color, $accent_color, $final_header_color, $final_accent_color,
                 $final_extract_header_color, $final_extract_accent_color, $settings['id']
             ]);
@@ -164,7 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 INSERT INTO invoice_settings (
                     supplier_name, supplier_address, supplier_tax_number, supplier_logo_path, stamp_path,
                     client_name, client_address, client_tax_number,
-                    contract_number, contract_date, invoice_title, tax_rate, currency,
+                    contract_date, invoice_title, tax_rate, currency,
                     header_color, accent_color, final_header_color, final_accent_color,
                     final_extract_header_color, final_extract_accent_color, created_by
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -174,7 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([
                 $supplier_name, $supplier_address, $supplier_tax_number, $logo_path, $stamp_path,
                 $client_name, $client_address, $client_tax_number,
-                $contract_number, $contract_date, $invoice_title, $tax_rate, $currency,
+                $contract_date, $invoice_title, $tax_rate, $currency,
                 $header_color, $accent_color, $final_header_color, $final_accent_color,
                 $final_extract_header_color, $final_extract_accent_color, $user_id
             ]);
@@ -202,7 +200,6 @@ if (!$settings) {
         'client_name' => '',
         'client_address' => '',
         'client_tax_number' => '',
-        'contract_number' => '',
         'contract_date' => '',
         'invoice_title' => 'فاتورة ضريبية',
         'tax_rate' => 15.00,
@@ -383,12 +380,6 @@ ob_start();
         </h4>
 
         <div class="row">
-            <div class="col-md-6 mb-3">
-                <label for="contract_number" class="form-label">رقم العقد <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="contract_number" name="contract_number"
-                       value="<?php echo htmlspecialchars($settings['contract_number']); ?>" required>
-            </div>
-
             <div class="col-md-6 mb-3">
                 <label for="contract_date" class="form-label">تاريخ العقد</label>
                 <input type="date" class="form-control" id="contract_date" name="contract_date"

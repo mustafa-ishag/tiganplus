@@ -54,7 +54,12 @@ $extractsQuery = "
            COUNT(DISTINCT CASE
                WHEN wo.actual_value > 0 AND pewo.extract_value > wo.actual_value
                THEN pewo.id
-           END) as negative_value_count
+           END) as negative_value_count,
+           -- رقم العقد (من أول أمر عمل)
+           (SELECT con.contract_number FROM work_orders wo2 
+            JOIN contracts con ON wo2.contract_id = con.id 
+            JOIN partial_extract_work_orders pewo2 ON wo2.id = pewo2.work_order_id 
+            WHERE pewo2.partial_extract_id = pe.id LIMIT 1) as contract_number
     FROM partial_extracts pe
     LEFT JOIN branches b ON pe.branch_id = b.id
     LEFT JOIN users u ON pe.created_by = u.id
@@ -517,6 +522,7 @@ ob_start();
                     <thead>
                         <tr>
                             <th>رقم المستخلص</th>
+                            <th>رقم العقد</th>
                             <th>رقم PO</th>
                             <th>رقم الفاتورة</th>
                             <th>القسم</th>
@@ -556,6 +562,13 @@ ob_start();
                         <tr class="<?php echo $certificatesRowClass; ?>">
                             <td>
                                 <span class="badge bg-primary extract-number"><?php echo htmlspecialchars($extract['extract_number']); ?></span>
+                            </td>
+                            <td>
+                                <?php if (!empty($extract['contract_number'])): ?>
+                                    <span class="badge bg-dark"><?php echo htmlspecialchars($extract['contract_number']); ?></span>
+                                <?php else: ?>
+                                    <span class="text-muted small">-</span>
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <?php if (!empty($extract['po_number'])): ?>
