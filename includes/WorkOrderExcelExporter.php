@@ -140,7 +140,9 @@ class WorkOrderExcelExporter {
                 'نموذج التخريد',
                 'نموذج F1',
                 'شهادة الإنجاز',
-                'تأكيد شهادة الإنجاز'
+                'تاريخ ارفاق شهادة الإنجاز',
+                'تأكيد شهادة الإنجاز',
+                'تاريخ تأكيد شهادة الإنجاز'
             ]);
         }
 
@@ -235,6 +237,8 @@ class WorkOrderExcelExporter {
                        woa_f1.status as f1_form_status,
                        woa_comp.status as completion_certificate_status,
                        woa_comp.completion_certificate_confirmation,
+                       woa_comp.certificate_attached_date,
+                       woa_comp.certificate_confirmed_date,
                        -- المستخلصات (قيمة أمر العمل في المستخلص)
                        COALESCE(pe.extract_number, fre.extract_number, ffpe.extract_number) as extract_number,
                        pe.approval_stage as partial_extract_approval_stage,
@@ -471,7 +475,9 @@ class WorkOrderExcelExporter {
             $this->sheet->setCellValue($col++ . $this->currentRow, $this->translateAttachmentStatus($row['demolition_form_status'] ?? 'not_attached'));
             $this->sheet->setCellValue($col++ . $this->currentRow, $this->translateAttachmentStatus($row['f1_form_status'] ?? 'not_attached'));
             $this->sheet->setCellValue($col++ . $this->currentRow, $this->translateAttachmentStatus($row['completion_certificate_status'] ?? 'not_attached'));
+            $this->sheet->setCellValue($col++ . $this->currentRow, $row['certificate_attached_date'] ?? '');
             $this->sheet->setCellValue($col++ . $this->currentRow, $this->translateConfirmationStatus($row['completion_certificate_confirmation'] ?? 'empty'));
+            $this->sheet->setCellValue($col++ . $this->currentRow, $row['certificate_confirmed_date'] ?? '');
         }
 
         // إضافة الحالة والملاحظات
@@ -630,7 +636,7 @@ class WorkOrderExcelExporter {
 
         // إضافة عرض أعمدة النماذج إذا كانت مطلوبة
         if (($this->filters['include_attachments'] ?? '1') === '1') {
-            for ($i = 0; $i < 6; $i++) {
+            for ($i = 0; $i < 8; $i++) {
                 $columnWidths[$currentCol] = 15;
                 $currentCol++;
             }

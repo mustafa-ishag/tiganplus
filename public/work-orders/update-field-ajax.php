@@ -168,20 +168,41 @@ try {
         // تحديد اسم الحقل الصحيح في قاعدة البيانات
         $dbField = ($field === 'completion_certificate_status') ? 'status' : 'completion_certificate_confirmation';
 
+        // تحديد حقول التاريخ التي يجب تحديثها
+        $dateUpdate = '';
+        $dateParams = [];
+        if ($field === 'completion_certificate_status') {
+            if ($value === 'attached') {
+                $dateUpdate = ', certificate_attached_date = COALESCE(certificate_attached_date, CURDATE())';
+            } else {
+                $dateUpdate = ', certificate_attached_date = NULL';
+            }
+        } elseif ($field === 'completion_certificate_confirmation') {
+            if ($value === 'confirmed') {
+                $dateUpdate = ', certificate_confirmed_date = COALESCE(certificate_confirmed_date, CURDATE())';
+            } else {
+                $dateUpdate = ', certificate_confirmed_date = NULL';
+            }
+        }
+
         if ($attachment) {
             // تحديث السجل الموجود
-            $sql = "UPDATE work_order_attachments SET {$dbField} = ?, updated_at = NOW() WHERE work_order_id = ? AND form_type = 'completion_certificate'";
+            $sql = "UPDATE work_order_attachments SET {$dbField} = ?, updated_at = NOW(){$dateUpdate} WHERE work_order_id = ? AND form_type = 'completion_certificate'";
             $stmt = $db->prepare($sql);
             $result = $stmt->execute([$value, $workOrderId]);
         } else {
             // إنشاء سجل جديد
             if ($field === 'completion_certificate_status') {
-                $sql = "INSERT INTO work_order_attachments (work_order_id, form_type, status, created_at, updated_at) VALUES (?, 'completion_certificate', ?, NOW(), NOW())";
+                $attachedDate = ($value === 'attached') ? date('Y-m-d') : null;
+                $sql = "INSERT INTO work_order_attachments (work_order_id, form_type, status, certificate_attached_date, created_at, updated_at) VALUES (?, 'completion_certificate', ?, ?, NOW(), NOW())";
+                $stmt = $db->prepare($sql);
+                $result = $stmt->execute([$workOrderId, $value, $attachedDate]);
             } else {
-                $sql = "INSERT INTO work_order_attachments (work_order_id, form_type, completion_certificate_confirmation, status, created_at, updated_at) VALUES (?, 'completion_certificate', ?, 'not_attached', NOW(), NOW())";
+                $confirmedDate = ($value === 'confirmed') ? date('Y-m-d') : null;
+                $sql = "INSERT INTO work_order_attachments (work_order_id, form_type, completion_certificate_confirmation, certificate_confirmed_date, status, created_at, updated_at) VALUES (?, 'completion_certificate', ?, ?, 'not_attached', NOW(), NOW())";
+                $stmt = $db->prepare($sql);
+                $result = $stmt->execute([$workOrderId, $value, $confirmedDate]);
             }
-            $stmt = $db->prepare($sql);
-            $result = $stmt->execute([$workOrderId, $value]);
         }
     } else {
         // تحديث في جدول أوامر العمل

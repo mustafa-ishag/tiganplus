@@ -117,11 +117,13 @@ try {
     // 8: تاريخ التكليف
     // 9: القيمة الفعلية
     // 10: شهادة الإنجاز
-    // 11: تأكيد الشهادة
-    // 12: حالة الصرف
-    // 13: الحالة
-    // 14-18: النماذج
-    // 19: الإجراءات - غير قابل للترتيب
+    // 11: تاريخ ارفاق الشهادة
+    // 12: تأكيد الشهادة
+    // 13: تاريخ تأكيد الشهادة
+    // 14: حالة الصرف
+    // 15: الحالة
+    // 16-20: النماذج
+    // 21: الإجراءات - غير قابل للترتيب
     $columns = [
         0 => 'wo.is_favorite',
         1 => 'wo.work_order_number',
@@ -134,14 +136,16 @@ try {
         8 => 'wo.assignment_date',
         9 => 'wo.actual_value',
         10 => 'cc.status',
-        11 => 'cc.completion_certificate_confirmation',
-        12 => 'wo.disbursement_status',
-        13 => 'wo.status',
-        14 => 'drill.status',
-        15 => 'excavation.status',
-        16 => 'demolition.status',
-        17 => 'f1.status',
-        18 => 'assets.status'
+        11 => 'cc.certificate_attached_date',
+        12 => 'cc.completion_certificate_confirmation',
+        13 => 'cc.certificate_confirmed_date',
+        14 => 'wo.disbursement_status',
+        15 => 'wo.status',
+        16 => 'drill.status',
+        17 => 'excavation.status',
+        18 => 'demolition.status',
+        19 => 'f1.status',
+        20 => 'assets.status'
     ];
 
     // عمود الترتيب
@@ -354,6 +358,8 @@ try {
                cc.id as completion_certificate_id,
                cc.status as completion_certificate_status,
                cc.completion_certificate_confirmation,
+               cc.certificate_attached_date,
+               cc.certificate_confirmed_date,
                cc.file_path as completion_certificate_file,
                cc.original_filename as completion_certificate_filename,
                -- النماذج المرفقة
@@ -429,7 +435,9 @@ try {
             'assignment_date' => $workOrder['assignment_date'] ?? '',
             'actual_value' => $workOrder['actual_value'] ?? 0,
             'completion_certificate_status' => $workOrder['completion_certificate_status'] ?? 'not_attached',
+            'certificate_attached_date' => $workOrder['certificate_attached_date'] ?? '',
             'completion_certificate_confirmation' => $workOrder['completion_certificate_confirmation'] ?? 'empty',
+            'certificate_confirmed_date' => $workOrder['certificate_confirmed_date'] ?? '',
             'completion_certificate_file' => $workOrder['completion_certificate_file'] ?? '',
             'completion_certificate_filename' => $workOrder['completion_certificate_filename'] ?? '',
             'disbursement_status' => $workOrder['disbursement_status'] ?? 'none',

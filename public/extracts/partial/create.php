@@ -413,12 +413,27 @@ ob_start();
 <script>
 $(document).ready(function() {
     // تهيئة DataTable
-    $('#availableWorkOrdersTable').DataTable({
+    var availableTable = $('#availableWorkOrdersTable').DataTable({
         language: {
             url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/ar.json'
         },
         pageLength: 10,
-        order: [[0, 'desc']]
+        order: [[0, 'desc']],
+        initComplete: function() {
+            // جعل حقل البحث رقمي فقط
+            var searchInput = $('#availableWorkOrdersTable_filter input');
+            searchInput.attr('type', 'tel');
+            searchInput.attr('inputmode', 'numeric');
+            searchInput.attr('pattern', '[0-9]*');
+            searchInput.attr('placeholder', 'ابحث برقم أمر العمل...');
+            searchInput.on('input', function() {
+                var val = $(this).val().replace(/[^0-9]/g, '');
+                if ($(this).val() !== val) {
+                    $(this).val(val);
+                    availableTable.search(val).draw();
+                }
+            });
+        }
     });
 
     let selectedWorkOrders = [];

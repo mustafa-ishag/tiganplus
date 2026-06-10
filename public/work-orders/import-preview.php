@@ -129,17 +129,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_import'])) {
                             // إدراج النموذج الجديد
                             $insertAttachmentStmt = $db->prepare("
                                 INSERT INTO work_order_attachments (
-                                    work_order_id, form_type, status, completion_certificate_confirmation, created_at, updated_at
-                                ) VALUES (?, ?, ?, ?, NOW(), NOW())
+                                    work_order_id, form_type, status, completion_certificate_confirmation,
+                                    certificate_attached_date, certificate_confirmed_date, created_at, updated_at
+                                ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
                             ");
 
                             $confirmation = ($formType === 'completion_certificate') ? ($attachmentData['confirmation'] ?? null) : null;
+                            $certificateAttachedDate = ($formType === 'completion_certificate') ? ($attachmentData['certificate_attached_date'] ?? null) : null;
+                            $certificateConfirmedDate = ($formType === 'completion_certificate') ? ($attachmentData['certificate_confirmed_date'] ?? null) : null;
 
                             $insertAttachmentStmt->execute([
                                 $workOrderId,
                                 $formType,
                                 $attachmentData['status'],
-                                $confirmation
+                                $confirmation,
+                                $certificateAttachedDate,
+                                $certificateConfirmedDate
                             ]);
                         }
                     }

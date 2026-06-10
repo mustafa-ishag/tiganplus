@@ -90,6 +90,15 @@ try {
         }
         $updateFields[] = 'status = ?';
         $updateValues[] = $status;
+
+        // تحديث تاريخ الإرفاق تلقائياً لشهادة الإنجاز
+        if ($formType === 'completion_certificate') {
+            if ($status === 'attached') {
+                $updateFields[] = 'certificate_attached_date = COALESCE(certificate_attached_date, CURDATE())';
+            } else {
+                $updateFields[] = 'certificate_attached_date = NULL';
+            }
+        }
     }
     
     // تحديث تأكيد شهادة الإنجاز
@@ -99,6 +108,13 @@ try {
         }
         $updateFields[] = 'completion_certificate_confirmation = ?';
         $updateValues[] = $completionConfirmation;
+
+        // تحديث تاريخ التأكيد تلقائياً
+        if ($completionConfirmation === 'confirmed') {
+            $updateFields[] = 'certificate_confirmed_date = COALESCE(certificate_confirmed_date, CURDATE())';
+        } else {
+            $updateFields[] = 'certificate_confirmed_date = NULL';
+        }
     }
 
     // تحديث الملاحظات
@@ -131,13 +147,15 @@ try {
     } else {
         // إنشاء سجل جديد
         if (!empty($status)) {
-            $insertSql = "INSERT INTO work_order_attachments (work_order_id, form_type, status, created_at) VALUES (?, ?, ?, NOW())";
+            $attachedDate = ($formType === 'completion_certificate' && $status === 'attached') ? date('Y-m-d') : null;
+            $insertSql = "INSERT INTO work_order_attachments (work_order_id, form_type, status, certificate_attached_date, created_at) VALUES (?, ?, ?, ?, NOW())";
             $insertStmt = $db->prepare($insertSql);
-            $result = $insertStmt->execute([$workOrderId, $formType, $status]);
+            $result = $insertStmt->execute([$workOrderId, $formType, $status, $attachedDate]);
         } elseif (!empty($completionConfirmation)) {
-            $insertSql = "INSERT INTO work_order_attachments (work_order_id, form_type, completion_certificate_confirmation, created_at) VALUES (?, ?, ?, NOW())";
+            $confirmedDate = ($completionConfirmation === 'confirmed') ? date('Y-m-d') : null;
+            $insertSql = "INSERT INTO work_order_attachments (work_order_id, form_type, completion_certificate_confirmation, certificate_confirmed_date, created_at) VALUES (?, ?, ?, ?, NOW())";
             $insertStmt = $db->prepare($insertSql);
-            $result = $insertStmt->execute([$workOrderId, $formType, $completionConfirmation]);
+            $result = $insertStmt->execute([$workOrderId, $formType, $completionConfirmation, $confirmedDate]);
         } else {
             throw new InvalidArgumentException('لا توجد بيانات للإدراج');
         }

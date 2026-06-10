@@ -211,6 +211,14 @@ ob_start();
     </div>
 </div>
 
+<?php
+// حفظ المحتوى
+$content = ob_get_clean();
+
+// تضمين layout
+include __DIR__ . '/../includes/layout.php';
+?>
+
 <script>
 $(document).ready(function() {
     // إضافة CSS للتحقق من صحة رقم أمر العمل
@@ -421,11 +429,3 @@ $(document).ready(function() {
     $('#assignment_date').val(today);
 });
 </script>
-
-<?php
-// حفظ المحتوى
-$content = ob_get_clean();
-
-// تضمين layout
-include __DIR__ . '/../includes/layout.php';
-?>

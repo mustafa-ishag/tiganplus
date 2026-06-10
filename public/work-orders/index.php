@@ -616,7 +616,9 @@ ob_start();
                         <th>تاريخ التكليف</th>
                         <th>القيمة الفعلية</th>
                         <th>شهادة الإنجاز</th>
+                        <th>تاريخ ارفاق الشهادة</th>
                         <th>تأكيد الشهادة</th>
+                        <th>تاريخ تأكيد الشهادة</th>
                         <th>حالة الصرف</th>
                         <th>الحالة</th>
                         <th class="forms-column">الحفر الدقيق</th>
@@ -1839,7 +1841,9 @@ $(document).ready(function() {
                 { "data": "assignment_date" },
                 { "data": "actual_value" },
                 { "data": "completion_certificate_status" },
+                { "data": "certificate_attached_date" },
                 { "data": "completion_certificate_confirmation" },
+                { "data": "certificate_confirmed_date" },
                 { "data": "disbursement_status" },
                 { "data": "status" },
                 { "data": "precise_drilling_status" },
@@ -2011,6 +2015,13 @@ $(document).ready(function() {
                 {
                     "targets": 11,
                     "render": function(data, type, row) {
+                        if (!data) return '<span class="text-muted small">—</span>';
+                        return '<span class="small">' + data + '</span>';
+                    }
+                },
+                {
+                    "targets": 12,
+                    "render": function(data, type, row) {
                         const confirmationStatus = data || 'empty';
                         let html = '<select class="form-select form-select-sm completion-certificate-confirmation-select confirmation-status-' + confirmationStatus + '" ';
                         html += 'data-work-order-id="' + row.id + '" ';
@@ -2024,7 +2035,14 @@ $(document).ready(function() {
                     }
                 },
                 {
-                    "targets": 12,
+                    "targets": 13,
+                    "render": function(data, type, row) {
+                        if (!data) return '<span class="text-muted small">—</span>';
+                        return '<span class="small">' + data + '</span>';
+                    }
+                },
+                {
+                    "targets": 14,
                     "render": function(data, type, row) {
                         const disbursementStatus = data || 'none';
                         <?php if (hasPermission('work_orders_update_fields')): ?>
@@ -2051,7 +2069,7 @@ $(document).ready(function() {
                     }
                 },
                 {
-                    "targets": 13,
+                    "targets": 15,
                     "render": function(data, type, row) {
                         const status = data || 'active';
                         <?php if (hasPermission('work_orders_update_fields')): ?>
@@ -2077,37 +2095,37 @@ $(document).ready(function() {
                     }
                 },
                 {
-                    "targets": 14,
+                    "targets": 16,
                     "render": function(data, type, row) {
                         return renderFormStatus(data, 'الحفر الدقيق', row.id, 'precise_drilling_form');
                     }
                 },
                 {
-                    "targets": 15,
+                    "targets": 17,
                     "render": function(data, type, row) {
                         return renderFormStatus(data, 'الكشط', row.id, 'excavation_form');
                     }
                 },
                 {
-                    "targets": 16,
+                    "targets": 18,
                     "render": function(data, type, row) {
                         return renderFormStatus(data, 'التخريد', row.id, 'demolition_form');
                     }
                 },
                 {
-                    "targets": 17,
+                    "targets": 19,
                     "render": function(data, type, row) {
                         return renderFormStatus(data, 'F1', row.id, 'f1_form');
                     }
                 },
                 {
-                    "targets": 18,
+                    "targets": 20,
                     "render": function(data, type, row) {
                         return renderFormStatus(data, 'استلام الأصول (211)', row.id, 'assets_receipt_form');
                     }
                 },
                 {
-                    "targets": 19,
+                    "targets": 21,
                     "render": function(data, type, row) {
                         let html = '<div class="btn-group" role="group">';
 

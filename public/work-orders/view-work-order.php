@@ -57,6 +57,8 @@ try {
             form_type,
             status,
             completion_certificate_confirmation,
+            certificate_attached_date,
+            certificate_confirmed_date,
             file_path,
             original_filename,
             file_size,
@@ -111,6 +113,8 @@ try {
                 'form_type' => $formType,
                 'status' => $defaultStatus,
                 'completion_certificate_confirmation' => 'empty',
+                'certificate_attached_date' => null,
+                'certificate_confirmed_date' => null,
                 'file_path' => null,
                 'original_filename' => null,
                 'file_size' => null,
@@ -338,6 +342,20 @@ try {
                 $html .= '<div class="mt-2">
                     <small class="text-muted">التأكيد:</small>
                     <span class="badge bg-' . $confirmation['class'] . ' small">' . $confirmation['text'] . '</span>
+                </div>';
+            }
+
+            // عرض تاريخ ارفاق الشهادة
+            if (!empty($attachment['certificate_attached_date'])) {
+                $html .= '<div class="mt-1">
+                    <small class="text-muted"><i class="fas fa-calendar-check me-1"></i>تاريخ الإرفاق: ' . htmlspecialchars($attachment['certificate_attached_date']) . '</small>
+                </div>';
+            }
+
+            // عرض تاريخ تأكيد الشهادة
+            if (!empty($attachment['certificate_confirmed_date'])) {
+                $html .= '<div class="mt-1">
+                    <small class="text-muted"><i class="fas fa-calendar-alt me-1"></i>تاريخ التأكيد: ' . htmlspecialchars($attachment['certificate_confirmed_date']) . '</small>
                 </div>';
             }
         }

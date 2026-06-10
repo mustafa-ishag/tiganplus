@@ -141,6 +141,8 @@ try {
                woa_f1.status as f1_form_status,
                woa_comp.status as completion_certificate_status,
                woa_comp.completion_certificate_confirmation,
+               woa_comp.certificate_attached_date,
+               woa_comp.certificate_confirmed_date,
                -- المستخلصات (قيمة أمر العمل في المستخلص)
                COALESCE(pe.extract_number, fre.extract_number, ffpe.extract_number) as extract_number,
                pewo.extract_value as partial_extract_value,
@@ -234,7 +236,9 @@ try {
                 'نموذج التخريد',
                 'نموذج F1',
                 'شهادة الإنجاز',
-                'تأكيد شهادة الإنجاز'
+                'تاريخ ارفاق شهادة الإنجاز',
+                'تأكيد شهادة الإنجاز',
+                'تاريخ تأكيد شهادة الإنجاز'
             ]);
         }
 
@@ -281,7 +285,9 @@ try {
                     translateAttachmentStatus($workOrder['demolition_form_status'] ?? 'not_attached'),
                     translateAttachmentStatus($workOrder['f1_form_status'] ?? 'not_attached'),
                     translateAttachmentStatus($workOrder['completion_certificate_status'] ?? 'not_attached'),
-                    translateConfirmationStatus($workOrder['completion_certificate_confirmation'] ?? 'empty')
+                    $workOrder['certificate_attached_date'] ?? '',
+                    translateConfirmationStatus($workOrder['completion_certificate_confirmation'] ?? 'empty'),
+                    $workOrder['certificate_confirmed_date'] ?? ''
                 ]);
             }
 

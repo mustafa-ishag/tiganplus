@@ -371,7 +371,9 @@ function analyzeImportData(array $importData): array
                 if ($attachmentStatus) {
                     $attachments[$formType] = [
                         'status' => $attachmentStatus,
-                        'confirmation' => null
+                        'confirmation' => null,
+                        'certificate_attached_date' => null,
+                        'certificate_confirmed_date' => null
                     ];
                 }
             }
@@ -386,7 +388,9 @@ function analyzeImportData(array $importData): array
                 // إذا كان هناك تأكيد، نفترض أن الشهادة مرفقة
                 $attachments['completion_certificate'] = [
                     'status' => 'attached',
-                    'confirmation' => null
+                    'confirmation' => null,
+                    'certificate_attached_date' => null,
+                    'certificate_confirmed_date' => null
                 ];
             }
 
@@ -396,6 +400,48 @@ function analyzeImportData(array $importData): array
             } elseif (!empty($confirmationText)) {
                 // إضافة تحذير إذا كانت القيمة غير معروفة
                 $errors[] = "قيمة تأكيد الشهادة غير معروفة: '{$confirmationText}' (القيم المقبولة: فارغ، مؤكد، مقبول، مرفوض)";
+            }
+        }
+
+        // معالجة تاريخ ارفاق شهادة الإنجاز
+        if (isset($record['تاريخ ارفاق شهادة الإنجاز'])) {
+            $attachedDateText = trim($record['تاريخ ارفاق شهادة الإنجاز']);
+            if (!empty($attachedDateText)) {
+                $parsedDate = parseDate($attachedDateText);
+                if ($parsedDate) {
+                    if (!isset($attachments['completion_certificate'])) {
+                        $attachments['completion_certificate'] = [
+                            'status' => 'attached',
+                            'confirmation' => null,
+                            'certificate_attached_date' => null,
+                            'certificate_confirmed_date' => null
+                        ];
+                    }
+                    $attachments['completion_certificate']['certificate_attached_date'] = $parsedDate;
+                } else {
+                    $errors[] = "تاريخ ارفاق شهادة الإنجاز '{$attachedDateText}' غير صحيح";
+                }
+            }
+        }
+
+        // معالجة تاريخ تأكيد شهادة الإنجاز
+        if (isset($record['تاريخ تأكيد شهادة الإنجاز'])) {
+            $confirmedDateText = trim($record['تاريخ تأكيد شهادة الإنجاز']);
+            if (!empty($confirmedDateText)) {
+                $parsedDate = parseDate($confirmedDateText);
+                if ($parsedDate) {
+                    if (!isset($attachments['completion_certificate'])) {
+                        $attachments['completion_certificate'] = [
+                            'status' => 'attached',
+                            'confirmation' => null,
+                            'certificate_attached_date' => null,
+                            'certificate_confirmed_date' => null
+                        ];
+                    }
+                    $attachments['completion_certificate']['certificate_confirmed_date'] = $parsedDate;
+                } else {
+                    $errors[] = "تاريخ تأكيد شهادة الإنجاز '{$confirmedDateText}' غير صحيح";
+                }
             }
         }
 
