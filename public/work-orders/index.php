@@ -1932,21 +1932,21 @@ $(document).ready(function() {
                         let extractClass = 'text-muted';
                         let extractLink = '';
 
-                        if (row.partial_extract_number) {
-                            extractNumber = row.partial_extract_number;
-                            extractType = 'جزئي';
-                            extractClass = 'text-primary';
-                            extractLink = '../extracts/partial/view.php?id=' + row.partial_extract_id;
+                        if (row.final_for_partial_extract_number) {
+                            extractNumber = row.final_for_partial_extract_number;
+                            extractType = 'نهائي لجزئي';
+                            extractClass = 'text-warning';
+                            extractLink = '../extracts/final-for-partial/view.php?id=' + row.final_for_partial_extract_id;
                         } else if (row.final_regular_extract_number) {
                             extractNumber = row.final_regular_extract_number;
                             extractType = 'نهائي عادي';
                             extractClass = 'text-success';
                             extractLink = '../extracts/final-regular/view.php?id=' + row.final_regular_extract_id;
-                        } else if (row.final_for_partial_extract_number) {
-                            extractNumber = row.final_for_partial_extract_number;
-                            extractType = 'نهائي للجزئي';
-                            extractClass = 'text-warning';
-                            extractLink = '../extracts/final-for-partial/view.php?id=' + row.final_for_partial_extract_id;
+                        } else if (row.partial_extract_number) {
+                            extractNumber = row.partial_extract_number;
+                            extractType = 'جزئي';
+                            extractClass = 'text-primary';
+                            extractLink = '../extracts/partial/view.php?id=' + row.partial_extract_id;
                         }
 
                         if (extractNumber) {
@@ -1973,7 +1973,8 @@ $(document).ready(function() {
                         return '<input type="date" class="form-control form-control-sm assignment-date-input" ' +
                                'data-work-order-id="' + row.id + '" ' +
                                'value="' + (data || '') + '" ' +
-                               'onchange="updateWorkOrderField(' + row.id + ', \'assignment_date\', this.value, this)">';
+                               'onblur="updateWorkOrderField(' + row.id + ', \'assignment_date\', this.value, this)" ' +
+                               'onkeypress="if(event.keyCode===13) this.blur()">';
                     }
                 },
                 {
@@ -2015,8 +2016,14 @@ $(document).ready(function() {
                 {
                     "targets": 11,
                     "render": function(data, type, row) {
-                        if (!data) return '<span class="text-muted small">—</span>';
-                        return '<span class="small">' + data + '</span>';
+                        let html = '<input type="date" class="form-control form-control-sm certificate-date-input" ';
+                        html += 'data-work-order-id="' + row.id + '" ';
+                        html += 'value="' + (data || '') + '" ';
+                        html += 'onblur="updateCertificateDate(' + row.id + ', \'certificate_attached_date\', this.value, this)" ';
+                        html += 'onkeypress="if(event.keyCode===13) this.blur()" ';
+                        html += 'style="font-size: 11px; padding: 2px 4px; min-width: 120px;" ';
+                        html += 'title="تاريخ إرفاق الشهادة">';
+                        return html;
                     }
                 },
                 {
@@ -2037,8 +2044,14 @@ $(document).ready(function() {
                 {
                     "targets": 13,
                     "render": function(data, type, row) {
-                        if (!data) return '<span class="text-muted small">—</span>';
-                        return '<span class="small">' + data + '</span>';
+                        let html = '<input type="date" class="form-control form-control-sm certificate-date-input" ';
+                        html += 'data-work-order-id="' + row.id + '" ';
+                        html += 'value="' + (data || '') + '" ';
+                        html += 'onblur="updateCertificateDate(' + row.id + ', \'certificate_confirmed_date\', this.value, this)" ';
+                        html += 'onkeypress="if(event.keyCode===13) this.blur()" ';
+                        html += 'style="font-size: 11px; padding: 2px 4px; min-width: 120px;" ';
+                        html += 'title="تاريخ تأكيد الشهادة">';
+                        return html;
                     }
                 },
                 {
@@ -2306,23 +2319,24 @@ $(document).ready(function() {
 
         if (formsViewActive) {
             // وضع النماذج: إخفاء الأعمدة غير المطلوبة وإظهار أعمدة النماذج
-            // إخفاء: الجهة الحالية، الفرع، الموقع، رقم المستخلص، تاريخ التكليف، شهادة الإنجاز، تأكيد الشهادة، حالة الصرف، الحالة
             table.column(4).visible(false); // الجهة الحالية
             table.column(5).visible(false); // الفرع
             table.column(6).visible(false); // الموقع
             table.column(7).visible(false); // رقم المستخلص
             table.column(8).visible(false); // تاريخ التكليف
             table.column(10).visible(false); // شهادة الإنجاز
-            table.column(11).visible(false); // تأكيد الشهادة
-            table.column(12).visible(false); // حالة الصرف
-            table.column(13).visible(false); // الحالة
+            table.column(11).visible(false); // تاريخ ارفاق الشهادة
+            table.column(12).visible(false); // تأكيد الشهادة
+            table.column(13).visible(false); // تاريخ تأكيد الشهادة
+            table.column(14).visible(false); // حالة الصرف
+            table.column(15).visible(false); // الحالة
 
             // إظهار أعمدة النماذج
-            table.column(14).visible(true); // الحفر الدقيق
-            table.column(15).visible(true); // الكشط
-            table.column(16).visible(true); // التخريد
-            table.column(17).visible(true); // F1
-            table.column(18).visible(true); // استلام الأصول
+            table.column(16).visible(true); // الحفر الدقيق
+            table.column(17).visible(true); // الكشط
+            table.column(18).visible(true); // التخريد
+            table.column(19).visible(true); // F1
+            table.column(20).visible(true); // استلام الأصول
 
             $(this).html('<i class="fas fa-table me-1"></i>الوضع العادي');
             $(this).removeClass('btn-info').addClass('btn-warning');
@@ -2334,16 +2348,18 @@ $(document).ready(function() {
             table.column(7).visible(true); // رقم المستخلص
             table.column(8).visible(true); // تاريخ التكليف
             table.column(10).visible(true); // شهادة الإنجاز
-            table.column(11).visible(true); // تأكيد الشهادة
-            table.column(12).visible(true); // حالة الصرف
-            table.column(13).visible(true); // الحالة
+            table.column(11).visible(true); // تاريخ ارفاق الشهادة
+            table.column(12).visible(true); // تأكيد الشهادة
+            table.column(13).visible(true); // تاريخ تأكيد الشهادة
+            table.column(14).visible(true); // حالة الصرف
+            table.column(15).visible(true); // الحالة
 
             // إخفاء أعمدة النماذج
-            table.column(14).visible(false); // الحفر الدقيق
-            table.column(15).visible(false); // الكشط
-            table.column(16).visible(false); // التخريد
-            table.column(17).visible(false); // F1
-            table.column(18).visible(false); // استلام الأصول
+            table.column(16).visible(false); // الحفر الدقيق
+            table.column(17).visible(false); // الكشط
+            table.column(18).visible(false); // التخريد
+            table.column(19).visible(false); // F1
+            table.column(20).visible(false); // استلام الأصول
 
             $(this).html('<i class="fas fa-file-alt me-1"></i>وضع النماذج');
             $(this).removeClass('btn-warning').addClass('btn-info');
@@ -2462,11 +2478,12 @@ $(document).ready(function() {
     });
 
     // إخفاء أعمدة النماذج افتراضياً
-    table.column(14).visible(false); // الحفر الدقيق
-    table.column(15).visible(false); // الكشط
-    table.column(16).visible(false); // التخريد
-    table.column(17).visible(false); // F1
-    table.column(18).visible(false); // استلام الأصول
+    table.column(16).visible(false); // الحفر الدقيق
+    table.column(17).visible(false); // الكشط
+    table.column(18).visible(false); // التخريد
+    table.column(19).visible(false); // F1
+    table.column(20).visible(false); // استلام الأصول
+
 
     // إخفاء/إظهار الفلاتر
     $('#toggleFilters').on('click', function() {
@@ -2518,6 +2535,58 @@ function applyInitialColors() {
         var value = $(this).val();
         $(this).removeClass('confirmation-status-empty confirmation-status-confirmed confirmation-status-accepted confirmation-status-rejected');
         $(this).addClass('confirmation-status-' + value);
+    });
+}
+
+// دالة تحديث تاريخ الشهادة يدوياً
+function updateCertificateDate(workOrderId, dateField, value, element) {
+    if (!workOrderId || !dateField) {
+        showAlert('error', 'معاملات مطلوبة مفقودة');
+        return;
+    }
+
+    const currentDataOriginal = $(element).attr('data-original-value');
+    const originalValue = currentDataOriginal !== undefined ? currentDataOriginal : element.defaultValue;
+    
+    if (value === originalValue) {
+        return; // لم تتغير القيمة
+    }
+
+    $(element).attr('data-original-value', value);
+
+    $(element).addClass('updating-field');
+
+    $.ajax({
+        url: 'update-field-ajax.php',
+        method: 'POST',
+        data: {
+            id: workOrderId,
+            field: dateField,
+            value: value || ''
+        },
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                $(element).removeClass('updating-field').addClass('field-updated');
+                setTimeout(function() {
+                    $(element).removeClass('field-updated');
+                }, 2000);
+                showAlert('success', response.message || 'تم تحديث التاريخ بنجاح');
+            } else {
+                $(element).removeClass('updating-field').addClass('field-error');
+                setTimeout(function() {
+                    $(element).removeClass('field-error');
+                }, 2000);
+                showAlert('error', response.message || 'حدث خطأ أثناء التحديث');
+            }
+        },
+        error: function() {
+            $(element).removeClass('updating-field').addClass('field-error');
+            setTimeout(function() {
+                $(element).removeClass('field-error');
+            }, 2000);
+            showAlert('error', 'حدث خطأ في الاتصال بالخادم');
+        }
     });
 }
 
@@ -2818,11 +2887,16 @@ function updateWorkOrderField(workOrderId, field, value, element) {
         return;
     }
 
-    // إظهار مؤشر التحميل
-    const originalValue = $(element).data('original-value') || $(element).val() || '';
-    $(element).data('original-value', originalValue);
-    $(element).prop('disabled', true);
+    const currentDataOriginal = $(element).attr('data-original-value');
+    const originalValue = currentDataOriginal !== undefined ? currentDataOriginal : element.defaultValue;
+    
+    if (value === originalValue) {
+        return; // لم تتغير القيمة
+    }
 
+    $(element).attr('data-original-value', value);
+
+    // إظهار مؤشر التحميل
     // إضافة مؤشر بصري للتحديث
     $(element).addClass('updating-field');
 
@@ -2887,10 +2961,6 @@ function updateWorkOrderField(workOrderId, field, value, element) {
             }
 
             showAlert('error', errorMessage);
-        },
-        complete: function() {
-            // إعادة تفعيل العنصر
-            $(element).prop('disabled', false);
         }
     });
 }

@@ -36,10 +36,14 @@ try {
             b.name as branch_name,
             b.code as branch_code,
             wot.type_code,
-            wot.description as work_order_type_description
+            wot.description as work_order_type_description,
+            c.contract_number,
+            c.start_date as contract_start_date,
+            c.end_date as contract_end_date
         FROM work_orders wo
         LEFT JOIN branches b ON wo.branch_id = b.id
         LEFT JOIN work_order_types wot ON wo.work_order_type_id = wot.id
+        LEFT JOIN contracts c ON wo.contract_id = c.id
         WHERE wo.id = ?
     ");
     
@@ -69,6 +73,69 @@ try {
     ");
     $attachmentsStmt->execute([$workOrderId]);
     $attachments = $attachmentsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // جلب تفاصيل المستخلصات المرتبطة بأمر العمل
+    $extractDetails = [];
+
+    // 1. المستخلصات الجزئية
+    $partialStmt = $db->prepare("
+        SELECT pe.*, pew.completion_date, pew.extract_value, pew.notes as wo_notes,
+               b.name as branch_name, u.full_name as created_by_name
+        FROM partial_extract_work_orders pew
+        JOIN partial_extracts pe ON pew.partial_extract_id = pe.id
+        LEFT JOIN branches b ON pe.branch_id = b.id
+        LEFT JOIN users u ON pe.created_by = u.id
+        WHERE pew.work_order_id = ?
+        ORDER BY pe.extract_date DESC
+    ");
+    $partialStmt->execute([$workOrderId]);
+    $partialExtracts = $partialStmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($partialExtracts as $pe) {
+        $pe['extract_type_label'] = 'جزئي';
+        $pe['extract_type_color'] = 'info';
+        $pe['extract_type_icon'] = 'fas fa-layer-group';
+        $extractDetails[] = $pe;
+    }
+
+    // 2. المستخلصات النهائية العادية
+    $finalRegStmt = $db->prepare("
+        SELECT fre.*, frew.completion_date, frew.extract_value, frew.penalty_amount as wo_penalty, frew.notes as wo_notes,
+               b.name as branch_name, u.full_name as created_by_name
+        FROM final_regular_extract_work_orders frew
+        JOIN final_regular_extracts fre ON frew.final_regular_extract_id = fre.id
+        LEFT JOIN branches b ON fre.branch_id = b.id
+        LEFT JOIN users u ON fre.created_by = u.id
+        WHERE frew.work_order_id = ?
+        ORDER BY fre.extract_date DESC
+    ");
+    $finalRegStmt->execute([$workOrderId]);
+    $finalRegExtracts = $finalRegStmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($finalRegExtracts as $fre) {
+        $fre['extract_type_label'] = 'نهائي عادي';
+        $fre['extract_type_color'] = 'success';
+        $fre['extract_type_icon'] = 'fas fa-check-double';
+        $extractDetails[] = $fre;
+    }
+
+    // 3. المستخلصات النهائية للجزئية
+    $finalPartStmt = $db->prepare("
+        SELECT ffpe.*, ffpew.completion_date, ffpew.extract_value, ffpew.penalty_amount as wo_penalty, ffpew.notes as wo_notes,
+               b.name as branch_name, u.full_name as created_by_name
+        FROM final_for_partial_extract_work_orders ffpew
+        JOIN final_for_partial_extracts ffpe ON ffpew.final_for_partial_extract_id = ffpe.id
+        LEFT JOIN branches b ON ffpe.branch_id = b.id
+        LEFT JOIN users u ON ffpe.created_by = u.id
+        WHERE ffpew.work_order_id = ?
+        ORDER BY ffpe.extract_date DESC
+    ");
+    $finalPartStmt->execute([$workOrderId]);
+    $finalPartExtracts = $finalPartStmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($finalPartExtracts as $ffpe) {
+        $ffpe['extract_type_label'] = 'نهائي للجزئي';
+        $ffpe['extract_type_color'] = 'warning';
+        $ffpe['extract_type_icon'] = 'fas fa-flag-checkered';
+        $extractDetails[] = $ffpe;
+    }
 
     // تعريف أنواع النماذج
     $formTypes = [
@@ -123,13 +190,13 @@ try {
         }
     }
 
-    // تحويل حالة الصرف إلى نص
+    // تحويل حالة صرف المواد إلى نص
     $disbursementStatusText = [
-        'none' => 'لا يوجد',
+        'none' => 'لم يتم الصرف',
         'pending_disbursement' => 'في انتظار الصرف',
-        'disbursement' => 'تم الصرف',
+        'disbursement' => 'تم صرف المواد',
         'completed' => 'مكتمل',
-        'return' => 'مرتجع',
+        'return' => 'متبقي إرجاع',
         'partial_disbursement' => 'صرف جزئي',
         'cancelled_disbursement' => 'صرف ملغي'
     ];
@@ -165,8 +232,14 @@ try {
                             <td>' . htmlspecialchars($workOrder['work_order_number']) . '</td>
                         </tr>
                         <tr>
+                            <td class="fw-bold">رقم العقد:</td>
+                            <td>' . (!empty($workOrder['contract_number']) ?
+                                '<span class="badge bg-dark fs-6 px-2 py-1"><i class="fas fa-file-contract me-1"></i>' . htmlspecialchars($workOrder['contract_number']) . '</span>' :
+                                '<span class="text-muted"><i class="fas fa-unlink me-1"></i>غير مرتبط بعقد</span>') . '</td>
+                        </tr>
+                        <tr>
                             <td class="fw-bold">نوع أمر العمل:</td>
-                            <td>' . htmlspecialchars($workOrder['type_code']) . ' - ' . htmlspecialchars($workOrder['work_order_type_description']) . '</td>
+                            <td>' . htmlspecialchars($workOrder['type_code'] ?? '') . (!empty($workOrder['work_order_type_description']) ? ' - ' . htmlspecialchars($workOrder['work_order_type_description']) : '') . '</td>
                         </tr>
                         <tr>
                             <td class="fw-bold">القسم:</td>
@@ -174,7 +247,7 @@ try {
                         </tr>
                         <tr>
                             <td class="fw-bold">الفرع:</td>
-                            <td>' . htmlspecialchars($workOrder['branch_name']) . ' (' . htmlspecialchars($workOrder['branch_code']) . ')</td>
+                            <td>' . htmlspecialchars($workOrder['branch_name'] ?? '') . (!empty($workOrder['branch_code']) ? ' (' . htmlspecialchars($workOrder['branch_code']) . ')' : '') . '</td>
                         </tr>
                         <tr>
                             <td class="fw-bold">الموقع:</td>
@@ -228,7 +301,7 @@ try {
             </div>
         </div>
         
-        <div class="col-12">
+        <div class="col-md-6">
             <div class="card mb-3">
                 <div class="card-header">
                     <h6 class="card-title mb-0">
@@ -237,31 +310,252 @@ try {
                     </h6>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="text-center">
-                                <h5 class="text-primary">' . number_format($workOrder['estimated_value'], 2) . ' ريال</h5>
-                                <small class="text-muted">القيمة المقدرة</small>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="text-center">
-                                <h5 class="text-success">' . number_format($workOrder['actual_value'], 2) . ' ريال</h5>
-                                <small class="text-muted">القيمة الفعلية</small>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="text-center">
-                                <span class="badge bg-' . ($workOrder['disbursement_status'] == 'completed' ? 'success' : ($workOrder['disbursement_status'] == 'none' ? 'secondary' : 'warning')) . ' fs-6">
-                                    ' . ($disbursementStatusText[$workOrder['disbursement_status']] ?? $workOrder['disbursement_status']) . '
-                                </span>
-                                <br><small class="text-muted">حالة الصرف</small>
-                            </div>
-                        </div>
+                    <table class="table table-borderless table-sm mb-0">
+                        <tr>
+                            <td class="fw-bold">القيمة المقدرة:</td>
+                            <td><span class="text-primary fw-bold">' . number_format($workOrder['estimated_value'], 2) . ' ريال</span></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">القيمة الفعلية:</td>
+                            <td><span class="text-success fw-bold">' . number_format($workOrder['actual_value'], 2) . ' ريال</span></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-warehouse text-info me-2"></i>
+                        حالة صرف المواد
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <span class="badge bg-' . ($workOrder['disbursement_status'] == 'completed' ? 'success' : ($workOrder['disbursement_status'] == 'none' ? 'secondary' : ($workOrder['disbursement_status'] == 'return' ? 'warning' : 'info'))) . ' fs-6 px-3 py-2">
+                            <i class="fas fa-' . ($workOrder['disbursement_status'] == 'completed' ? 'check-circle' : ($workOrder['disbursement_status'] == 'none' ? 'minus-circle' : ($workOrder['disbursement_status'] == 'return' ? 'undo' : 'boxes'))) . ' me-1"></i>
+                            ' . ($disbursementStatusText[$workOrder['disbursement_status']] ?? $workOrder['disbursement_status']) . '
+                        </span>
+                        <br><small class="text-muted mt-1 d-block">صرف المواد من مستودع شركة الكهرباء</small>
                     </div>
                 </div>
             </div>
         </div>';
+
+    // إضافة قسم المستخلصات
+    if (!empty($extractDetails)) {
+        // حساب الملخص المالي
+        $totalExtractValue = 0;
+        $totalPenalty = 0;
+        foreach ($extractDetails as $ext) {
+            $totalExtractValue += (float)($ext['extract_value'] ?? 0);
+            $totalPenalty += (float)($ext['wo_penalty'] ?? 0);
+        }
+
+        $html .= '<div class="col-12">
+            <div class="card mb-3 border-0 shadow-sm">
+                <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-file-invoice-dollar me-2"></i>
+                            تفاصيل المستخلصات
+                            <span class="badge bg-light text-dark ms-2">' . count($extractDetails) . ' مستخلص</span>
+                        </h6>
+                        <div>
+                            <span class="badge bg-light text-dark me-2">
+                                <i class="fas fa-coins me-1"></i>
+                                إجمالي القيمة: ' . number_format($totalExtractValue, 2) . ' ريال
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">';
+
+        // جلب مراحل الاعتماد من قاعدة البيانات
+        $stagesStmt = $db->query("SELECT stage_key, stage_name, stage_color, stage_order, is_final FROM approval_stages WHERE is_active = 1 ORDER BY stage_order ASC");
+        $dbStages = $stagesStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // بناء مصفوفة المراحل وترتيبها
+        $approvalStages = [];
+        $stagesOrder = [];
+        $stageIcons = [
+            'draft' => 'fas fa-pencil-alt',
+            'technical_support' => 'fas fa-headset',
+            'construction' => 'fas fa-hard-hat',
+            'department_manager' => 'fas fa-user-tie',
+            'administration_manager' => 'fas fa-user-shield',
+            'taif_finance' => 'fas fa-calculator',
+            'finance' => 'fas fa-calculator',
+            'disbursed' => 'fas fa-check-circle',
+            'did' => 'fas fa-exclamation-triangle'
+        ];
+        $stageColors = [
+            'primary' => '#0d6efd',
+            'secondary' => '#6c757d',
+            'success' => '#198754',
+            'danger' => '#dc3545',
+            'warning' => '#ffc107',
+            'info' => '#17a2b8'
+        ];
+
+        foreach ($dbStages as $stage) {
+            $key = $stage['stage_key'];
+            $color = $stageColors[$stage['stage_color']] ?? '#6c757d';
+            $icon = $stageIcons[$key] ?? 'fas fa-circle';
+            $approvalStages[$key] = [
+                'label' => $stage['stage_name'],
+                'icon' => $icon,
+                'color' => $color
+            ];
+            $stagesOrder[] = $key;
+        }
+
+        foreach ($extractDetails as $idx => $extract) {
+            $currentStage = $extract['approval_stage'] ?? 'draft';
+            $extractStatus = $extract['status'] ?? $currentStage;
+
+            $currentStageIndex = array_search($currentStage, $stagesOrder);
+            if ($currentStageIndex === false) $currentStageIndex = 0;
+
+            $html .= '<div class="p-3' . ($idx > 0 ? ' border-top' : '') . '">
+                <div class="d-flex align-items-start mb-3">
+                    <div class="me-3">
+                        <span class="badge bg-' . $extract['extract_type_color'] . ' fs-6 px-3 py-2">
+                            <i class="' . $extract['extract_type_icon'] . ' me-1"></i>
+                            ' . $extract['extract_type_label'] . '
+                        </span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">
+                            <i class="fas fa-hashtag text-muted me-1"></i>
+                            ' . htmlspecialchars($extract['extract_number']) . '
+                        </h6>
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>تاريخ المستخلص: ' . htmlspecialchars($extract['extract_date'] ?? '-') . '
+                        </small>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold text-primary fs-5">' . number_format((float)($extract['extract_value'] ?? 0), 2) . '</div>
+                        <small class="text-muted">ريال</small>
+                    </div>
+                </div>';
+
+            // شريط مراحل الاعتماد المرئي (RTL - من اليمين لليسار)
+            $stagesOrderReversed = array_reverse($stagesOrder);
+            $progressPercent = $currentStageIndex > 0 ? round(($currentStageIndex / (count($stagesOrder) - 1)) * 100) : 0;
+
+            $html .= '<div class="mb-3" dir="ltr">
+                <div class="d-flex justify-content-between align-items-center position-relative" style="padding: 0 10px; direction: ltr;">
+                    <div style="position: absolute; top: 50%; left: 20px; right: 20px; height: 3px; background: #e9ecef; transform: translateY(-50%); z-index: 0;"></div>
+                    <div style="position: absolute; top: 50%; right: 20px; height: 3px; background: linear-gradient(270deg, #667eea, #764ba2); transform: translateY(-50%); z-index: 1; width: ' . $progressPercent . '%; transition: width 0.5s;"></div>';
+
+            foreach ($stagesOrderReversed as $sIdx => $stage) {
+                $stageInfo = $approvalStages[$stage] ?? ['label' => $stage, 'icon' => 'fas fa-circle', 'color' => '#6c757d'];
+                $originalIdx = array_search($stage, $stagesOrder);
+                $isCompleted = $originalIdx < $currentStageIndex;
+                $isCurrent = $originalIdx == $currentStageIndex;
+                $isPending = $originalIdx > $currentStageIndex;
+
+                $bgColor = $isCompleted ? $stageInfo['color'] : ($isCurrent ? $stageInfo['color'] : '#dee2e6');
+                $textColor = ($isCompleted || $isCurrent) ? 'white' : '#adb5bd';
+                $size = $isCurrent ? '36px' : '28px';
+                $shadow = $isCurrent ? 'box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.3);' : '';
+
+                $html .= '<div class="text-center" style="z-index: 2; flex: 1;">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle" 
+                         style="width: ' . $size . '; height: ' . $size . '; background: ' . $bgColor . '; color: ' . $textColor . '; ' . $shadow . ' transition: all 0.3s;"
+                         title="' . $stageInfo['label'] . '">
+                        <i class="' . ($isCompleted ? 'fas fa-check' : $stageInfo['icon']) . '" style="font-size: ' . ($isCurrent ? '14px' : '11px') . ';"></i>
+                    </div>
+                    <div class="mt-1" style="font-size: 10px; color: ' . ($isCurrent ? $stageInfo['color'] : '#adb5bd') . '; font-weight: ' . ($isCurrent ? 'bold' : 'normal') . ';">
+                        ' . $stageInfo['label'] . '
+                    </div>
+                </div>';
+            }
+
+            $html .= '</div>
+            </div>';
+
+            // تفاصيل إضافية
+            $html .= '<div class="row g-2">';
+
+            // رقم أمر الشراء
+            if (!empty($extract['po_number'])) {
+                $html .= '<div class="col-auto">
+                    <span class="badge bg-light text-dark border">
+                        <i class="fas fa-shopping-cart text-primary me-1"></i>
+                        PO: ' . htmlspecialchars($extract['po_number']) . '
+                    </span>
+                </div>';
+            }
+
+            // رقم الفاتورة
+            if (!empty($extract['invoice_number'])) {
+                $html .= '<div class="col-auto">
+                    <span class="badge bg-light text-dark border">
+                        <i class="fas fa-file-invoice text-success me-1"></i>
+                        فاتورة: ' . htmlspecialchars($extract['invoice_number']) . '
+                    </span>
+                </div>';
+            }
+
+            // رقم ورقة الإدخال
+            if (!empty($extract['entry_sheet_number'])) {
+                $html .= '<div class="col-auto">
+                    <span class="badge bg-light text-dark border">
+                        <i class="fas fa-receipt text-info me-1"></i>
+                        Entry Sheet: ' . htmlspecialchars($extract['entry_sheet_number']) . '
+                    </span>
+                </div>';
+            }
+
+            // تاريخ الإنجاز
+            if (!empty($extract['completion_date'])) {
+                $html .= '<div class="col-auto">
+                    <span class="badge bg-light text-dark border">
+                        <i class="fas fa-calendar-check text-success me-1"></i>
+                        تاريخ الإنجاز: ' . htmlspecialchars($extract['completion_date']) . '
+                    </span>
+                </div>';
+            }
+
+            // الغرامات
+            $penalty = (float)($extract['wo_penalty'] ?? 0);
+            if ($penalty > 0) {
+                $html .= '<div class="col-auto">
+                    <span class="badge bg-danger">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        غرامة: ' . number_format($penalty, 2) . ' ريال
+                    </span>
+                </div>';
+            }
+
+            $html .= '</div>'; // end row g-2
+
+            $html .= '</div>'; // end p-3
+        }
+
+        $html .= '</div>
+            </div>
+        </div>';
+    } else {
+        // لا توجد مستخلصات
+        $html .= '<div class="col-12">
+            <div class="card mb-3 border-0 shadow-sm">
+                <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>
+                        تفاصيل المستخلصات
+                    </h6>
+                </div>
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3" style="opacity: 0.3;"></i>
+                    <p class="text-muted mb-0">لا توجد مستخلصات مرتبطة بأمر العمل هذا</p>
+                </div>
+            </div>
+        </div>';
+    }
 
     // إضافة قسم المرفقات
     $html .= '<div class="col-12">

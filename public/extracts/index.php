@@ -128,11 +128,11 @@ ob_start();
                 <li><a class="dropdown-item" href="<?= path('extracts/partial/create.php') ?>">
                     <i class="fas fa-circle text-primary me-2"></i>مستخلص جزئي
                 </a></li>
-                <li><a class="dropdown-item" href="<?= path('extracts/final-regular/create.php') ?>">
-                    <i class="fas fa-circle text-success me-2"></i>مستخلص نهائي عادي
-                </a></li>
                 <li><a class="dropdown-item" href="<?= path('extracts/final-for-partial/create.php') ?>">
                     <i class="fas fa-circle text-warning me-2"></i>مستخلص نهائي للجزئية
+                </a></li>
+                <li><a class="dropdown-item" href="<?= path('extracts/final-regular/create.php') ?>">
+                    <i class="fas fa-circle text-success me-2"></i>مستخلص نهائي عادي
                 </a></li>
             </ul>
         </div>
@@ -187,52 +187,6 @@ ob_start();
             </div>
         </div>
 
-        <!-- المستخلصات النهائية العادية -->
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                المستخلصات النهائية العادية
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                <?php echo number_format($finalRegularStats['total']); ?>
-                            </div>
-                            <div class="text-xs text-muted">
-                                المبلغ الإجمالي: <?php echo number_format($finalRegularStats['total_amount'] ?? 0, 2); ?>
-                                <span class="sar-icon"><svg><use href="#sar-symbol"/></svg></span>
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-file-invoice fa-2x text-success"></i>
-                        </div>
-                    </div>
-                    <div class="row mt-2">
-                        <div class="col">
-                            <small class="text-muted">
-                                مسودة: <?php echo $finalRegularStats['draft']; ?> |
-                                مقدمة: <?php echo $finalRegularStats['submitted']; ?> |
-                                معتمدة: <?php echo $finalRegularStats['approved']; ?>
-                            </small>
-                        </div>
-                    </div>
-                    <div class="row mt-2">
-                        <div class="col">
-                            <a href="final-regular/index.php" class="btn btn-outline-success btn-sm me-2">
-                                <i class="fas fa-list me-1"></i>
-                                عرض الكل
-                            </a>
-                            <a href="final-regular/create.php" class="btn btn-success btn-sm">
-                                <i class="fas fa-plus me-1"></i>
-                                إنشاء جديد
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- المستخلصات النهائية للجزئية -->
         <div class="col-xl-4 col-md-6 mb-4">
             <div class="card border-left-warning shadow h-100 py-2">
@@ -278,6 +232,52 @@ ob_start();
                 </div>
             </div>
         </div>
+
+        <!-- المستخلصات النهائية العادية -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                المستخلصات النهائية العادية
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                <?php echo number_format($finalRegularStats['total']); ?>
+                            </div>
+                            <div class="text-xs text-muted">
+                                المبلغ الإجمالي: <?php echo number_format($finalRegularStats['total_amount'] ?? 0, 2); ?>
+                                <span class="sar-icon"><svg><use href="#sar-symbol"/></svg></span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-invoice fa-2x text-success"></i>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col">
+                            <small class="text-muted">
+                                مسودة: <?php echo $finalRegularStats['draft']; ?> |
+                                مقدمة: <?php echo $finalRegularStats['submitted']; ?> |
+                                معتمدة: <?php echo $finalRegularStats['approved']; ?>
+                            </small>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col">
+                            <a href="final-regular/index.php" class="btn btn-outline-success btn-sm me-2">
+                                <i class="fas fa-list me-1"></i>
+                                عرض الكل
+                            </a>
+                            <a href="final-regular/create.php" class="btn btn-success btn-sm">
+                                <i class="fas fa-plus me-1"></i>
+                                إنشاء جديد
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Quick Actions -->
@@ -301,19 +301,19 @@ ob_start();
                             </a>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <a href="final-regular/create.php" class="btn btn-success btn-lg w-100 h-100 d-flex flex-column justify-content-center align-items-center">
-                                <i class="fas fa-file-invoice fa-3x mb-2"></i>
-                                <h5 class="mb-1">مستخلص نهائي عادي</h5>
-                                <small>FRE-YYYY-XXX</small>
-                                <small class="text-light">مع الغرامات</small>
-                            </a>
-                        </div>
-                        <div class="col-md-4 mb-3">
                             <a href="final-for-partial/create.php" class="btn btn-warning btn-lg w-100 h-100 d-flex flex-column justify-content-center align-items-center">
                                 <i class="fas fa-file-contract fa-3x mb-2"></i>
                                 <h5 class="mb-1">مستخلص نهائي للجزئية</h5>
                                 <small>FFPE-YYYY-XXX</small>
                                 <small class="text-dark">مرتبط بجزئي</small>
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="final-regular/create.php" class="btn btn-success btn-lg w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+                                <i class="fas fa-file-invoice fa-3x mb-2"></i>
+                                <h5 class="mb-1">مستخلص نهائي عادي</h5>
+                                <small>FRE-YYYY-XXX</small>
+                                <small class="text-light">مع الغرامات</small>
                             </a>
                         </div>
                     </div>

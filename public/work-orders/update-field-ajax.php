@@ -75,7 +75,9 @@ try {
         'disbursement_status',
         'status',
         'completion_certificate_status',
-        'completion_certificate_confirmation'
+        'completion_certificate_confirmation',
+        'certificate_attached_date',
+        'certificate_confirmed_date'
     ];
 
     if (!in_array($field, $allowedFields)) {
@@ -155,10 +157,18 @@ try {
                 exit();
             }
             break;
+
+        case 'certificate_attached_date':
+        case 'certificate_confirmed_date':
+            if ($value && !DateTime::createFromFormat('Y-m-d', $value)) {
+                echo json_encode(['success' => false, 'message' => 'تاريخ غير صحيح']);
+                exit();
+            }
+            break;
     }
     
     // تحديث البيانات
-    if (in_array($field, ['completion_certificate_status', 'completion_certificate_confirmation'])) {
+    if (in_array($field, ['completion_certificate_status', 'completion_certificate_confirmation', 'certificate_attached_date', 'certificate_confirmed_date'])) {
         // تحديث في جدول المرفقات
         // أولاً، التحقق من وجود سجل شهادة الإنجاز
         $stmt = $db->prepare("SELECT id FROM work_order_attachments WHERE work_order_id = ? AND form_type = 'completion_certificate'");
@@ -168,40 +178,37 @@ try {
         // تحديد اسم الحقل الصحيح في قاعدة البيانات
         $dbField = ($field === 'completion_certificate_status') ? 'status' : 'completion_certificate_confirmation';
 
-        // تحديد حقول التاريخ التي يجب تحديثها
+        // لا يتم تعيين التاريخ تلقائياً - التاريخ يُكتب يدوياً فقط
         $dateUpdate = '';
-        $dateParams = [];
-        if ($field === 'completion_certificate_status') {
-            if ($value === 'attached') {
-                $dateUpdate = ', certificate_attached_date = COALESCE(certificate_attached_date, CURDATE())';
-            } else {
-                $dateUpdate = ', certificate_attached_date = NULL';
-            }
-        } elseif ($field === 'completion_certificate_confirmation') {
-            if ($value === 'confirmed') {
-                $dateUpdate = ', certificate_confirmed_date = COALESCE(certificate_confirmed_date, CURDATE())';
-            } else {
-                $dateUpdate = ', certificate_confirmed_date = NULL';
-            }
-        }
 
         if ($attachment) {
             // تحديث السجل الموجود
-            $sql = "UPDATE work_order_attachments SET {$dbField} = ?, updated_at = NOW(){$dateUpdate} WHERE work_order_id = ? AND form_type = 'completion_certificate'";
-            $stmt = $db->prepare($sql);
-            $result = $stmt->execute([$value, $workOrderId]);
+            if (in_array($field, ['certificate_attached_date', 'certificate_confirmed_date'])) {
+                // تحديث التاريخ مباشرة
+                $dateValue = !empty($value) ? $value : null;
+                $sql = "UPDATE work_order_attachments SET {$field} = ?, updated_at = NOW() WHERE work_order_id = ? AND form_type = 'completion_certificate'";
+                $stmt = $db->prepare($sql);
+                $result = $stmt->execute([$dateValue, $workOrderId]);
+            } else {
+                $sql = "UPDATE work_order_attachments SET {$dbField} = ?, updated_at = NOW(){$dateUpdate} WHERE work_order_id = ? AND form_type = 'completion_certificate'";
+                $stmt = $db->prepare($sql);
+                $result = $stmt->execute([$value, $workOrderId]);
+            }
         } else {
             // إنشاء سجل جديد
-            if ($field === 'completion_certificate_status') {
-                $attachedDate = ($value === 'attached') ? date('Y-m-d') : null;
-                $sql = "INSERT INTO work_order_attachments (work_order_id, form_type, status, certificate_attached_date, created_at, updated_at) VALUES (?, 'completion_certificate', ?, ?, NOW(), NOW())";
+            if (in_array($field, ['certificate_attached_date', 'certificate_confirmed_date'])) {
+                $dateValue = !empty($value) ? $value : null;
+                $sql = "INSERT INTO work_order_attachments (work_order_id, form_type, {$field}, status, created_at, updated_at) VALUES (?, 'completion_certificate', ?, 'not_attached', NOW(), NOW())";
                 $stmt = $db->prepare($sql);
-                $result = $stmt->execute([$workOrderId, $value, $attachedDate]);
+                $result = $stmt->execute([$workOrderId, $dateValue]);
+            } elseif ($field === 'completion_certificate_status') {
+                $sql = "INSERT INTO work_order_attachments (work_order_id, form_type, status, created_at, updated_at) VALUES (?, 'completion_certificate', ?, NOW(), NOW())";
+                $stmt = $db->prepare($sql);
+                $result = $stmt->execute([$workOrderId, $value]);
             } else {
-                $confirmedDate = ($value === 'confirmed') ? date('Y-m-d') : null;
-                $sql = "INSERT INTO work_order_attachments (work_order_id, form_type, completion_certificate_confirmation, certificate_confirmed_date, status, created_at, updated_at) VALUES (?, 'completion_certificate', ?, ?, 'not_attached', NOW(), NOW())";
+                $sql = "INSERT INTO work_order_attachments (work_order_id, form_type, completion_certificate_confirmation, status, created_at, updated_at) VALUES (?, 'completion_certificate', ?, 'not_attached', NOW(), NOW())";
                 $stmt = $db->prepare($sql);
-                $result = $stmt->execute([$workOrderId, $value, $confirmedDate]);
+                $result = $stmt->execute([$workOrderId, $value]);
             }
         }
     } else {
@@ -244,7 +251,9 @@ try {
             'disbursement_status' => 'تم تحديث حالة الصرف بنجاح',
             'status' => 'تم تحديث الحالة بنجاح',
             'completion_certificate_status' => 'تم تحديث حالة شهادة الإنجاز بنجاح',
-            'completion_certificate_confirmation' => 'تم تحديث تأكيد شهادة الإنجاز بنجاح'
+            'completion_certificate_confirmation' => 'تم تحديث تأكيد شهادة الإنجاز بنجاح',
+            'certificate_attached_date' => 'تم تحديث تاريخ إرفاق الشهادة بنجاح',
+            'certificate_confirmed_date' => 'تم تحديث تاريخ تأكيد الشهادة بنجاح'
         ];
 
         echo json_encode([

@@ -738,19 +738,19 @@ if (!function_exists('hasAnyMenuPermission')) {
                                 </a>
                             <?php endif; ?>
 
-                            <?php if (hasPermission('menu_extracts_final_regular')): ?>
-                                <a class="nav-dropdown-item <?= $currentPage === 'extracts-final-regular' ? 'active' : '' ?>"
-                                    href="<?= path('extracts/final-regular/index.php') ?>">
-                                    <i class="fas fa-file-check"></i>
-                                    <span>المستخلصات النهائية العادية</span>
-                                </a>
-                            <?php endif; ?>
-
                             <?php if (hasPermission('menu_extracts_final_partial')): ?>
                                 <a class="nav-dropdown-item <?= $currentPage === 'extracts-final-for-partial' ? 'active' : '' ?>"
                                     href="<?= path('extracts/final-for-partial/index.php') ?>">
                                     <i class="fas fa-file-invoice"></i>
                                     <span>المستخلصات النهائية للجزئية</span>
+                                </a>
+                            <?php endif; ?>
+
+                            <?php if (hasPermission('menu_extracts_final_regular')): ?>
+                                <a class="nav-dropdown-item <?= $currentPage === 'extracts-final-regular' ? 'active' : '' ?>"
+                                    href="<?= path('extracts/final-regular/index.php') ?>">
+                                    <i class="fas fa-file-check"></i>
+                                    <span>المستخلصات النهائية العادية</span>
                                 </a>
                             <?php endif; ?>
 
