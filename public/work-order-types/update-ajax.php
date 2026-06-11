@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-// تحميل التطبيق
-require_once __DIR__ . '/../../bootstrap/app.php';
+// منع عرض الأخطاء في المتصفح
+ini_set('display_errors', '0');
+error_reporting(0);
 
 use EtganERP\Infrastructure\Persistence\WorkOrderTypeRepository;
 use EtganERP\Application\WorkOrderType\UpdateWorkOrderType\UpdateWorkOrderTypeCommand;
@@ -15,11 +16,14 @@ header('Content-Type: application/json; charset=utf-8');
 
 // التحقق من أن الطلب POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'طريقة الطلب غير صحيحة']);
+    echo json_encode(['success' => false, 'message' => 'طريقة الطلب غير صحيحة'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
 try {
+    // تحميل التطبيق
+    require_once __DIR__ . '/../../bootstrap/app.php';
+
     // التحقق من البيانات المطلوبة
     $id = $_POST['id'] ?? null;
     $description = trim($_POST['description'] ?? '') ?: null;
@@ -58,5 +62,11 @@ try {
         'success' => false,
         'message' => $e->getMessage()
     ], JSON_UNESCAPED_UNICODE);
+} catch (Error $e) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'حدث خطأ في النظام: ' . $e->getMessage()
+    ], JSON_UNESCAPED_UNICODE);
 }
 ?>
+

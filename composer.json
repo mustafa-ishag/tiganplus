@@ -30,12 +30,12 @@
     },
     "autoload": {
         "psr-4": {
-            "TiqanERP\\": "src/"
+            "EtganERP\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "TiqanERP\\Tests\\": "tests/"
+            "EtganERP\\Tests\\": "tests/"
         }
     },
     "config": {

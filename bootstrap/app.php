@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use TiqanERP\Infrastructure\Database\DatabaseConnection;
+use EtganERP\Infrastructure\Database\DatabaseConnection;
 
 // تحميل Composer autoloader
 require_once __DIR__ . '/../vendor/autoload.php';
