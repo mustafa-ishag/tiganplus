@@ -49,7 +49,11 @@ try {
                b.code as branch_code,
                u.full_name as created_by_name,
                pe.extract_number as related_partial_extract_number,
-               pe.description as partial_extract_description
+               pe.description as partial_extract_description,
+               (SELECT con.contract_number FROM work_orders wo2 
+                JOIN contracts con ON wo2.contract_id = con.id 
+                JOIN final_for_partial_extract_work_orders ffpewo2 ON wo2.id = ffpewo2.work_order_id 
+                WHERE ffpewo2.final_for_partial_extract_id = ffpe.id LIMIT 1) as contract_number
         FROM final_for_partial_extracts ffpe
         LEFT JOIN branches b ON ffpe.branch_id = b.id
         LEFT JOIN users u ON ffpe.created_by = u.id
@@ -201,11 +205,21 @@ ob_start();
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label fw-bold">رقم المستخلص:</label>
                             <p class="mb-0"><?php echo htmlspecialchars($extract['extract_number']); ?></p>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">رقم العقد:</label>
+                            <p class="mb-0">
+                                <?php if (!empty($extract['contract_number'])): ?>
+                                    <span class="badge bg-dark"><?php echo htmlspecialchars($extract['contract_number']); ?></span>
+                                <?php else: ?>
+                                    <span class="text-muted">لا يوجد</span>
+                                <?php endif; ?>
+                            </p>
+                        </div>
+                        <div class="col-md-4 mb-3">
                             <label class="form-label fw-bold">رقم PO:</label>
                             <p class="mb-0">
                                 <?php if (!empty($extract['po_number'])): ?>

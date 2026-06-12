@@ -47,7 +47,11 @@ try {
         SELECT fre.*,
                b.name as branch_name,
                b.code as branch_code,
-               u.full_name as created_by_name
+               u.full_name as created_by_name,
+               (SELECT con.contract_number FROM work_orders wo2 
+                JOIN contracts con ON wo2.contract_id = con.id 
+                JOIN final_regular_extract_work_orders frewo2 ON wo2.id = frewo2.work_order_id 
+                WHERE frewo2.final_regular_extract_id = fre.id LIMIT 1) as contract_number
         FROM final_regular_extracts fre
         LEFT JOIN branches b ON fre.branch_id = b.id
         LEFT JOIN users u ON fre.created_by = u.id
@@ -231,6 +235,16 @@ ob_start();
                                 <tr>
                                     <td class="fw-bold">رقم المستخلص:</td>
                                     <td><span class="badge bg-success"><?php echo htmlspecialchars($extract['extract_number']); ?></span></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">رقم العقد:</td>
+                                    <td>
+                                        <?php if (!empty($extract['contract_number'])): ?>
+                                            <span class="badge bg-dark"><?php echo htmlspecialchars($extract['contract_number']); ?></span>
+                                        <?php else: ?>
+                                            <span class="text-muted">لا يوجد</span>
+                                        <?php endif; ?>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td class="fw-bold">رقم PO:</td>

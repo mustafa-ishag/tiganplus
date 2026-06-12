@@ -153,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="author" content="Tiqan ERP System">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="../assets/images/favicon.ico">
+    <link rel="icon" type="image/png" href="../assets/images/tigan-logo.png">
 
     <!-- Bootstrap RTL CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
@@ -258,16 +258,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .logo-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 1.5rem;
             box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
             animation: pulse 2s infinite;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px;
         }
 
         @keyframes pulse {
@@ -275,9 +277,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             50% { transform: scale(1.05); }
         }
 
-        .logo-icon i {
-            font-size: 2.5rem;
-            color: white;
+        .logo-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         .system-title {
@@ -562,7 +565,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- شعار النظام -->
             <div class="logo-section">
                 <div class="logo-icon">
-                    <i class="fas fa-building"></i>
+                    <img src="../assets/images/tigan-logo.png" alt="شعار تِقان">
                 </div>
                 <h1 class="system-title">نظام تِقان ERP</h1>
                 <p class="system-subtitle">إدارة موارد المؤسسة للمقاولات والإنشاءات</p>

@@ -115,6 +115,10 @@ ob_start();
         <p class="text-muted mb-0">نظام شامل لإدارة المستخلصات الجزئية والنهائية</p>
     </div>
     <div>
+        <a href="update-sap-all.php" class="btn btn-warning me-2">
+            <i class="fas fa-sync-alt me-1"></i>
+            تحديث SAP الشامل
+        </a>
         <a href="reports.php" class="btn btn-info me-2">
             <i class="fas fa-chart-line me-1"></i>
             التقارير الشاملة

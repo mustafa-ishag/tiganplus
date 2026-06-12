@@ -49,6 +49,7 @@ if (!function_exists('hasAnyMenuPermission')) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle) ?> - نظام تِقان</title>
+    <link rel="icon" type="image/png" href="<?= path('assets/images/tigan-logo.png') ?>">
 
     <!-- Bootstrap CSS RTL -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
@@ -103,10 +104,20 @@ if (!function_exists('hasAnyMenuPermission')) {
         }
 
         .sidebar-brand {
-            padding: 2rem 1.5rem;
+            padding: 1.5rem 1.5rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
             text-align: center;
             background: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-brand img.sidebar-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 0.5rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px;
         }
 
         .sidebar-brand h4 {
@@ -332,9 +343,8 @@ if (!function_exists('hasAnyMenuPermission')) {
 
         .sidebar-toggle {
             position: fixed;
-            top: 50%;
+            top: 20px;
             right: 0;
-            transform: translateY(-50%);
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             color: white;
             border: none;
@@ -353,12 +363,12 @@ if (!function_exists('hasAnyMenuPermission')) {
 
         .sidebar-toggle:hover {
             background: linear-gradient(135deg, #1e3d72 0%, #2c5aa0 100%);
-            transform: translateY(-50%) translateX(-5px);
+            transform: translateX(-5px);
             box-shadow: -4px 0 15px rgba(0, 0, 0, 0.3);
         }
 
         .sidebar-toggle:active {
-            transform: translateY(-50%) translateX(-2px) scale(0.95);
+            transform: translateX(-2px) scale(0.95);
         }
 
         .sidebar-toggle i {
@@ -654,7 +664,8 @@ if (!function_exists('hasAnyMenuPermission')) {
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <h4><i class="fas fa-building me-2"></i>نظام تِقان</h4>
+            <img src="<?= path('assets/images/tigan-logo.png') ?>" alt="شعار تِقان" class="sidebar-logo">
+            <h4>نظام تِقان</h4>
             <small>إدارة المقاولات</small>
         </div>
 

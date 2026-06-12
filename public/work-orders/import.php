@@ -495,7 +495,7 @@ function translateDisbursementStatusFromArabic($status) {
         'مكتمل' => 'completed',
         'صرف' => 'disbursement',
         'إرجاع' => 'return',
-        'صرف وإرجاع مكتمل' => 'disbursement_return_completed'
+        'صرف وإرجاع' => 'disbursement_return_completed'
     ];
     return $statuses[$status] ?? 'none';
 }

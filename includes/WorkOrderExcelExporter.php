@@ -697,7 +697,7 @@ class WorkOrderExcelExporter {
             'completed' => 'مكتمل',
             'disbursement' => 'صرف',
             'return' => 'إرجاع',
-            'disbursement_return_completed' => 'صرف وإرجاع مكتمل'
+            'disbursement_return_completed' => 'صرف وإرجاع'
         ];
         return $statuses[$status] ?? $status;
     }

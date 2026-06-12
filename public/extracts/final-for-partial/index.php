@@ -506,12 +506,12 @@ ob_start();
                     <thead>
                         <tr>
                             <th>رقم المستخلص</th>
-                            <th>رقم العقد</th>
                             <th>رقم PO</th>
                             <th>رقم الفاتورة</th>
                             <th>الفرع</th>
                             <th>القسم</th>
-                            <th>تاريخ المستخلص</th>
+                            <th class="text-nowrap">تاريخ المستخلص</th>
+                            <th class="text-nowrap">تاريخ الصرف</th>
                             <th>المبلغ الصافي</th>
                             <th>أوامر العمل</th>
                             <th>شهادات الإنجاز</th>
@@ -550,13 +550,6 @@ ob_start();
                                 <span class="badge bg-warning text-dark"><?php echo htmlspecialchars($extract['extract_number']); ?></span>
                             </td>
                             <td>
-                                <?php if (!empty($extract['contract_number'])): ?>
-                                    <span class="badge bg-dark"><?php echo htmlspecialchars($extract['contract_number']); ?></span>
-                                <?php else: ?>
-                                    <span class="text-muted small">-</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
                                 <?php if (!empty($extract['po_number'])): ?>
                                     <span class="badge bg-info"><?php echo htmlspecialchars($extract['po_number']); ?></span>
                                 <?php else: ?>
@@ -568,7 +561,14 @@ ob_start();
                             <td>
                                 <span class="badge bg-<?php echo $departmentColor; ?> department-badge"><?php echo htmlspecialchars($departmentName); ?></span>
                             </td>
-                            <td><?php echo date('Y-m-d', strtotime($extract['extract_date'])); ?></td>
+                            <td class="text-nowrap"><?php echo date('Y-m-d', strtotime($extract['extract_date'])); ?></td>
+                            <td class="text-nowrap">
+                                <?php if (!empty($extract['disbursement_date'])): ?>
+                                    <?php echo date('Y-m-d', strtotime($extract['disbursement_date'])); ?>
+                                <?php else: ?>
+                                    <span class="text-muted small">-</span>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <span class="text-success fw-bold"><?php echo number_format($extract['net_amount'] ?? 0, 2); ?></span>
                                 <span class="sar-icon"><svg><use href="#sar-symbol"/></svg></span>

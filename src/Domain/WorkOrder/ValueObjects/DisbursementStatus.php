@@ -113,7 +113,7 @@ final class DisbursementStatus
             self::COMPLETED => 'مكتمل',
             self::DISBURSEMENT => 'صرف',
             self::RETURN => 'إرجاع',
-            self::DISBURSEMENT_RETURN_COMPLETED => 'صرف وإرجاع مكتمل',
+            self::DISBURSEMENT_RETURN_COMPLETED => 'صرف وإرجاع',
             default => $this->value
         };
     }

@@ -111,7 +111,7 @@ try {
         'completed' => 'مكتمل',
         'disbursement' => 'صرف',
         'return' => 'إرجاع',
-        'disbursement_return_completed' => 'صرف وإرجاع مكتمل'
+        'disbursement_return_completed' => 'صرف وإرجاع'
     ];
 
     // No automatic number generation needed
@@ -2066,7 +2066,7 @@ $(document).ready(function() {
                         html += '<option value="completed"' + (disbursementStatus === 'completed' ? ' selected' : '') + '>مكتمل</option>';
                         html += '<option value="disbursement"' + (disbursementStatus === 'disbursement' ? ' selected' : '') + '>صرف</option>';
                         html += '<option value="return"' + (disbursementStatus === 'return' ? ' selected' : '') + '>إرجاع</option>';
-                        html += '<option value="disbursement_return_completed"' + (disbursementStatus === 'disbursement_return_completed' ? ' selected' : '') + '>صرف وإرجاع مكتمل</option>';
+                        html += '<option value="disbursement_return_completed"' + (disbursementStatus === 'disbursement_return_completed' ? ' selected' : '') + '>صرف وإرجاع</option>';
                         html += '</select>';
                         return html;
                         <?php else: ?>
@@ -2075,7 +2075,7 @@ $(document).ready(function() {
                             'completed': 'مكتمل',
                             'disbursement': 'صرف',
                             'return': 'إرجاع',
-                            'disbursement_return_completed': 'صرف وإرجاع مكتمل'
+                            'disbursement_return_completed': 'صرف وإرجاع'
                         };
                         return '<span class="badge bg-secondary">' + (statusLabels[disbursementStatus] || 'غير محدد') + '</span>';
                         <?php endif; ?>
