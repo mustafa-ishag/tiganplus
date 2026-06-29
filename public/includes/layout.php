@@ -1695,6 +1695,191 @@ if (!function_exists('hasAnyMenuPermission')) {
         });
     </script>
 
+<!-- تثبيت رأس الجدول وشريط التمرير للمستخلصات -->
+<style>
+.sticky-table-header {
+    position: fixed;
+    top: 0;
+    z-index: 1020;
+    display: none;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    overflow-x: scroll;
+    overflow-y: hidden;
+    pointer-events: none;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    transition: width 0.3s ease, left 0.3s ease;
+}
+
+.sticky-table-header::-webkit-scrollbar {
+    display: none;
+}
+
+.sticky-table-header table {
+    margin-bottom: 0;
+}
+
+.sticky-table-scrollbar {
+    position: fixed;
+    bottom: 0;
+    z-index: 1020;
+    display: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    background: #f0f0f0;
+    border-top: 1px solid #ccc;
+    transition: width 0.3s ease, left 0.3s ease;
+}
+
+.sticky-table-scrollbar .scroll-inner {
+    height: 1px;
+}
+</style>
+
+<script>
+// دالة عامة لتثبيت رأس أي جدول + شريط تمرير أفقي
+function initStickyTable(tableId) {
+    var $table = $('#' + tableId);
+    if (!$table.length) return;
+
+    var $scrollParent = $table.closest('.table-responsive');
+    if (!$scrollParent.length) return;
+
+    // تحديد لون الرأس من الجدول الأصلي
+    var $origThead = $table.find('thead');
+    var headBg = '#212529';
+    var headColor = '#fff';
+    if ($origThead.hasClass('table-dark')) {
+        headBg = '#212529'; headColor = '#fff';
+    } else if ($origThead.hasClass('table-primary')) {
+        headBg = '#0d6efd'; headColor = '#fff';
+    } else {
+        // قراءة اللون من العنصر
+        var computedBg = window.getComputedStyle($origThead[0]).backgroundColor;
+        if (computedBg && computedBg !== 'rgba(0, 0, 0, 0)') headBg = computedBg;
+    }
+
+    // إنشاء العناصر
+    var $stickyWrap = $('<div class="sticky-table-header" id="' + tableId + '-sticky-hdr"></div>');
+    var $stickyScrollbar = $('<div class="sticky-table-scrollbar" id="' + tableId + '-sticky-scroll"><div class="scroll-inner"></div></div>');
+    $('body').append($stickyWrap).append($stickyScrollbar);
+
+    var syncing = false;
+
+    function buildHeader() {
+        var $thead = $table.find('thead');
+        if (!$thead.length) return;
+
+        var $cloneTable = $('<table class="table"></table>').css('margin-bottom', 0);
+        var $cloneThead = $thead.clone();
+        $cloneTable.append($cloneThead);
+        $stickyWrap.empty().append($cloneTable);
+
+        // مزامنة عرض الأعمدة
+        var $origThs = $thead.find('th');
+        var $cloneThs = $cloneThead.find('th');
+        $origThs.each(function(i) {
+            var w = $(this).outerWidth();
+            $cloneThs.eq(i).css({ 'width': w + 'px', 'min-width': w + 'px', 'background': headBg, 'color': headColor });
+        });
+
+        $cloneTable.css('width', $table.outerWidth() + 'px');
+        $stickyWrap.css('background', headBg);
+        syncPos();
+    }
+
+    function syncPos() {
+        var rect = $scrollParent[0].getBoundingClientRect();
+        var sl = $scrollParent.scrollLeft();
+        $stickyWrap.css({ 'width': rect.width + 'px', 'left': rect.left + 'px' });
+        $stickyWrap.scrollLeft(sl);
+        $stickyScrollbar.css({ 'width': rect.width + 'px', 'left': rect.left + 'px' });
+        $stickyScrollbar.find('.scroll-inner').css('width', $table.outerWidth() + 'px');
+    }
+
+    function handleHeader() {
+        var $thead = $table.find('thead');
+        if (!$thead.length) return;
+        var theadTop = $thead.offset().top;
+        var tableBottom = $table.offset().top + $table.outerHeight() - $thead.outerHeight();
+        var scrollTop = $(window).scrollTop();
+
+        if (scrollTop > theadTop && scrollTop < tableBottom) {
+            if ($stickyWrap.css('display') === 'none') buildHeader();
+            syncPos();
+            $stickyWrap.show();
+        } else {
+            $stickyWrap.hide();
+        }
+    }
+
+    function handleScrollbar() {
+        var rect = $scrollParent[0].getBoundingClientRect();
+        var vh = $(window).height();
+        var wider = $table.outerWidth() > $scrollParent.outerWidth();
+        var bottomVisible = rect.bottom <= vh;
+
+        if (wider && !bottomVisible && rect.top < vh) {
+            syncPos();
+            $stickyScrollbar.show();
+        } else {
+            $stickyScrollbar.hide();
+        }
+    }
+
+    // مزامنة التمرير
+    $stickyScrollbar.on('scroll', function() {
+        if (syncing) return; syncing = true;
+        $scrollParent.scrollLeft($stickyScrollbar.scrollLeft());
+        if ($stickyWrap.is(':visible')) $stickyWrap.scrollLeft($stickyScrollbar.scrollLeft());
+        syncing = false;
+    });
+
+    $scrollParent.on('scroll', function() {
+        if (syncing) return; syncing = true;
+        if ($stickyWrap.is(':visible')) $stickyWrap.scrollLeft($scrollParent.scrollLeft());
+        if ($stickyScrollbar.is(':visible')) $stickyScrollbar.scrollLeft($scrollParent.scrollLeft());
+        syncing = false;
+    });
+
+    $(window).on('scroll', function() { handleHeader(); handleScrollbar(); });
+    $(window).on('resize', function() {
+        if ($stickyWrap.is(':visible')) buildHeader();
+        handleScrollbar();
+    });
+
+    $table.on('draw.dt', function() {
+        if ($stickyWrap.is(':visible')) buildHeader();
+        handleScrollbar();
+    });
+
+    // مزامنة سلسة مع القائمة الجانبية
+    var $toggle = $('#sidebarToggle');
+    if ($toggle.length) {
+        $toggle.on('click', function() {
+            var start = Date.now();
+            function anim() {
+                syncPos();
+                if (Date.now() - start < 350) {
+                    requestAnimationFrame(anim);
+                } else {
+                    if ($stickyWrap.is(':visible')) buildHeader();
+                    handleScrollbar();
+                }
+            }
+            requestAnimationFrame(anim);
+        });
+    }
+}
+
+// تطبيق على جدول المستخلصات
+$(document).ready(function() {
+    if ($('#extractsTable').length) {
+        initStickyTable('extractsTable');
+    }
+});
+</script>
+
 </body>
 
 </html>

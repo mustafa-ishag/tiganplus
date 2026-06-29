@@ -1243,6 +1243,57 @@ ob_start();
     vertical-align: middle;
 }
 
+/* تثبيت رأس الجدول - يتم عبر JavaScript */
+#workOrdersTable-sticky-header {
+    position: fixed;
+    top: 0;
+    z-index: 1020;
+    display: none;
+    background: #212529;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    overflow-x: scroll;
+    overflow-y: hidden;
+    pointer-events: none;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    transition: width 0.3s ease, left 0.3s ease;
+}
+
+#workOrdersTable-sticky-header::-webkit-scrollbar {
+    display: none;
+}
+
+#workOrdersTable-sticky-header table {
+    margin-bottom: 0;
+}
+
+#workOrdersTable-sticky-header th {
+    font-size: 0.9em;
+    font-weight: 600;
+    white-space: nowrap;
+    padding: 12px 8px;
+    color: #fff;
+    background: #212529;
+    border-color: #373b3e;
+}
+
+/* شريط التمرير الأفقي المثبت في الأسفل */
+#workOrdersTable-sticky-scrollbar {
+    position: fixed;
+    bottom: 0;
+    z-index: 1020;
+    display: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    background: #f0f0f0;
+    border-top: 1px solid #ccc;
+    transition: width 0.3s ease, left 0.3s ease;
+}
+
+#workOrdersTable-sticky-scrollbar .scroll-inner {
+    height: 1px;
+}
+
 /* تحسين عرض القوائم المنسدلة */
 .form-select-sm {
     padding: 6px 8px;
@@ -3908,4 +3959,172 @@ $(document).ready(function() {
     background-color: #f5f5f5;
 }
 </style>
+
+<script>
+// تثبيت رأس جدول أوامر العمل عند التمرير
+$(document).ready(function() {
+    var $table = $('#workOrdersTable');
+    if (!$table.length) return;
+
+    var $scrollParent = $table.closest('.table-responsive');
+    if (!$scrollParent.length) return;
+
+    // إنشاء العنصر المثبت
+    var $stickyWrap = $('<div id="workOrdersTable-sticky-header"></div>');
+    $('body').append($stickyWrap);
+
+    function buildStickyHeader() {
+        var $thead = $table.find('thead');
+        if (!$thead.length) return;
+
+        // نسخ الرأس
+        var $cloneTable = $('<table class="table table-hover"></table>');
+        var $cloneThead = $thead.clone();
+        $cloneTable.append($cloneThead);
+        $stickyWrap.empty().append($cloneTable);
+
+        // مزامنة عرض الأعمدة
+        var $origThs = $thead.find('th');
+        var $cloneThs = $cloneThead.find('th');
+        $origThs.each(function(i) {
+            $cloneThs.eq(i).css({
+                'width': $(this).outerWidth() + 'px',
+                'min-width': $(this).outerWidth() + 'px'
+            });
+        });
+
+        $cloneTable.css('width', $table.outerWidth() + 'px');
+        syncPosition();
+    }
+
+    function syncPosition() {
+        var parentRect = $scrollParent[0].getBoundingClientRect();
+        var scrollLeft = $scrollParent.scrollLeft();
+
+        $stickyWrap.css({
+            'width': parentRect.width + 'px',
+            'left': parentRect.left + 'px'
+        });
+
+        // مزامنة التمرير الأفقي
+        $stickyWrap.scrollLeft(scrollLeft);
+    }
+
+    function handleScroll() {
+        var $thead = $table.find('thead');
+        if (!$thead.length) return;
+
+        var theadTop = $thead.offset().top;
+        var tableBottom = $table.offset().top + $table.outerHeight() - $thead.outerHeight();
+        var scrollTop = $(window).scrollTop();
+
+        if (scrollTop > theadTop && scrollTop < tableBottom) {
+            if ($stickyWrap.css('display') === 'none') {
+                buildStickyHeader();
+            }
+            syncPosition();
+            $stickyWrap.show();
+        } else {
+            $stickyWrap.hide();
+        }
+    }
+
+    // ===== شريط التمرير الأفقي المثبت في الأسفل =====
+    var $stickyScrollbar = $('<div id="workOrdersTable-sticky-scrollbar"><div class="scroll-inner"></div></div>');
+    $('body').append($stickyScrollbar);
+    var syncing = false;
+
+    function updateScrollbar() {
+        var parentRect = $scrollParent[0].getBoundingClientRect();
+        $stickyScrollbar.css({
+            'width': parentRect.width + 'px',
+            'left': parentRect.left + 'px'
+        });
+        $stickyScrollbar.find('.scroll-inner').css('width', $table.outerWidth() + 'px');
+    }
+
+    function handleScrollbar() {
+        var parentRect = $scrollParent[0].getBoundingClientRect();
+        var viewportHeight = $(window).height();
+
+        // إظهار شريط التمرير فقط إذا الجدول أعرض من الحاوية وأسفل الجدول تحت الشاشة
+        var tableWider = $table.outerWidth() > $scrollParent.outerWidth();
+        var bottomVisible = parentRect.bottom <= viewportHeight;
+
+        if (tableWider && !bottomVisible && parentRect.top < viewportHeight) {
+            updateScrollbar();
+            $stickyScrollbar.show();
+        } else {
+            $stickyScrollbar.hide();
+        }
+    }
+
+    // مزامنة التمرير: شريط مثبت -> الجدول
+    $stickyScrollbar.on('scroll', function() {
+        if (syncing) return;
+        syncing = true;
+        $scrollParent.scrollLeft($stickyScrollbar.scrollLeft());
+        if ($stickyWrap.is(':visible')) {
+            $stickyWrap.scrollLeft($stickyScrollbar.scrollLeft());
+        }
+        syncing = false;
+    });
+
+    // مزامنة التمرير: الجدول -> شريط مثبت + الرأس
+    $scrollParent.on('scroll', function() {
+        if (syncing) return;
+        syncing = true;
+        if ($stickyWrap.is(':visible')) {
+            $stickyWrap.scrollLeft($scrollParent.scrollLeft());
+        }
+        if ($stickyScrollbar.is(':visible')) {
+            $stickyScrollbar.scrollLeft($scrollParent.scrollLeft());
+        }
+        syncing = false;
+    });
+
+    $(window).on('scroll', function() {
+        handleScroll();
+        handleScrollbar();
+    });
+    $(window).on('resize', function() {
+        if ($stickyWrap.is(':visible')) {
+            buildStickyHeader();
+        }
+        handleScrollbar();
+    });
+
+    // إعادة بناء عند تحديث DataTable
+    $table.on('draw.dt', function() {
+        if ($stickyWrap.is(':visible')) {
+            buildStickyHeader();
+        }
+        handleScrollbar();
+    });
+
+    // مزامنة سلسة عند إخفاء/إظهار القائمة الجانبية
+    var $sidebarToggle = $('#sidebarToggle');
+    if ($sidebarToggle.length) {
+        $sidebarToggle.on('click', function() {
+            var startTime = Date.now();
+            var duration = 350; // مدة الانتقال
+
+            function animateSync() {
+                syncPosition();
+                updateScrollbar();
+                if (Date.now() - startTime < duration) {
+                    requestAnimationFrame(animateSync);
+                } else {
+                    // تحديث نهائي بعد اكتمال الانتقال
+                    if ($stickyWrap.is(':visible')) {
+                        buildStickyHeader();
+                    }
+                    handleScrollbar();
+                }
+            }
+            requestAnimationFrame(animateSync);
+        });
+    }
+});
+</script>
 
