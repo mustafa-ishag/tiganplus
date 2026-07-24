@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * تصدير تقرير المستخلصات الشامل إلى PDF باستخدام mPDF
  * Export Comprehensive Extracts Report to PDF using mPDF
@@ -473,7 +473,7 @@ ob_start();
         }
         
         .section-title {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
             color: white;
             padding: 12px 20px;
             font-size: 18px;

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * صفحة تحديث SAP الشاملة - تحديث جميع أنواع المستخلصات مرة واحدة
  * Unified SAP Update - Update All Extract Types at Once
@@ -464,7 +464,7 @@ ob_start();
 
     <!-- نموذج رفع الملف -->
     <div class="card shadow mb-4">
-        <div class="card-header py-3 bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="card-header py-3 bg-gradient" style="background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);">
             <h6 class="m-0 font-weight-bold text-white">
                 <i class="fas fa-file-upload me-2"></i>
                 رفع ملف SAP واحد لتحديث جميع أنواع المستخلصات

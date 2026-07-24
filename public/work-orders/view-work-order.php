@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
@@ -355,7 +355,7 @@ try {
 
         $html .= '<div class="col-12">
             <div class="card mb-3 border-0 shadow-sm">
-                <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%); color: white;">
                     <div class="d-flex justify-content-between align-items-center">
                         <h6 class="card-title mb-0">
                             <i class="fas fa-file-invoice-dollar me-2"></i>
@@ -448,7 +448,7 @@ try {
             $html .= '<div class="mb-3" dir="ltr">
                 <div class="d-flex justify-content-between align-items-center position-relative" style="padding: 0 10px; direction: ltr;">
                     <div style="position: absolute; top: 50%; left: 20px; right: 20px; height: 3px; background: #e9ecef; transform: translateY(-50%); z-index: 0;"></div>
-                    <div style="position: absolute; top: 50%; right: 20px; height: 3px; background: linear-gradient(270deg, #667eea, #764ba2); transform: translateY(-50%); z-index: 1; width: ' . $progressPercent . '%; transition: width 0.5s;"></div>';
+                    <div style="position: absolute; top: 50%; right: 20px; height: 3px; background: linear-gradient(270deg, #176cb4, #4fa5e6); transform: translateY(-50%); z-index: 1; width: ' . $progressPercent . '%; transition: width 0.5s;"></div>';
 
             foreach ($stagesOrderReversed as $sIdx => $stage) {
                 $stageInfo = $approvalStages[$stage] ?? ['label' => $stage, 'icon' => 'fas fa-circle', 'color' => '#6c757d'];
@@ -543,7 +543,7 @@ try {
         // لا توجد مستخلصات
         $html .= '<div class="col-12">
             <div class="card mb-3 border-0 shadow-sm">
-                <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%); color: white;">
                     <h6 class="card-title mb-0">
                         <i class="fas fa-file-invoice-dollar me-2"></i>
                         تفاصيل المستخلصات

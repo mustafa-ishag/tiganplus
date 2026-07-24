@@ -488,7 +488,7 @@ table{border-collapse:collapse;}
   <!-- SECTION TITLE -->
   <tr>
     <td class="bp" style="background:#fff;padding:4px 20px 0;">
-      <div style="background:linear-gradient(90deg,#152f5e,#2c5aa0);border-radius:10px;padding:12px 16px;">
+      <div style="background:linear-gradient(90deg,#0e2942,#176cb4);border-radius:10px;padding:12px 16px;">
         <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
             <td class="st" style="color:#fff;font-weight:800;font-size:14px;">

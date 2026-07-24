@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 
 require_once __DIR__ . '/../../config/config.php';
@@ -111,7 +111,7 @@ if (in_array($fileExtension, ['pdf', 'jpg', 'jpeg', 'png', 'gif'])) {
         .file-icon {
             width: 100px;
             height: 100px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
             border-radius: 20px;
             display: flex;
             align-items: center;
@@ -152,7 +152,7 @@ if (in_array($fileExtension, ['pdf', 'jpg', 'jpeg', 'png', 'gif'])) {
             margin-top: 30px;
         }
         .btn-download {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
             border: none;
             color: white;
             padding: 12px 30px;

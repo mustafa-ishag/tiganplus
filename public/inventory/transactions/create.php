@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // بدء الجلسة إذا لم تكن نشطة
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -299,7 +299,7 @@ ob_start();
     }
 
     .form-card .card-header i {
-        color: var(--primary-color, #2c5aa0);
+        color: var(--primary-color, #176cb4);
         font-size: 1rem;
     }
 
@@ -314,7 +314,7 @@ ob_start();
     }
 
     .materials-table thead {
-        background: linear-gradient(135deg, #2c5aa0 0%, #1e3d72 100%) !important;
+        background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%) !important;
     }
 
     .materials-table thead th {
@@ -389,7 +389,7 @@ ob_start();
 
     .dropdown-item-custom .item-number {
         font-weight: 700;
-        color: #2c5aa0;
+        color: #176cb4;
         font-size: 0.9rem;
     }
 
@@ -410,14 +410,14 @@ ob_start();
     }
 
     .material-search-input:focus {
-        border-color: #2c5aa0;
+        border-color: #176cb4;
         box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.25);
     }
 
     .selected-item {
         background-color: #e7f3ff;
-        border-color: #2c5aa0;
-        color: #2c5aa0;
+        border-color: #176cb4;
+        color: #176cb4;
         font-weight: 600;
     }
 
@@ -427,7 +427,7 @@ ob_start();
         margin-top: 6px;
         padding: 6px 10px;
         background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%);
-        border-right: 3px solid #2c5aa0;
+        border-right: 3px solid #176cb4;
         border-radius: 0 6px 6px 0;
         font-size: 0.8rem;
         color: #555;
@@ -488,12 +488,12 @@ ob_start();
     }
 
     .summary-bar .summary-item i {
-        color: var(--primary-color, #2c5aa0);
+        color: var(--primary-color, #176cb4);
     }
 
     .summary-bar .summary-value {
         font-weight: 700;
-        color: var(--primary-color, #2c5aa0);
+        color: var(--primary-color, #176cb4);
         font-size: 1.05rem;
     }
 
@@ -519,7 +519,7 @@ ob_start();
     }
 
     .info-card .card-header i {
-        color: var(--primary-color, #2c5aa0);
+        color: var(--primary-color, #176cb4);
     }
 
     .info-card .card-body {
@@ -647,7 +647,7 @@ ob_start();
     .wo-dropdown-item .wo-number {
         font-weight: 600;
         font-size: .9rem;
-        color: #2c5aa0;
+        color: #176cb4;
     }
 
     .wo-dropdown-item .wo-type {
@@ -662,7 +662,7 @@ ob_start();
     }
 
     .wo-selected {
-        border-color: #2c5aa0 !important;
+        border-color: #176cb4 !important;
         background: #f0f7ff !important;
     }
 
@@ -670,7 +670,7 @@ ob_start();
         display: none;
         margin-top: 4px;
         font-size: .82rem;
-        color: #2c5aa0;
+        color: #176cb4;
         font-weight: 600;
     }
 

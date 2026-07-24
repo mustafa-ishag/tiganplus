@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * صفحة تسجيل الدخول - نظام تِقان ERP
  * Login Page - Tiqan ERP System
@@ -162,7 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
     <!-- Google Fonts - Arabic -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
 
     <!-- SweetAlert2 -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
@@ -190,8 +190,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         body {
-            font-family: 'Cairo', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #0e2942 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -777,7 +777,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // تحسين الأداء - تحميل الخطوط مسبقاً
         const fontLink = document.createElement('link');
         fontLink.rel = 'preload';
-        fontLink.href = 'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap';
+        fontLink.href = 'https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap';
         fontLink.as = 'style';
         document.head.appendChild(fontLink);
 

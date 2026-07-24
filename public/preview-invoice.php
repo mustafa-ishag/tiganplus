@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * معاينة الفاتورة الضريبية
  * Invoice Preview Page
@@ -32,11 +32,11 @@ function generatePreviewHTML($extract, $settings, $workOrders, $contractNumber) 
     <head>
         <meta charset="UTF-8">
         <title>فاتورة ضريبة - <?php echo htmlspecialchars($extract['extract_number']); ?></title>
-        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
-                font-family: 'Cairo', Arial, sans-serif;
+                font-family: 'Tajawal', Arial, sans-serif;
                 direction: rtl;
                 background: #f5f5f5;
                 padding: 20px;
@@ -412,7 +412,7 @@ if (isset($error)) {
         <meta charset='UTF-8'>
         <title>خطأ في المعاينة</title>
         <style>
-            body { font-family: Cairo, Arial, sans-serif; padding: 20px; direction: rtl; }
+            body { font-family: Tajawal, Arial, sans-serif; padding: 20px; direction: rtl; }
             .error { background: #f8d7da; color: #721c24; padding: 20px; border-radius: 8px; }
         </style>
     </head>
@@ -436,10 +436,10 @@ if (isset($error)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>معاينة الفاتورة الضريبية</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Cairo', Arial, sans-serif;
+            font-family: 'Tajawal', Arial, sans-serif;
             background: #f5f5f5;
             margin: 0;
             padding: 0;
@@ -462,7 +462,7 @@ if (isset($error)) {
             padding: 12px 30px;
             border: none;
             border-radius: 8px;
-            font-family: 'Cairo', Arial, sans-serif;
+            font-family: 'Tajawal', Arial, sans-serif;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;

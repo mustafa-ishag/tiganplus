@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         
@@ -135,12 +135,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         .form-control:focus {
-            border-color: #667eea;
+            border-color: #176cb4;
             box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
             border: none;
             border-radius: 10px;
             padding: 12px 30px;
@@ -169,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         .breadcrumb-item a {
-            color: #667eea;
+            color: #176cb4;
             text-decoration: none;
         }
         

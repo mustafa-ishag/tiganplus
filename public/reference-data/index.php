@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 
 require_once __DIR__ . '/../../config/config.php';
@@ -699,7 +699,7 @@ include __DIR__ . '/../includes/layout.php';
                         title: 'تم بنجاح!',
                         text: response.message,
                         confirmButtonText: 'موافق',
-                        confirmButtonColor: '#2c5aa0'
+                        confirmButtonColor: '#176cb4'
                     }).then(() => {
                         $('#entityModal').modal('hide');
                         location.reload();

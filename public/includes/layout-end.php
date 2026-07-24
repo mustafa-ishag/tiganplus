@@ -51,42 +51,29 @@
     // تبديل الشريط الجانبي لجميع الشاشات
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
-        const navbar = document.querySelector('.navbar');
         const mainContent = document.querySelector('.main-content');
-        const toggleBtn = document.getElementById('sidebarToggle');
-        const toggleIcon = toggleBtn.querySelector('i');
+        const overlay = document.getElementById('sidebarOverlay');
         const isMobile = window.innerWidth <= 768;
-
-        // إضافة تأثير الأنيميشن
-        toggleBtn.classList.add('animating');
-        setTimeout(() => toggleBtn.classList.remove('animating'), 300);
 
         if (isMobile) {
             // للجوال: استخدام show/hide
             sidebar.classList.toggle('show');
-            if (sidebar.classList.contains('show')) {
-                sidebar.classList.remove('collapsed');
-                toggleIcon.className = 'fas fa-times';
-            } else {
-                sidebar.classList.add('collapsed');
-                toggleIcon.className = 'fas fa-bars';
+            if (overlay) {
+                if (sidebar.classList.contains('show')) {
+                    overlay.classList.add('show');
+                } else {
+                    overlay.classList.remove('show');
+                }
             }
         } else {
             // للشاشات الكبيرة: استخدام collapsed
             sidebar.classList.toggle('collapsed');
 
-            // تحديث الشريط العلوي والمحتوى الرئيسي
             if (sidebar.classList.contains('collapsed')) {
-                if (navbar) navbar.classList.add('expanded');
                 if (mainContent) mainContent.classList.add('expanded');
-                toggleIcon.className = 'fas fa-chevron-left';
-                // حفظ الحالة في localStorage
                 localStorage.setItem('sidebarCollapsed', 'true');
             } else {
-                if (navbar) navbar.classList.remove('expanded');
                 if (mainContent) mainContent.classList.remove('expanded');
-                toggleIcon.className = 'fas fa-bars';
-                // حفظ الحالة في localStorage
                 localStorage.setItem('sidebarCollapsed', 'false');
             }
         }
@@ -97,19 +84,13 @@
         const isMobile = window.innerWidth <= 768;
 
         if (!isMobile) {
-            // فقط للشاشات الكبيرة
             const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
             if (isCollapsed) {
                 const sidebar = document.getElementById('sidebar');
-                const navbar = document.querySelector('.navbar');
                 const mainContent = document.querySelector('.main-content');
-                const toggleBtn = document.getElementById('sidebarToggle');
-                const toggleIcon = toggleBtn?.querySelector('i');
 
                 sidebar.classList.add('collapsed');
-                if (navbar) navbar.classList.add('expanded');
                 if (mainContent) mainContent.classList.add('expanded');
-                if (toggleIcon) toggleIcon.className = 'fas fa-chevron-left';
             }
         }
     }
@@ -117,14 +98,13 @@
     // إغلاق الشريط الجانبي عند النقر خارجه في الجوال
     document.addEventListener('click', function (event) {
         const sidebar = document.getElementById('sidebar');
-        const toggleBtn = document.getElementById('sidebarToggle');
+        const overlay = document.getElementById('sidebarOverlay');
 
         if (window.innerWidth <= 768 &&
             !sidebar.contains(event.target) &&
-            !toggleBtn.contains(event.target) &&
             sidebar.classList.contains('show')) {
             sidebar.classList.remove('show');
-            sidebar.classList.add('collapsed');
+            if (overlay) overlay.classList.remove('show');
         }
     });
 
@@ -157,7 +137,7 @@
                 title: title || (type === 'success' ? 'نجح!' : type === 'error' || type === 'danger' ? 'خطأ!' : 'تنبيه!'),
                 text: message,
                 confirmButtonText: 'موافق',
-                confirmButtonColor: '#2c5aa0'
+                confirmButtonColor: '#176cb4'
             });
         } catch (e) {
             // fallback في حال فشل SweetAlert2
@@ -336,15 +316,15 @@
     }
 
     .swal2-popup {
-        font-family: 'Cairo', sans-serif !important;
+        font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif !important;
     }
 
     .swal2-title {
-        font-family: 'Cairo', sans-serif !important;
+        font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif !important;
     }
 
     .swal2-content {
-        font-family: 'Cairo', sans-serif !important;
+        font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif !important;
     }
 </style>
 </body>

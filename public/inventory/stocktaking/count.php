@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 if (session_status() === PHP_SESSION_NONE) session_start();
 if (!defined('ETGAN_SYSTEM')) define('ETGAN_SYSTEM', true);
 require_once __DIR__ . '/../../../config/config.php';
@@ -33,7 +33,7 @@ ob_start();
 .barcode-display{font-family:'Courier New',monospace;font-size:1.1rem;font-weight:700;letter-spacing:2px}
 .diff-badge{font-size:0.9rem;padding:4px 10px;border-radius:6px;font-weight:700}
 .qty-input{font-size:1.1rem;font-weight:600;text-align:center;border:2px solid #dee2e6;border-radius:8px;padding:8px;width:120px}
-.qty-input:focus{border-color:#2c5aa0;box-shadow:0 0 0 .2rem rgba(44,90,160,.25)}
+.qty-input:focus{border-color:#176cb4;box-shadow:0 0 0 .2rem rgba(44,90,160,.25)}
 .item-row{padding:12px 16px;border-bottom:1px solid #f0f0f0;transition:background .2s}
 .item-row:hover{background:#f8f9fa}
 .item-row.just-saved{animation:savedFlash .8s ease}

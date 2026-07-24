@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // بدء output buffering لتجنب مشاكل headers
 ob_start();
 
@@ -33,8 +33,8 @@ if (isset($_SESSION['user_id'])) {
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
-    <!-- Google Fonts - Cairo -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts - Tajawal -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
 
     <!-- Animate.css for animations -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
@@ -44,10 +44,10 @@ if (isset($_SESSION['user_id'])) {
     
     <style>
         :root {
-            --primary-color: #667eea;
-            --secondary-color: #764ba2;
+            --primary-color: #176cb4;
+            --secondary-color: #0e2942;
             --accent-color: #f093fb;
-            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-1: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
             --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             --text-dark: #2d3748;
@@ -59,7 +59,7 @@ if (isset($_SESSION['user_id'])) {
         }
 
         * {
-            font-family: 'Cairo', sans-serif;
+            font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -881,7 +881,7 @@ if (isset($_SESSION['user_id'])) {
             sparkle.style.top = y + 'px';
             sparkle.style.width = '4px';
             sparkle.style.height = '4px';
-            sparkle.style.background = 'linear-gradient(45deg, #667eea, #764ba2)';
+            sparkle.style.background = 'linear-gradient(45deg, #176cb4, #4fa5e6)';
             sparkle.style.borderRadius = '50%';
             sparkle.style.pointerEvents = 'none';
             sparkle.style.zIndex = '9999';

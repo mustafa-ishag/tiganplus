@@ -245,11 +245,18 @@ ob_start();
     width: 100%;
     height: 100%;
 }
+
+/* إخفاء صندوق البحث الافتراضي في DataTable */
+.dataTables_filter {
+    display: none !important;
+}
+
+/* End of specific CSS */
 </style>
 
 <div class="container-fluid px-4">
     <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
         <div>
             <h1 class="h3 mb-0 text-primary">
                 <i class="fas fa-file-alt text-primary me-2"></i>
@@ -257,28 +264,26 @@ ob_start();
             </h1>
             <p class="text-muted mb-0">إدارة المستخلصات الجزئية (PE-YYYY-XXX) - بدون غرامات</p>
         </div>
-        <div>
-            <a href="../index.php" class="btn btn-outline-secondary me-2">
-                <i class="fas fa-arrow-left me-1"></i>
-                العودة للرئيسية
+        <div class="d-flex gap-2 flex-wrap justify-content-start justify-content-lg-end">
+            <a href="../index.php" class="btn btn-light rounded-pill px-3 shadow-sm border-0 text-secondary fw-bold text-nowrap">
+                <i class="fas fa-arrow-right me-1"></i>
+                <span>العودة</span>
             </a>
-            <div class="btn-group me-2" role="group">
-                <a href="export.php" class="btn btn-success">
-                    <i class="fas fa-download me-1"></i>
-                    تصدير
-                </a>
-                <a href="import.php" class="btn btn-info">
-                    <i class="fas fa-upload me-1"></i>
-                    استيراد
-                </a>
-                <a href="update-sap-entry-number.php" class="btn btn-warning">
-                    <i class="fas fa-file-import me-1"></i>
-                    تحديث SAP
-                </a>
-            </div>
-            <a href="create.php" class="btn btn-primary">
+            <a href="export.php" class="btn btn-light rounded-pill px-3 shadow-sm border-0 text-success fw-bold text-nowrap">
+                <i class="fas fa-file-excel me-1"></i>
+                <span>تصدير</span>
+            </a>
+            <a href="import.php" class="btn btn-light rounded-pill px-3 shadow-sm border-0 text-info fw-bold text-nowrap">
+                <i class="fas fa-upload me-1"></i>
+                <span>استيراد</span>
+            </a>
+            <a href="update-sap-entry-number.php" class="btn btn-light rounded-pill px-3 shadow-sm border-0 text-warning fw-bold text-nowrap">
+                <i class="fas fa-sync-alt me-1"></i>
+                <span>تحديث SAP</span>
+            </a>
+            <a href="create.php" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold text-nowrap">
                 <i class="fas fa-plus me-1"></i>
-                مستخلص جزئي جديد
+                <span>مستخلص جزئي جديد</span>
             </a>
         </div>
     </div>
@@ -287,25 +292,21 @@ ob_start();
     <div class="row mb-4">
         <!-- إجمالي المستخلصات -->
         <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">إجمالي المستخلصات</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $stats['total']; ?> مستخلص</div>
-
-                            <!-- المبلغ الصافي -->
-                            <div class="mt-2">
-                                <div class="text-xs text-muted">
-                                    <i class="fas fa-coins fa-sm"></i>
-                                    صافي: <span class="font-weight-bold text-primary"><?php echo number_format($stats['total_net_amount'] ?? 0, 0); ?></span>
-                                    <span class="sar-icon"><svg><use href="#sar-symbol"/></svg></span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-file-invoice fa-2x text-success"></i>
-                        </div>
+            <div class="dash-card h-100 p-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <div class="text-muted fw-bold mb-1" style="font-size: 0.7rem; line-height: 1.2;">إجمالي المستخلصات</div>
+                        <div class="h4 mb-0 fw-bold text-dark"><?php echo $stats['total']; ?></div>
+                    </div>
+                    <div class="icon-circle bg-success-soft">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                </div>
+                <div class="mt-auto border-top pt-2">
+                    <div class="text-muted" style="font-size: 0.8rem;">
+                        <i class="fas fa-coins me-1 text-success"></i> صافي: 
+                        <span class="fw-bold text-dark"><?php echo number_format($stats['total_net_amount'] ?? 0, 0); ?></span>
+                        <span class="sar-icon text-muted" style="width: 10px; height: 10px;"><svg><use href="#sar-symbol"/></svg></span>
                     </div>
                 </div>
             </div>
@@ -320,29 +321,31 @@ ob_start();
 
             // إخفاء البطاقات التي لا تحتوي على مستخلصات
             if ($count == 0) continue;
+            
+            $colorClass = $stage['color'];
+            if ($colorClass == 'primary') $softBg = 'bg-primary-soft';
+            elseif ($colorClass == 'success') $softBg = 'bg-success-soft';
+            elseif ($colorClass == 'warning') $softBg = 'bg-warning-soft';
+            elseif ($colorClass == 'info') $softBg = 'bg-info-soft';
+            elseif ($colorClass == 'danger') $softBg = 'bg-danger-soft';
+            else $softBg = 'bg-secondary-soft';
             ?>
             <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
-                <div class="card border-left-<?php echo $stage['color']; ?> shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-<?php echo $stage['color']; ?> text-uppercase mb-1">
-                                    <?php echo $stage['name']; ?>
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $count; ?> مستخلص</div>
-
-                                <!-- المبلغ الصافي -->
-                                <div class="mt-2">
-                                    <div class="text-xs text-muted">
-                                        <i class="fas fa-coins fa-sm"></i>
-                                        صافي: <span class="font-weight-bold text-primary"><?php echo number_format($netAmount, 0); ?></span>
-                                        <span class="sar-icon"><svg><use href="#sar-symbol"/></svg></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="<?php echo $stage['icon']; ?> fa-2x text-<?php echo $stage['color']; ?>"></i>
-                            </div>
+                <div class="dash-card h-100 p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="text-muted fw-bold mb-1" style="font-size: 0.7rem; line-height: 1.2;"><?php echo htmlspecialchars($stage['name']); ?></div>
+                            <div class="h4 mb-0 fw-bold text-dark"><?php echo $count; ?></div>
+                        </div>
+                        <div class="icon-circle <?php echo $softBg; ?>">
+                            <i class="<?php echo $stage['icon']; ?>"></i>
+                        </div>
+                    </div>
+                    <div class="mt-auto border-top pt-2">
+                        <div class="text-muted" style="font-size: 0.8rem;">
+                            <i class="fas fa-coins me-1 text-<?php echo $colorClass; ?>"></i> صافي: 
+                            <span class="fw-bold text-dark"><?php echo number_format($netAmount, 0); ?></span>
+                            <span class="sar-icon text-muted" style="width: 10px; height: 10px;"><svg><use href="#sar-symbol"/></svg></span>
                         </div>
                     </div>
                 </div>
@@ -360,29 +363,26 @@ ob_start();
 
             // إخفاء البطاقات التي لا تحتوي على مستخلصات
             if ($count == 0) continue;
+            
+            $colorClass = $department['color'];
+            $softBg = 'bg-' . $colorClass . '-soft';
             ?>
             <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
-                <div class="card border-left-<?php echo $department['color']; ?> shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-<?php echo $department['color']; ?> text-uppercase mb-1">
-                                    <?php echo $department['name']; ?>
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $count; ?> مستخلص</div>
-
-                                <!-- المبلغ الصافي -->
-                                <div class="mt-2">
-                                    <div class="text-xs text-muted">
-                                        <i class="fas fa-coins fa-sm"></i>
-                                        صافي: <span class="font-weight-bold text-primary"><?php echo number_format($netAmount, 0); ?></span>
-                                        <span class="sar-icon"><svg><use href="#sar-symbol"/></svg></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="<?php echo $department['icon']; ?> fa-2x text-<?php echo $department['color']; ?>"></i>
-                            </div>
+                <div class="dash-card h-100 p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="text-muted fw-bold mb-1" style="font-size: 0.7rem; line-height: 1.2;"><?php echo htmlspecialchars($department['name']); ?></div>
+                            <div class="h4 mb-0 fw-bold text-dark"><?php echo $count; ?></div>
+                        </div>
+                        <div class="icon-circle <?php echo $softBg; ?>">
+                            <i class="<?php echo $department['icon']; ?>"></i>
+                        </div>
+                    </div>
+                    <div class="mt-auto border-top pt-2">
+                        <div class="text-muted" style="font-size: 0.8rem;">
+                            <i class="fas fa-coins me-1 text-<?php echo $colorClass; ?>"></i> صافي: 
+                            <span class="fw-bold text-dark"><?php echo number_format($netAmount, 0); ?></span>
+                            <span class="sar-icon text-muted" style="width: 10px; height: 10px;"><svg><use href="#sar-symbol"/></svg></span>
                         </div>
                     </div>
                 </div>
@@ -392,85 +392,78 @@ ob_start();
 
     <!-- Financial Summary -->
     <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card border-left-success shadow">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                إجمالي المبالغ الصافية
-                            </div>
-                            <div class="h4 mb-0 font-weight-bold text-gray-800">
-                                <?php echo number_format($stats['total_net_amount'] ?? 0, 2); ?>
-                                <span class="sar-icon-lg"><svg><use href="#sar-symbol"/></svg></span>
-                            </div>
+        <div class="col-md-4 mb-3">
+            <div class="dash-card h-100 p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted fw-bold mb-2" style="font-size: 0.75rem;">إجمالي المبالغ الصافية</div>
+                        <div class="h3 mb-0 fw-bold text-dark">
+                            <?php echo number_format($stats['total_net_amount'] ?? 0, 2); ?>
+                            <span class="sar-icon-lg text-muted"><svg><use href="#sar-symbol"/></svg></span>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-coins fa-2x text-success"></i>
-                        </div>
+                    </div>
+                    <div class="icon-circle bg-success-soft" style="width: 60px; height: 60px; font-size: 1.8rem;">
+                        <i class="fas fa-coins"></i>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card border-left-info shadow">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                متوسط قيمة المستخلص
-                            </div>
-                            <div class="h4 mb-0 font-weight-bold text-gray-800">
-                                <?php echo number_format($stats['average_amount'] ?? 0, 2); ?>
-                                <span class="sar-icon-lg"><svg><use href="#sar-symbol"/></svg></span>
-                            </div>
+        <div class="col-md-4 mb-3">
+            <div class="dash-card h-100 p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted fw-bold mb-2" style="font-size: 0.75rem;">متوسط قيمة المستخلص</div>
+                        <div class="h3 mb-0 fw-bold text-dark">
+                            <?php echo number_format($stats['average_amount'] ?? 0, 2); ?>
+                            <span class="sar-icon-lg text-muted"><svg><use href="#sar-symbol"/></svg></span>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-chart-line fa-2x text-info"></i>
-                        </div>
+                    </div>
+                    <div class="icon-circle bg-info-soft" style="width: 60px; height: 60px; font-size: 1.8rem;">
+                        <i class="fas fa-chart-line"></i>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card border-left-primary shadow">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                نسبة الإنجاز
-                            </div>
-                            <div class="h4 mb-0 font-weight-bold text-gray-800">
-                                <?php
-                                $completionRate = $stats['total'] > 0 ? round(($stats['disbursed'] / $stats['total']) * 100, 1) : 0;
-                                echo $completionRate; ?>%
-                            </div>
+        <div class="col-md-4 mb-3">
+            <div class="dash-card h-100 p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted fw-bold mb-2" style="font-size: 0.75rem;">نسبة الإنجاز (تم الصرف)</div>
+                        <div class="h3 mb-0 fw-bold text-dark">
+                            <?php
+                            $completionRate = $stats['total'] > 0 ? round((($stats['disbursed'] ?? 0) / $stats['total']) * 100, 1) : 0;
+                            echo $completionRate; ?>%
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-percentage fa-2x text-primary"></i>
-                        </div>
+                    </div>
+                    <div class="icon-circle bg-primary-soft" style="width: 60px; height: 60px; font-size: 1.8rem;">
+                        <i class="fas fa-percentage"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Filters -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">
-                <i class="fas fa-filter me-2"></i>
-                فلترة المستخلصات الجزئية
-            </h6>
+    <!-- Filters Section - Compact Design -->
+    <div class="card dash-card mb-4 border-0">
+        <div class="card-header py-3 border-0" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); cursor: pointer; border-radius: 20px 20px 0 0;" id="filtersHeader" title="إظهار/إخفاء الفلاتر">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 text-white fw-bold">
+                    <i class="fas fa-filter me-2"></i>
+                    الفلاتر والبحث
+                </h6>
+                <div class="text-white opacity-75">
+                    <span id="toggleFiltersText" class="me-2 small fw-bold">إظهار</span>
+                    <i class="fas fa-chevron-down" style="transition: transform 0.3s ease; transform: rotate(180deg);"></i>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-3">
-                    <label for="approvalStageFilter" class="form-label">
-                        مرحلة الاعتماد
-                        <small class="text-muted">(يمكن اختيار أكثر من مرحلة)</small>
+        <div class="card-body py-3" id="filtersContainer">
+            <div class="row g-3 mb-3">
+                <div class="col-lg-3 col-md-4">
+                    <label for="approvalStageFilter" class="form-label small fw-bold mb-2">
+                        <i class="fas fa-layer-group me-1"></i>مرحلة الاعتماد
                     </label>
-                    <select class="form-select" id="approvalStageFilter" multiple>
+                    <select class="form-select form-select-sm" id="approvalStageFilter" multiple>
                         <?php foreach ($approvalStages as $stage): ?>
                             <option value="<?php echo htmlspecialchars($stage['key']); ?>">
                                 <?php echo htmlspecialchars($stage['name']); ?>
@@ -478,17 +471,21 @@ ob_start();
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label for="departmentFilter" class="form-label">القسم</label>
-                    <select class="form-select" id="departmentFilter">
-                        <option value="">جميع الأقسام</option>
+                <div class="col-lg-2 col-md-3">
+                    <label for="departmentFilter" class="form-label small fw-bold mb-2">
+                        <i class="fas fa-building me-1"></i>القسم
+                    </label>
+                    <select class="form-select form-select-sm" id="departmentFilter">
+                        <option value="">الكل</option>
                         <option value="connections">التوصيلات</option>
                         <option value="projects">المشاريع</option>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label for="finalExtractFilter" class="form-label">نهائي</label>
-                    <select class="form-select" id="finalExtractFilter">
+                <div class="col-lg-2 col-md-3">
+                    <label for="finalExtractFilter" class="form-label small fw-bold mb-2">
+                        <i class="fas fa-check-double me-1"></i>نهائي
+                    </label>
+                    <select class="form-select form-select-sm" id="finalExtractFilter">
                         <option value="">الكل</option>
                         <option value="yes">نعم (✓)</option>
                         <option value="yes-warning">نعم - كان سالب (⚠ أخضر)</option>
@@ -496,29 +493,51 @@ ob_start();
                         <option value="warning">قيمة سالبة (⚠ أصفر)</option>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label for="dateFromFilter" class="form-label">من تاريخ</label>
-                    <input type="date" class="form-control" id="dateFromFilter">
+                <div class="col-lg-2 col-md-3">
+                    <label for="dateFromFilter" class="form-label small fw-bold mb-2">
+                        <i class="fas fa-calendar-alt me-1"></i>من تاريخ
+                    </label>
+                    <input type="date" class="form-control form-control-sm" id="dateFromFilter">
                 </div>
-                <div class="col-md-2">
-                    <label for="dateToFilter" class="form-label">إلى تاريخ</label>
-                    <input type="date" class="form-control" id="dateToFilter">
+                <div class="col-lg-2 col-md-3">
+                    <label for="dateToFilter" class="form-label small fw-bold mb-2">
+                        <i class="fas fa-calendar-alt me-1"></i>إلى تاريخ
+                    </label>
+                    <input type="date" class="form-control form-control-sm" id="dateToFilter">
+                </div>
+                <div class="col-lg-1 col-md-2">
+                    <label class="form-label small fw-bold mb-2 d-block">&nbsp;</label>
+                    <div class="d-flex gap-2 w-100">
+                        <button type="button" class="btn btn-light btn-sm shadow-sm rounded-pill border-0 text-danger px-3 w-100" id="resetFilters" title="إعادة تعيين جميع الفلاتر">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Extracts Table -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">
-                <i class="fas fa-table me-2"></i>
-                قائمة المستخلصات الجزئية
-            </h6>
+    <div class="card dash-card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white border-0 py-3" style="border-radius: 20px 20px 0 0;">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list text-primary me-2"></i>
+                    قائمة المستخلصات الجزئية
+                </h5>
+            </div>
         </div>
-        <div class="card-body">
+        <div class="card-body p-0">
+            <div class="p-3 border-bottom">
+                <div class="input-group">
+                    <span class="input-group-text bg-primary text-white">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" class="form-control" id="customTableSearch" placeholder="ابحث في الجدول...">
+                </div>
+            </div>
             <div class="table-responsive">
-                <table class="table table-bordered" id="extractsTable" width="100%" cellspacing="0">
+                <table class="table premium-table" id="extractsTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>رقم المستخلص</th>
@@ -534,7 +553,7 @@ ob_start();
                             <th>التخريد</th>
                             <th>نهائي</th>
                             <th>مرحلة الاعتماد</th>
-                            <th>الإجراءات</th>
+                            <th class="text-center">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -795,45 +814,6 @@ ob_start();
 .approval-stage {
     font-size: 0.8em;
     font-weight: 500;
-}
-
-/* تحسين مظهر الجدول */
-.table th {
-    background-color: #f8f9fa;
-    border-top: 2px solid #dee2e6;
-    font-weight: 600;
-    font-size: 0.9em;
-    text-align: center;
-    vertical-align: middle;
-}
-
-.table td {
-    vertical-align: middle;
-    text-align: center;
-    font-size: 0.9em;
-}
-
-/* تأثير الظل عند تمرير المؤشر على الصف */
-.table tbody tr {
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.table tbody tr:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-    position: relative;
-    z-index: 10;
-}
-
-.table tbody tr:hover td {
-    background-color: #e3f2fd !important;
-    transition: background-color 0.3s ease;
-}
-
-/* الحفاظ على لون الصفوف الخضراء عند التمرير */
-.table tbody tr.table-success:hover td {
-    background-color: #d4edda !important;
 }
 
 /* تحسين الأيقونات */
@@ -1102,6 +1082,54 @@ $(document).ready(function() {
         );
 
         table.draw();
+    });
+
+    // Collapse Filters Logic
+    $('#filtersHeader').on('click', function() {
+        $('#filtersContainer').slideToggle(300);
+        const icon = $(this).find('i.fa-chevron-down');
+        const text = $('#toggleFiltersText');
+        
+        if (icon.css('transform') !== 'none' && icon.css('transform') !== 'matrix(1, 0, 0, 1, 0, 0)') {
+            icon.css('transform', 'rotate(0deg)');
+            text.text('إخفاء');
+        } else {
+            icon.css('transform', 'rotate(180deg)');
+            text.text('إظهار');
+        }
+    });
+
+    // إغلاق الفلاتر افتراضياً
+    $('#filtersContainer').hide();
+    
+    // زر إعادة تعيين الفلاتر
+    $('#resetFilters').on('click', function() {
+        // إعادة تعيين جميع الفلاتر
+        $('#approvalStageFilter').val(null).trigger('change');
+        $('#departmentFilter').val('');
+        $('#finalExtractFilter').val('');
+        $('#dateFromFilter').val('');
+        $('#dateToFilter').val('');
+
+        // إزالة الفلاتر المخصصة
+        $.fn.dataTable.ext.search = [];
+        
+        // إعادة الرسم
+        $('#extractsTable').DataTable().search('').columns().search('').draw();
+        
+        Swal.fire({
+            position: 'top-end',
+            icon: 'success',
+            title: 'تم إعادة تعيين الفلاتر',
+            showConfirmButton: false,
+            timer: 1500,
+            toast: true
+        });
+    });
+
+    // ربط مربع البحث المخصص بـ DataTable
+    $('#customTableSearch').on('keyup', function() {
+        $('#extractsTable').DataTable().search(this.value).draw();
     });
 
     // تطبيق الألوان الأولية لمراحل الاعتماد

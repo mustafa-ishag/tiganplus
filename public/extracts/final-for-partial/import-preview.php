@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * صفحة معاينة استيراد المستخلصات النهائية للجزئية
  */
@@ -700,7 +700,7 @@ include __DIR__ . '/../../includes/layout.php';
 
 <style>
 .summary-stats {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
     padding: 30px;
     border-radius: 15px;
     color: white;

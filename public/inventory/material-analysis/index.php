@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // بدء الجلسة إذا لم تكن نشطة
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -224,7 +224,7 @@ ob_start();
 <style>
     /* ===== Page Header ===== */
     .page-header {
-        background: linear-gradient(135deg, #2c5aa0 0%, #1e3d72 100%);
+        background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
         color: white;
         padding: 1.5rem 2rem;
         border-radius: 12px;
@@ -266,7 +266,7 @@ ob_start();
     }
 
     .analysis-card .card-header i {
-        color: #2c5aa0;
+        color: #176cb4;
     }
 
     .analysis-card .card-body {
@@ -316,7 +316,7 @@ ob_start();
     .wo-dropdown-item .wo-number {
         font-weight: 600;
         font-size: .9rem;
-        color: #2c5aa0;
+        color: #176cb4;
     }
 
     .wo-dropdown-item .wo-type {
@@ -331,7 +331,7 @@ ob_start();
     }
 
     .wo-selected {
-        border-color: #2c5aa0 !important;
+        border-color: #176cb4 !important;
         background: #f0f7ff !important;
     }
 
@@ -351,7 +351,7 @@ ob_start();
 
     .wo-info-bar .wo-info-title {
         font-weight: 700;
-        color: #2c5aa0;
+        color: #176cb4;
         font-size: 1.05rem;
         margin-bottom: 0.5rem;
     }
@@ -367,7 +367,7 @@ ob_start();
     }
 
     .wo-info-bar .wo-info-detail i {
-        color: #2c5aa0;
+        color: #176cb4;
         margin-left: 4px;
     }
 
@@ -402,7 +402,7 @@ ob_start();
     }
 
     .stat-bg-1 {
-        background: linear-gradient(135deg, #2c5aa0, #1e3d72);
+        background: linear-gradient(135deg, #176cb4, #4fa5e6);
     }
 
     .stat-bg-2 {
@@ -449,14 +449,14 @@ ob_start();
 
     .results-table .text-total {
         font-weight: 700;
-        color: #2c5aa0;
+        color: #176cb4;
     }
 
     .results-table tfoot td {
         background: #f0f7ff;
         font-weight: 700;
         padding: 0.75rem 0.85rem;
-        border-top: 2px solid #2c5aa0;
+        border-top: 2px solid #176cb4;
     }
 
     /* ===== Empty State ===== */
@@ -496,7 +496,7 @@ ob_start();
         width: 48px;
         height: 48px;
         border: 4px solid #e2e8f0;
-        border-top-color: #2c5aa0;
+        border-top-color: #176cb4;
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
         margin: 0 auto 1rem;

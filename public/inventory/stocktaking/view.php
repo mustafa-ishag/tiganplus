@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 if (session_status() === PHP_SESSION_NONE) session_start();
 if (!defined('ETGAN_SYSTEM')) define('ETGAN_SYSTEM', true);
 require_once __DIR__ . '/../../../config/config.php';
@@ -161,7 +161,7 @@ new Chart(document.getElementById('resultChart'),{
         datasets:[{data:[<?=$session['matched_items']??0?>,<?=$session['surplus_items']??0?>,<?=$session['deficit_items']??0?>,<?=$session['not_counted_items']??0?>],
             backgroundColor:['#198754','#0d6efd','#dc3545','#ffc107']}]
     },
-    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{family:'Cairo'}}}}}
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{family:'Tajawal'}}}}}
 });
 
 // Filter

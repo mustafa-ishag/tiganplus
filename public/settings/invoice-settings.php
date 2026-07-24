@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * صفحة إدارة إعدادات الفواتير الضريبية
  * Invoice Settings Management Page
@@ -206,7 +206,7 @@ if (!$settings) {
         'currency' => 'ريال سعودي',
         'header_color' => '#2c3e50',
         'accent_color' => '#3498db',
-        'final_header_color' => '#2C5AA0',
+        'final_header_color' => '#176cb4',
         'final_accent_color' => '#4CAF50',
         'final_extract_header_color' => '#8E44AD',
         'final_extract_accent_color' => '#E74C3C'

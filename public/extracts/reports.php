@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * صفحة تقارير المستخلصات الشاملة
  * Comprehensive Extracts Reports Page
@@ -1265,7 +1265,7 @@ ob_start();
 }
 
 .gradient-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
 }
 
 .gradient-success {
@@ -1307,7 +1307,7 @@ ob_start();
 
 /* تنسيق مفتاح التبديل الاحترافي */
 .tax-toggle-container {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
     padding: 4px;
     border-radius: 50px;
     box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
@@ -1385,7 +1385,7 @@ ob_start();
 }
 
 .tax-switch input:checked + .tax-slider {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
 }
 
 .tax-switch input:checked + .tax-slider:before {
@@ -1581,7 +1581,7 @@ ob_start();
 
         <!-- Partial Extracts -->
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stats-card shadow" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div class="card stats-card shadow" style="background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%); color: white;">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">

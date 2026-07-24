@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
@@ -55,7 +55,7 @@ $pageTitle = 'عرض نوع أمر العمل: ' . $workOrderType->code()->value
         }
         
         .main-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
             color: white;
             padding: 2rem 0;
             margin-bottom: 2rem;
@@ -70,7 +70,7 @@ $pageTitle = 'عرض نوع أمر العمل: ' . $workOrderType->code()->value
         }
         
         .card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
             color: white;
             border: none;
             padding: 1.5rem;

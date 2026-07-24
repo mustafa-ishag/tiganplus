@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -207,7 +207,7 @@ ob_start();
 
     .dropdown-item-custom .item-number {
         font-weight: 700;
-        color: #2c5aa0;
+        color: #176cb4;
         font-size: 0.9rem;
     }
 

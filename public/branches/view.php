@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
@@ -250,7 +250,7 @@ if (isset($_GET['ajax'])) {
     }
 
     .stats-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
         border-radius: 15px;
         padding: 2rem;
         color: white;
@@ -310,7 +310,7 @@ if (isset($_GET['ajax'])) {
     }
 
     .btn-gradient-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
         border: none;
         color: white;
         border-radius: 10px;
@@ -486,7 +486,7 @@ include __DIR__ . '/../includes/layout.php';
 
 <style>
 .page-header-modern {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
     border-radius: 20px;
     padding: 2rem;
     color: white;
@@ -561,7 +561,7 @@ include __DIR__ . '/../includes/layout.php';
 }
 
 .stats-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
     border-radius: 15px;
     padding: 2rem;
     color: white;
@@ -621,7 +621,7 @@ include __DIR__ . '/../includes/layout.php';
 }
 
 .btn-gradient-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
     border: none;
     color: white;
     border-radius: 10px;

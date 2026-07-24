@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // بدء الجلسة إذا لم تكن نشطة
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -498,7 +498,7 @@ ob_start();
         win.document.write(`
             <html><head><title>طباعة باركود</title>
             <style>
-                body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:Cairo,sans-serif}
+                body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:Tajawal,sans-serif}
                 .label{text-align:center;padding:10px;border:1px dashed #ccc;width:300px}
                 .label .desc{font-size:10px;color:#666;margin-top:4px;word-break:break-all}
                 @media print{.no-print{display:none}.label{border:none}}

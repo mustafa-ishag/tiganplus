@@ -139,295 +139,351 @@ try {
 ob_start();
 ?>
 
-<!-- ترحيب بسيط -->
+<style>
+/* Premium Dashboard Styles */
+.dash-card {
+    border: none;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+.dash-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+}
+.icon-circle {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+.bg-primary-soft { background-color: rgba(67, 56, 202, 0.1); color: #4338ca; }
+.bg-success-soft { background-color: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.bg-warning-soft { background-color: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.bg-info-soft { background-color: rgba(6, 182, 212, 0.1); color: #06b6d4; }
+.bg-danger-soft { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.bg-secondary-soft { background-color: rgba(107, 114, 128, 0.1); color: #6b7280; }
+.bg-dark-soft { background-color: rgba(31, 41, 55, 0.1); color: #1f2937; }
+
+/* Welcome Banner */
+.welcome-banner {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border-radius: 24px;
+    position: relative;
+    overflow: hidden;
+    color: white;
+    padding: 2.5rem;
+    box-shadow: 0 10px 30px rgba(67, 56, 202, 0.2);
+}
+.welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+}
+.welcome-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+}
+.welcome-title { font-weight: 800; font-size: 2rem; position: relative; z-index: 1; }
+.welcome-subtitle { font-size: 1.1rem; opacity: 0.9; position: relative; z-index: 1; }
+
+/* Timeline */
+.timeline {
+    position: relative;
+    padding-right: 1.5rem;
+}
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 2px;
+    background: #e5e7eb;
+}
+.timeline-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+.timeline-dot {
+    position: absolute;
+    right: -1.5rem;
+    top: 0.25rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    transform: translateX(50%);
+    background: var(--primary-color);
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px var(--primary-color);
+}
+.timeline-content { padding-right: 1.5rem; }
+
+/* Quick Actions Grid */
+.quick-action-card {
+    border: 1px solid #f3f4f6;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s;
+    background: #fff;
+    display: block;
+    text-decoration: none;
+    color: #4b5563;
+}
+.quick-action-card:hover {
+    background: var(--primary-color);
+    color: #fff;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(67, 56, 202, 0.2);
+    border-color: var(--primary-color);
+}
+.quick-action-card .action-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    transition: color 0.3s;
+}
+.quick-action-card:hover .action-icon { color: #fff; }
+.quick-action-title { font-weight: 600; font-size: 1rem; }
+</style>
+
+<!-- Welcome Banner -->
 <div class="row mb-4">
     <div class="col-12">
-        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); border-radius: 15px;">
-            <div class="card-body text-white p-4">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h2 class="mb-2">مرحباً، <?php echo htmlspecialchars($user['full_name'] ?? 'مستخدم'); ?>! 👋</h2>
-                        <p class="mb-0 opacity-75">مرحباً بك في نظام تِقان لإدارة أعمال المقاولات</p>
-                        <small class="opacity-50">آخر تسجيل دخول: <?= date('Y-m-d H:i') ?></small>
-                    </div>
-                    <div class="col-md-4 text-center">
-                        <i class="fas fa-tachometer-alt" style="font-size: 3rem; opacity: 0.3;"></i>
-                    </div>
+        <div class="welcome-banner">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="welcome-title mb-2">مرحباً بك مجدداً، <?php echo htmlspecialchars($user['full_name'] ?? 'مستخدم'); ?></h2>
+                    <p class="welcome-subtitle mb-0">نظام تِقان يوفر لك تجربة استثنائية لإدارة أعمالك بفعالية واحترافية.</p>
+                </div>
+                <div class="col-md-4 text-center d-none d-md-block">
+                    <i class="fas fa-chart-line" style="font-size: 4rem; opacity: 0.15; position: relative; z-index: 1;"></i>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- الإحصائيات -->
+<!-- Stat Cards Row 1 -->
 <div class="row mb-4">
     <div class="col-lg-3 col-md-6 mb-3">
-        <div class="card border-start border-primary border-4 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="small fw-bold text-primary text-uppercase mb-1">
-                            أوامر العمل
-                        </div>
-                        <div class="h4 mb-0 fw-bold text-gray-800" data-animate-number="<?= $totalWorkOrders ?>">
-                            0
-                        </div>
-                        <div class="small text-success">
-                            <i class="fas fa-check-circle me-1"></i>
-                            <span id="active-work-orders" data-animate-number="<?= $activeWorkOrders ?>">0</span> نشط
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                    </div>
+        <div class="dash-card h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small fw-bold mb-1">أوامر العمل</div>
+                    <div class="h3 mb-0 fw-bold text-dark" data-animate-number="<?= $totalWorkOrders ?>">0</div>
                 </div>
+                <div class="icon-circle bg-primary-soft">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-sm">
+                <span class="text-success fw-bold"><i class="fas fa-arrow-up me-1"></i><?= $activeWorkOrders ?></span>
+                <span class="text-muted">نشط حالياً</span>
             </div>
         </div>
     </div>
 
     <div class="col-lg-3 col-md-6 mb-3">
-        <div class="card border-start border-success border-4 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="small fw-bold text-success text-uppercase mb-1">
-                            الفروع
-                        </div>
-                        <div class="h4 mb-0 fw-bold text-gray-800" data-animate-number="<?= $totalBranches ?>">
-                            0
-                        </div>
-                        <div class="small text-muted">
-                            <i class="fas fa-map-marker-alt me-1"></i>
-                            مواقع متعددة
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-building fa-2x text-gray-300"></i>
-                    </div>
+        <div class="dash-card h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small fw-bold mb-1">الفروع</div>
+                    <div class="h3 mb-0 fw-bold text-dark" data-animate-number="<?= $totalBranches ?>">0</div>
                 </div>
+                <div class="icon-circle bg-success-soft">
+                    <i class="fas fa-building"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-sm text-muted">
+                <i class="fas fa-map-marker-alt text-success me-1"></i> تغطية للمشاريع
             </div>
         </div>
     </div>
 
     <div class="col-lg-3 col-md-6 mb-3">
-        <div class="card border-start border-warning border-4 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="small fw-bold text-warning text-uppercase mb-1">
-                            المستخلصات الجزئية
-                        </div>
-                        <div class="h4 mb-0 fw-bold text-gray-800" data-animate-number="<?= $totalPartialExtracts ?>">
-                            0
-                        </div>
-                        <div class="small text-muted">
-                            <i class="fas fa-file-alt me-1"></i>
-                            مستخلصات جزئية
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-file-invoice fa-2x text-gray-300"></i>
-                    </div>
+        <div class="dash-card h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small fw-bold mb-1">المستخلصات الجزئية</div>
+                    <div class="h3 mb-0 fw-bold text-dark" data-animate-number="<?= $totalPartialExtracts ?>">0</div>
                 </div>
+                <div class="icon-circle bg-warning-soft">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-sm text-muted">
+                <i class="fas fa-clock text-warning me-1"></i> قيد الإنجاز
             </div>
         </div>
     </div>
 
     <div class="col-lg-3 col-md-6 mb-3">
-        <div class="card border-start border-info border-4 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="small fw-bold text-info text-uppercase mb-1">
-                            المستخلصات النهائية
-                        </div>
-                        <div class="h4 mb-0 fw-bold text-gray-800" data-animate-number="<?= $totalFinalExtracts ?>">
-                            0
-                        </div>
-                        <div class="small text-muted">
-                            <i class="fas fa-file-check me-1"></i>
-                            مستخلصات نهائية
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-file-invoice-dollar fa-2x text-gray-300"></i>
-                    </div>
+        <div class="dash-card h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small fw-bold mb-1">المستخلصات النهائية</div>
+                    <div class="h3 mb-0 fw-bold text-dark" data-animate-number="<?= $totalFinalExtracts ?>">0</div>
                 </div>
+                <div class="icon-circle bg-info-soft">
+                    <i class="fas fa-file-check"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-sm text-muted">
+                <i class="fas fa-check-circle text-info me-1"></i> منتهية وموثقة
             </div>
         </div>
     </div>
 </div>
 
-<!-- إحصائيات إضافية -->
+<!-- Stat Cards Row 2 -->
 <div class="row mb-4">
     <div class="col-lg-3 col-md-6 mb-3">
-        <div class="card border-start border-danger border-4 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="small fw-bold text-danger text-uppercase mb-1">
-                            المستخدمين
-                        </div>
-                        <div class="h4 mb-0 fw-bold text-gray-800" data-animate-number="<?= $totalUsers ?>">
-                            0
-                        </div>
-                        <div class="small text-muted">
-                            <i class="fas fa-user-check me-1"></i>
-                            مستخدمين نشطين
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-users fa-2x text-gray-300"></i>
-                    </div>
+        <div class="dash-card h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small fw-bold mb-1">المستخدمين</div>
+                    <div class="h3 mb-0 fw-bold text-dark" data-animate-number="<?= $totalUsers ?>">0</div>
                 </div>
+                <div class="icon-circle bg-danger-soft">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-sm text-muted">
+                <i class="fas fa-user-check text-danger me-1"></i> مستخدمين نشطين
             </div>
         </div>
     </div>
 
     <div class="col-lg-3 col-md-6 mb-3">
-        <div class="card border-start border-secondary border-4 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="small fw-bold text-secondary text-uppercase mb-1">
-                            المواد الكهربائية
-                        </div>
-                        <div class="h4 mb-0 fw-bold text-gray-800" data-animate-number="<?= $totalMaterials ?>">
-                            0
-                        </div>
-                        <div class="small text-muted">
-                            <i class="fas fa-boxes me-1"></i>
-                            مواد نشطة
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-warehouse fa-2x text-gray-300"></i>
-                    </div>
+        <div class="dash-card h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small fw-bold mb-1">المواد الكهربائية</div>
+                    <div class="h3 mb-0 fw-bold text-dark" data-animate-number="<?= $totalMaterials ?>">0</div>
                 </div>
+                <div class="icon-circle bg-secondary-soft">
+                    <i class="fas fa-box-open"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-sm text-muted">
+                <i class="fas fa-warehouse text-secondary me-1"></i> متوفرة في المخزون
             </div>
         </div>
     </div>
 
     <div class="col-lg-3 col-md-6 mb-3">
-        <div class="card border-start border-success border-4 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="small fw-bold text-success text-uppercase mb-1">
-                            أوامر مكتملة
-                        </div>
-                        <div class="h4 mb-0 fw-bold text-gray-800" data-animate-number="<?= $completedWorkOrders ?>">
-                            0
-                        </div>
-                        <div class="small text-muted">
-                            <i class="fas fa-check-double me-1"></i>
-                            مكتملة بنجاح
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-tasks fa-2x text-gray-300"></i>
-                    </div>
+        <div class="dash-card h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small fw-bold mb-1">أوامر مكتملة</div>
+                    <div class="h3 mb-0 fw-bold text-dark" data-animate-number="<?= $completedWorkOrders ?>">0</div>
                 </div>
+                <div class="icon-circle bg-success-soft">
+                    <i class="fas fa-check-double"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-sm text-muted">
+                <i class="fas fa-chart-line text-success me-1"></i> تم التنفيذ
             </div>
         </div>
     </div>
 
     <div class="col-lg-3 col-md-6 mb-3">
-        <div class="card border-start border-dark border-4 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="small fw-bold text-dark text-uppercase mb-1">
-                            المستخلصات للجزئية
-                        </div>
-                        <div class="h4 mb-0 fw-bold text-gray-800" data-animate-number="<?= $totalFinalForPartialExtracts ?>">
-                            0
-                        </div>
-                        <div class="small text-muted">
-                            <i class="fas fa-file-pdf me-1"></i>
-                            مستخلصات نهائية
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-file-alt fa-2x text-gray-300"></i>
-                    </div>
+        <div class="dash-card h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small fw-bold mb-1">مستخلصات للجزئية</div>
+                    <div class="h3 mb-0 fw-bold text-dark" data-animate-number="<?= $totalFinalForPartialExtracts ?>">0</div>
                 </div>
+                <div class="icon-circle bg-dark-soft">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-sm text-muted">
+                <i class="fas fa-file-signature text-dark me-1"></i> مسجلة ومعتمدة
             </div>
         </div>
     </div>
 </div>
 
-<!-- الملخص المالي -->
+<!-- Financial Summary & Recent Activities -->
 <div class="row mb-4">
+    <!-- الملخص المالي -->
     <div class="col-lg-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header bg-light">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-chart-line text-success me-2"></i>
-                    الملخص المالي
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-6 mb-3">
-                        <div class="text-center">
-                            <h6 class="text-muted mb-2">القيمة المقدرة</h6>
-                            <h4 class="text-success fw-bold" data-animate-number="<?= $totalEstimatedValue ?>">
-                                0
-                            </h4>
-                            <small class="text-muted">ريال سعودي</small>
-                        </div>
-                    </div>
-                    <div class="col-6 mb-3">
-                        <div class="text-center">
-                            <h6 class="text-muted mb-2">القيمة الفعلية</h6>
-                            <h4 class="text-primary fw-bold" data-animate-number="<?= $totalActualValue ?>">
-                                0
-                            </h4>
-                            <small class="text-muted">ريال سعودي</small>
-                        </div>
+        <div class="dash-card h-100 p-4">
+            <h5 class="fw-bold mb-4">الملخص المالي للمشاريع</h5>
+            <div class="row mb-4">
+                <div class="col-6">
+                    <div class="p-3 bg-light rounded-4 text-center">
+                        <div class="text-muted mb-2 small">القيمة المقدرة</div>
+                        <div class="h4 fw-bold text-success" data-animate-number="<?= $totalEstimatedValue ?>">0</div>
+                        <small class="text-muted">ر.س</small>
                     </div>
                 </div>
-                <div class="progress mt-3" style="height: 25px;">
-                    <div class="progress-bar bg-success" role="progressbar"
-                         style="width: <?= $totalEstimatedValue > 0 ? ($totalActualValue / $totalEstimatedValue * 100) : 0 ?>%"
-                         aria-valuenow="<?= $totalActualValue ?>" aria-valuemin="0" aria-valuemax="<?= $totalEstimatedValue ?>">
-                        <?= $totalEstimatedValue > 0 ? round(($totalActualValue / $totalEstimatedValue * 100), 1) : 0 ?>%
+                <div class="col-6">
+                    <div class="p-3 bg-light rounded-4 text-center">
+                        <div class="text-muted mb-2 small">القيمة الفعلية</div>
+                        <div class="h4 fw-bold text-primary" data-animate-number="<?= $totalActualValue ?>">0</div>
+                        <small class="text-muted">ر.س</small>
                     </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted small fw-bold">نسبة التنفيذ المالي</span>
+                <span class="text-success small fw-bold"><?= $totalEstimatedValue > 0 ? round(($totalActualValue / $totalEstimatedValue * 100), 1) : 0 ?>%</span>
+            </div>
+            <div class="progress rounded-pill" style="height: 10px; background: #e5e7eb;">
+                <div class="progress-bar bg-primary rounded-pill" role="progressbar"
+                     style="width: <?= $totalEstimatedValue > 0 ? ($totalActualValue / $totalEstimatedValue * 100) : 0 ?>%">
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- آخر الأنشطة -->
     <div class="col-lg-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header bg-light">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-history text-info me-2"></i>
-                    آخر الأنشطة
-                </h5>
-            </div>
-            <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+        <div class="dash-card h-100 p-4">
+            <h5 class="fw-bold mb-4">أحدث أوامر العمل</h5>
+            <div class="timeline ps-3" style="max-height: 250px; overflow-y: auto;">
                 <?php if (!empty($recentWorkOrders)): ?>
-                    <div class="mb-3">
-                        <h6 class="text-muted mb-2">آخر أوامر عمل</h6>
-                        <?php foreach ($recentWorkOrders as $wo): ?>
-                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-                                <div>
-                                    <small class="fw-bold"><?= htmlspecialchars($wo['work_order_number']) ?></small>
-                                    <br>
-                                    <small class="text-muted"><?= htmlspecialchars($wo['branch_name'] ?? 'بدون فرع') ?></small>
+                    <?php foreach ($recentWorkOrders as $wo): ?>
+                        <div class="timeline-item">
+                            <div class="timeline-dot <?= $wo['status'] === 'active' ? 'bg-success' : ($wo['status'] === 'completed' ? 'bg-info' : 'bg-secondary') ?>" 
+                                 style="box-shadow: 0 0 0 2px <?= $wo['status'] === 'active' ? '#22c55e' : ($wo['status'] === 'completed' ? '#06b6d4' : '#6b7280') ?>;"></div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold text-dark"><?= htmlspecialchars($wo['work_order_number']) ?></span>
+                                    <span class="badge rounded-pill bg-<?= $wo['status'] === 'active' ? 'success' : ($wo['status'] === 'completed' ? 'info' : 'secondary') ?> bg-opacity-10 text-<?= $wo['status'] === 'active' ? 'success' : ($wo['status'] === 'completed' ? 'info' : 'secondary') ?>">
+                                        <?= $wo['status'] === 'active' ? 'نشط' : ($wo['status'] === 'completed' ? 'مكتمل' : 'غير نشط') ?>
+                                    </span>
                                 </div>
-                                <span class="badge bg-<?= $wo['status'] === 'active' ? 'success' : ($wo['status'] === 'completed' ? 'info' : 'secondary') ?>">
-                                    <?= $wo['status'] === 'active' ? 'نشط' : ($wo['status'] === 'completed' ? 'مكتمل' : 'غير نشط') ?>
-                                </span>
+                                <div class="text-muted small"><?= htmlspecialchars($wo['branch_name'] ?? 'بدون فرع') ?></div>
+                                <div class="text-muted small" style="font-size: 0.75rem;"><i class="far fa-clock me-1"></i><?= date('Y-m-d H:i', strtotime($wo['created_at'] ?? 'now')) ?></div>
                             </div>
-                        <?php endforeach; ?>
-                    </div>
+                        </div>
+                    <?php endforeach; ?>
                 <?php else: ?>
-                    <div class="alert alert-info mb-0">
-                        <i class="fas fa-info-circle me-2"></i>
-                        لا توجد أوامر عمل حديثة
+                    <div class="text-center text-muted p-3">
+                        <i class="fas fa-inbox fa-2x mb-2 opacity-50"></i>
+                        <p>لا توجد أوامر عمل حديثة</p>
                     </div>
                 <?php endif; ?>
             </div>
@@ -435,114 +491,97 @@ ob_start();
     </div>
 </div>
 
-<!-- الإجراءات السريعة -->
-<div class="row">
+<!-- Quick Actions & System Info -->
+<div class="row mb-4">
+    <!-- الإجراءات السريعة -->
     <div class="col-lg-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header bg-light">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-bolt text-primary me-2"></i>
-                    الإجراءات السريعة
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="<?= path('work-orders/index.php') ?>" class="btn btn-outline-primary text-start">
-                        <i class="fas fa-clipboard-list me-2"></i>
-                        إدارة أوامر العمل
+        <div class="dash-card h-100 p-4">
+            <h5 class="fw-bold mb-4">الوصول السريع</h5>
+            <div class="row g-3">
+                <div class="col-6">
+                    <a href="<?= path('work-orders/index.php') ?>" class="quick-action-card">
+                        <i class="fas fa-clipboard-list action-icon"></i>
+                        <div class="quick-action-title">أوامر العمل</div>
                     </a>
-                    <a href="<?= path('extracts/index.php') ?>" class="btn btn-outline-success text-start">
-                        <i class="fas fa-file-invoice me-2"></i>
-                        إدارة المستخلصات
+                </div>
+                <div class="col-6">
+                    <a href="<?= path('extracts/index.php') ?>" class="quick-action-card">
+                        <i class="fas fa-file-invoice action-icon"></i>
+                        <div class="quick-action-title">المستخلصات</div>
                     </a>
-                    <a href="<?= path('branches/index.php') ?>" class="btn btn-outline-info text-start">
-                        <i class="fas fa-building me-2"></i>
-                        إدارة الفروع
+                </div>
+                <div class="col-6">
+                    <a href="<?= path('branches/index.php') ?>" class="quick-action-card">
+                        <i class="fas fa-building action-icon"></i>
+                        <div class="quick-action-title">الفروع</div>
                     </a>
-                    <a href="<?= path('users/index.php') ?>" class="btn btn-outline-warning text-start">
-                        <i class="fas fa-users me-2"></i>
-                        إدارة المستخدمين
+                </div>
+                <div class="col-6">
+                    <a href="<?= path('users/index.php') ?>" class="quick-action-card">
+                        <i class="fas fa-users action-icon"></i>
+                        <div class="quick-action-title">المستخدمين</div>
                     </a>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- معلومات النظام -->
     <div class="col-lg-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header bg-light">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-clock text-info me-2"></i>
-                    معلومات النظام
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-6 mb-3">
-                        <div class="border-end">
-                            <h6 class="text-muted mb-1">إصدار النظام</h6>
-                            <span class="badge bg-primary">v1.0.0</span>
-                        </div>
+        <div class="dash-card h-100 p-4">
+            <h5 class="fw-bold mb-4">حالة النظام</h5>
+            <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-4 mb-3">
+                <div class="d-flex align-items-center">
+                    <div class="icon-circle bg-primary-soft me-3" style="width: 45px; height: 45px;">
+                        <i class="fas fa-server"></i>
                     </div>
-                    <div class="col-6 mb-3">
-                        <h6 class="text-muted mb-1">التاريخ والوقت</h6>
-                        <span class="text-dark"><?= date('Y-m-d H:i') ?></span>
-                    </div>
-                    <div class="col-12">
-                        <div class="alert alert-info mb-0">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>نظام تِقان</strong> - نظام إدارة المقاولات المتكامل
-                        </div>
+                    <div>
+                        <div class="fw-bold">إصدار النظام</div>
+                        <div class="text-muted small">نظام إدارة متكامل</div>
                     </div>
                 </div>
+                <span class="badge bg-primary rounded-pill px-3 py-2">v1.0.0</span>
+            </div>
+            
+            <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-4">
+                <div class="d-flex align-items-center">
+                    <div class="icon-circle bg-success-soft me-3" style="width: 45px; height: 45px;">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">وقت الخادم</div>
+                        <div class="text-muted small">توقيت متزامن</div>
+                    </div>
+                </div>
+                <span class="fw-bold text-dark"><?= date('H:i A') ?></span>
             </div>
         </div>
     </div>
 </div>
 
-<!-- الرسوم البيانية -->
+<!-- Charts Row 1 -->
 <div class="row mb-4">
     <div class="col-lg-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header bg-light">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-chart-pie text-primary me-2"></i>
-                    توزيع أوامر العمل حسب الحالة
-                </h5>
-            </div>
-            <div class="card-body">
-                <canvas id="workOrdersStatusChart" style="max-height: 300px;"></canvas>
-            </div>
+        <div class="dash-card h-100 p-4">
+            <h5 class="fw-bold mb-4">توزيع أوامر العمل حسب الحالة</h5>
+            <canvas id="workOrdersStatusChart" style="max-height: 300px;"></canvas>
         </div>
     </div>
 
     <div class="col-lg-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header bg-light">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-chart-doughnut text-success me-2"></i>
-                    توزيع المستخلصات
-                </h5>
-            </div>
-            <div class="card-body">
-                <canvas id="extractsChart" style="max-height: 300px;"></canvas>
-            </div>
+        <div class="dash-card h-100 p-4">
+            <h5 class="fw-bold mb-4">توزيع المستخلصات</h5>
+            <canvas id="extractsChart" style="max-height: 300px;"></canvas>
         </div>
     </div>
 </div>
 
+<!-- Charts Row 2 -->
 <div class="row mb-4">
     <div class="col-lg-12 mb-4">
-        <div class="card h-100">
-            <div class="card-header bg-light">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-chart-bar text-info me-2"></i>
-                    توزيع أوامر العمل حسب الفرع
-                </h5>
-            </div>
-            <div class="card-body">
-                <canvas id="branchesChart" style="max-height: 300px;"></canvas>
-            </div>
+        <div class="dash-card h-100 p-4">
+            <h5 class="fw-bold mb-4">توزيع أوامر العمل حسب الفرع</h5>
+            <canvas id="branchesChart" style="max-height: 300px;"></canvas>
         </div>
     </div>
 </div>

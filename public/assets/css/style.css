@@ -1,19 +1,33 @@
 /* نظام إتقان ERP - ملف التصميم الرئيسي */
 
 :root {
-    --primary-color: #667eea;
-    --secondary-color: #764ba2;
-    --success-color: #28a745;
-    --danger-color: #dc3545;
-    --warning-color: #ffc107;
-    --info-color: #17a2b8;
-    --light-color: #f8f9fa;
-    --dark-color: #343a40;
+    --primary-color: #176cb4;
+    --secondary-color: #0e2942;
+    --success-color: #22ae82;
+    --danger-color: #E74C3C;
+    --warning-color: #F39C12;
+    --info-color: #3498DB;
+    --light-color: #F0F2F5;
+    --dark-color: #2C3E50;
     --sidebar-width: 280px;
-    --header-height: 70px;
+    --header-height: 64px;
     --border-radius: 12px;
-    --box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-    --transition: all 0.3s ease;
+    --border-radius-sm: 8px;
+    --box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s ease;
+    --font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
+    --gold: #176cb4;
+    --gold-light: #4fa5e6;
+    --gold-dark: #0f4e85;
+    --gold-gradient: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
+    --navy: #0e2942;
+    --navy-light: #16426a;
+    --navy-dark: #071522;
+    --border-color: #E8ECF1;
+    --text-primary: #2C3E50;
+    --text-secondary: #7F8C8D;
 }
 
 /* إعدادات عامة */
@@ -24,10 +38,13 @@
 }
 
 body {
-    font-family: 'Cairo', sans-serif;
+    font-family: var(--font-family);
     background-color: var(--light-color);
     overflow-x: hidden;
-    line-height: 1.6;
+    line-height: 1.7;
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* تحسينات النصوص */
@@ -69,10 +86,10 @@ a:hover {
 }
 
 .card-header {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    background: var(--gold-gradient);
     color: white;
     border: none;
-    padding: 1.5rem;
+    padding: 1.25rem 1.5rem;
     font-weight: 600;
 }
 

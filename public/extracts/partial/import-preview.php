@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * صفحة معاينة استيراد المستخلصات الجزئية
  */
@@ -471,7 +471,7 @@ ob_start();
 }
 
 .summary-stats {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #176cb4 100%);
     color: white;
     border-radius: 0.5rem;
     padding: 1rem;

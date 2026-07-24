@@ -137,11 +137,12 @@ ob_start();
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <p class="text-muted mb-0">إدارة أوامر العمل والمتابعة</p>
+        <h4 class="fw-bold text-dark mb-1">أوامر العمل</h4>
+        <p class="text-muted mb-0 small">إدارة ومتابعة جميع أوامر العمل في النظام</p>
     </div>
     <div>
         <?php if (hasPermission('work_orders_create')): ?>
-        <button type="button" class="btn btn-primary" onclick="openCreateModal()">
+        <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="openCreateModal()">
             <i class="fas fa-plus me-2"></i>
             إضافة أمر عمل جديد
         </button>
@@ -149,15 +150,15 @@ ob_start();
 
         <!-- Import/Export Dropdown -->
         <div class="btn-group ms-2" role="group">
-            <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <button type="button" class="btn btn-light rounded-pill px-3 shadow-sm border-0 text-success fw-bold dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="fas fa-exchange-alt me-2"></i>
                 استيراد/تصدير
             </button>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu shadow border-0" style="border-radius: 12px;">
                 <?php if (hasPermission('work_orders_export')): ?>
                 <li>
-                    <a class="dropdown-item" href="#" onclick="openExportModal()">
-                        <i class="fas fa-file-export me-2"></i>
+                    <a class="dropdown-item py-2" href="#" onclick="openExportModal()">
+                        <i class="fas fa-file-export me-2 text-success"></i>
                         تصدير البيانات
                     </a>
                 </li>
@@ -165,8 +166,8 @@ ob_start();
 
                 <?php if (hasPermission('work_orders_import')): ?>
                 <li>
-                    <a class="dropdown-item" href="import.php">
-                        <i class="fas fa-file-import me-2"></i>
+                    <a class="dropdown-item py-2" href="import.php">
+                        <i class="fas fa-file-import me-2 text-primary"></i>
                         استيراد البيانات
                     </a>
                 </li>
@@ -175,8 +176,8 @@ ob_start();
                 <li><hr class="dropdown-divider"></li>
 
                 <li>
-                    <a class="dropdown-item" href="download-sample.php">
-                        <i class="fas fa-download me-2"></i>
+                    <a class="dropdown-item py-2" href="download-sample.php">
+                        <i class="fas fa-download me-2 text-muted"></i>
                         تحميل نموذج CSV
                     </a>
                 </li>
@@ -184,14 +185,14 @@ ob_start();
         </div>
 
         <?php if (hasPermission('work_orders_print')): ?>
-        <button type="button" class="btn btn-info ms-2" onclick="printWorkOrders()">
+        <button type="button" class="btn btn-light rounded-pill px-3 shadow-sm border-0 text-info fw-bold ms-2" onclick="printWorkOrders()">
             <i class="fas fa-print me-2"></i>
             طباعة
         </button>
         <?php endif; ?>
 
         <!-- زر التقارير -->
-        <a href="reports.php" class="btn btn-warning ms-2">
+        <a href="reports.php" class="btn btn-light rounded-pill px-3 shadow-sm border-0 text-warning fw-bold ms-2">
             <i class="fas fa-chart-line me-2"></i>
             التقارير الشاملة
         </a>
@@ -199,29 +200,27 @@ ob_start();
 </div>
 
 <!-- زر عرض/إخفاء الأوامر المكتملة -->
-<div class="mb-3">
-    <div class="alert alert-info d-flex align-items-center justify-content-between" role="alert">
-        <div>
-            <i class="fas fa-info-circle me-2"></i>
-            <?php if ($showCompleted): ?>
-                <strong>عرض جميع أوامر العمل</strong> (بما فيها المكتملة)
-            <?php else: ?>
-                <strong>عرض أوامر العمل النشطة فقط</strong> (الأوامر المكتملة مخفية لتسريع التحميل)
-            <?php endif; ?>
-        </div>
-        <div>
-            <?php if ($showCompleted): ?>
-                <a href="index.php" class="btn btn-sm btn-warning">
-                    <i class="fas fa-eye-slash me-2"></i>
-                    إخفاء الأوامر المكتملة
-                </a>
-            <?php else: ?>
-                <a href="index.php?show_completed=1" class="btn btn-sm btn-success">
-                    <i class="fas fa-eye me-2"></i>
-                    عرض جميع الأوامر (بما فيها المكتملة)
-                </a>
-            <?php endif; ?>
-        </div>
+<div class="dash-card p-3 mb-4 bg-primary-soft border-0 d-flex align-items-center justify-content-between">
+    <div class="text-primary">
+        <i class="fas fa-info-circle me-2 fs-5 align-middle"></i>
+        <?php if ($showCompleted): ?>
+            <span class="fw-bold">عرض جميع أوامر العمل</span> <span class="text-muted small">(بما فيها المكتملة)</span>
+        <?php else: ?>
+            <span class="fw-bold">عرض أوامر العمل النشطة فقط</span> <span class="text-muted small">(الأوامر المكتملة مخفية)</span>
+        <?php endif; ?>
+    </div>
+    <div>
+        <?php if ($showCompleted): ?>
+            <a href="index.php" class="btn btn-white rounded-pill btn-sm shadow-sm text-warning fw-bold px-3">
+                <i class="fas fa-eye-slash me-1"></i>
+                إخفاء المكتملة
+            </a>
+        <?php else: ?>
+            <a href="index.php?show_completed=1" class="btn btn-white rounded-pill btn-sm shadow-sm text-primary fw-bold px-3">
+                <i class="fas fa-eye me-1"></i>
+                عرض الكل
+            </a>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -235,127 +234,80 @@ ob_start();
 
 <!-- Statistics Cards -->
 <div class="row mb-4">
-    <!-- إجمالي أوامر العمل -->
     <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-        <div class="card border-start border-primary border-4 h-100">
-            <div class="card-body p-3">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="small fw-bold text-primary text-uppercase mb-1">
-                            إجمالي
-                        </div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">
-                            <?= number_format($stats['total']) ?>
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                    </div>
+        <div class="dash-card h-100 p-3">
+            <div class="d-flex justify-content-between align-items-center h-100">
+                <div class="me-2">
+                    <div class="text-muted fw-bold mb-1" style="font-size: 0.7rem; line-height: 1.2;">إجمالي أوامر العمل</div>
+                    <div class="h5 mb-0 fw-bold text-dark"><?= number_format($stats['total']) ?></div>
+                </div>
+                <div class="icon-circle bg-primary-soft" style="width: 35px; height: 35px; font-size: 1rem; flex-shrink: 0;">
+                    <i class="fas fa-list-alt text-primary"></i>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- أوامر نشطة (بدون مستخلص أو مستخلص جزئي فقط) -->
     <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-        <div class="card border-start border-success border-4 h-100">
-            <div class="card-body p-3">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="small fw-bold text-success text-uppercase mb-1">
-                            نشطة
-                        </div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">
-                            <?= number_format($stats['active_no_extract'] ?? 0) ?>
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-play-circle fa-2x text-gray-300"></i>
-                    </div>
+        <div class="dash-card h-100 p-3">
+            <div class="d-flex justify-content-between align-items-center h-100">
+                <div class="me-2">
+                    <div class="text-muted fw-bold mb-1" style="font-size: 0.7rem; line-height: 1.2;">أوامر نشطة قيد التنفيذ</div>
+                    <div class="h5 mb-0 fw-bold text-dark"><?= number_format($stats['active_no_extract'] ?? 0) ?></div>
+                </div>
+                <div class="icon-circle bg-success-soft" style="width: 35px; height: 35px; font-size: 1rem; flex-shrink: 0;">
+                    <i class="fas fa-play-circle text-success"></i>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- أوامر جاري صرف المستخلص -->
     <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-        <div class="card border-start border-warning border-4 h-100">
-            <div class="card-body p-3">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="small fw-bold text-warning text-uppercase mb-1">
-                            جاري صرف
-                        </div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">
-                            <?= number_format($stats['disbursement_pending'] ?? 0) ?>
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-hourglass-half fa-2x text-gray-300"></i>
-                    </div>
+        <div class="dash-card h-100 p-3">
+            <div class="d-flex justify-content-between align-items-center h-100">
+                <div class="me-2">
+                    <div class="text-muted fw-bold mb-1" style="font-size: 0.7rem; line-height: 1.2;">أوامر جاري صرف مستخلصها</div>
+                    <div class="h5 mb-0 fw-bold text-dark"><?= number_format($stats['disbursement_pending'] ?? 0) ?></div>
+                </div>
+                <div class="icon-circle bg-warning-soft" style="width: 35px; height: 35px; font-size: 1rem; flex-shrink: 0;">
+                    <i class="fas fa-hourglass-half text-warning"></i>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- شهادات الإنجاز المرفقة -->
     <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-        <div class="card border-start border-info border-4 h-100">
-            <div class="card-body p-3">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="small fw-bold text-info text-uppercase mb-1">
-                            شهادة مرفقة
-                        </div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">
-                            <?= number_format($stats['completion_certificate_attached'] ?? 0) ?>
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-certificate fa-2x text-gray-300"></i>
-                    </div>
+        <div class="dash-card h-100 p-3">
+            <div class="d-flex justify-content-between align-items-center h-100">
+                <div class="me-2">
+                    <div class="text-muted fw-bold mb-1" style="font-size: 0.7rem; line-height: 1.2;">شهادات إنجاز مرفقة</div>
+                    <div class="h5 mb-0 fw-bold text-dark"><?= number_format($stats['completion_certificate_attached'] ?? 0) ?></div>
+                </div>
+                <div class="icon-circle bg-info-soft" style="width: 35px; height: 35px; font-size: 1rem; flex-shrink: 0;">
+                    <i class="fas fa-certificate text-info"></i>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- شهادات الإنجاز الغير مرفقة -->
     <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-        <div class="card border-start border-danger border-4 h-100">
-            <div class="card-body p-3">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="small fw-bold text-danger text-uppercase mb-1">
-                            شهادة غير مرفقة
-                        </div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">
-                            <?= number_format($stats['completion_certificate_not_attached'] ?? 0) ?>
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-exclamation-circle fa-2x text-gray-300"></i>
-                    </div>
+        <div class="dash-card h-100 p-3">
+            <div class="d-flex justify-content-between align-items-center h-100">
+                <div class="me-2">
+                    <div class="text-muted fw-bold mb-1" style="font-size: 0.7rem; line-height: 1.2;">أوامر متأخرة الإنجاز</div>
+                    <div class="h5 mb-0 fw-bold text-dark"><?= number_format($stats['completion_certificate_not_attached'] ?? 0) ?></div>
+                </div>
+                <div class="icon-circle bg-danger-soft" style="width: 35px; height: 35px; font-size: 1rem; flex-shrink: 0;">
+                    <i class="fas fa-exclamation-circle text-danger"></i>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- أوامر مكتملة -->
     <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-        <div class="card border-start border-secondary border-4 h-100">
-            <div class="card-body p-3">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="small fw-bold text-secondary text-uppercase mb-1">
-                            مكتملة
-                        </div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">
-                            <?= number_format($stats['completed']) ?>
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-flag-checkered fa-2x text-gray-300"></i>
-                    </div>
+        <div class="dash-card h-100 p-3">
+            <div class="d-flex justify-content-between align-items-center h-100">
+                <div class="me-2">
+                    <div class="text-muted fw-bold mb-1" style="font-size: 0.7rem; line-height: 1.2;">أوامر عمل مكتملة كلياً</div>
+                    <div class="h5 mb-0 fw-bold text-dark"><?= number_format($stats['completed']) ?></div>
+                </div>
+                <div class="icon-circle bg-secondary-soft" style="width: 35px; height: 35px; font-size: 1rem; flex-shrink: 0;">
+                    <i class="fas fa-flag-checkered text-secondary"></i>
                 </div>
             </div>
         </div>
@@ -363,16 +315,16 @@ ob_start();
 </div>
 
 <!-- Filters Section - Compact Design -->
-<div class="card mb-3 shadow-sm border-0">
-    <div class="card-header bg-gradient py-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); cursor: pointer;" id="filtersHeader" title="إظهار/إخفاء الفلاتر">
+<div class="card dash-card mb-4 border-0">
+    <div class="card-header py-3 border-0" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); cursor: pointer; border-radius: 20px 20px 0 0;" id="filtersHeader" title="إظهار/إخفاء الفلاتر">
         <div class="d-flex justify-content-between align-items-center">
             <h6 class="mb-0 text-white fw-bold">
                 <i class="fas fa-filter me-2"></i>
                 الفلاتر والبحث
             </h6>
-            <div>
-                <i class="fas fa-chevron-up me-1" style="transition: transform 0.3s ease; transform: rotate(180deg);"></i>
-                <span id="toggleFiltersText">إظهار</span>
+            <div class="text-white opacity-75">
+                <span id="toggleFiltersText" class="me-2 small fw-bold">إظهار</span>
+                <i class="fas fa-chevron-down" style="transition: transform 0.3s ease; transform: rotate(180deg);"></i>
             </div>
         </div>
     </div>
@@ -515,12 +467,12 @@ ob_start();
             </div>
             <div class="col-lg-2 col-md-3">
                 <label class="form-label small fw-bold mb-2 d-block">&nbsp;</label>
-                <div class="btn-group w-100" role="group">
-                    <button type="button" class="btn btn-primary btn-sm" id="applyFilters" title="تطبيق الفلاتر والبحث">
+                <div class="d-flex gap-2 w-100">
+                    <button type="button" class="btn btn-primary btn-sm flex-grow-1 shadow-sm rounded-pill fw-bold" id="applyFilters" title="تطبيق الفلاتر والبحث">
                         <i class="fas fa-search me-1"></i>
                         بحث
                     </button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="resetFilters" title="إعادة تعيين جميع الفلاتر">
+                    <button type="button" class="btn btn-light btn-sm shadow-sm rounded-pill border-0 text-danger px-3" id="resetFilters" title="إعادة تعيين جميع الفلاتر">
                         <i class="fas fa-redo"></i>
                     </button>
                 </div>
@@ -528,63 +480,52 @@ ob_start();
         </div>
 
         <!-- الفلاتر السريعة -->
-        <div class="row g-2">
+        <div class="row mt-2">
+            <div class="col-12 mb-2">
+                <label class="form-label fw-bold text-muted small"><i class="fas fa-bolt me-1 text-warning"></i> فلاتر سريعة بنقرة واحدة:</label>
+            </div>
             <div class="col-12">
-                <label class="form-label fw-bold">فلاتر سريعة:</label>
-            </div>
-            <div class="col-md-2">
-                <button type="button" class="btn btn-outline-warning btn-sm w-100 quick-filter" data-filter="favorites" style="border-color: #ffc107;">
-                    <i class="fas fa-star me-1" style="color: #ffc107;"></i>
-                    المفضلة
-                </button>
-            </div>
-            <div class="col-md-2">
-                <button type="button" class="btn btn-outline-info btn-sm w-100 quick-filter" data-filter="confirmed_no_extract">
-                    <i class="fas fa-certificate me-1"></i>
-                    شهادة مؤكدة ولم تدخل مستخلص
-                </button>
-            </div>
-            <div class="col-md-2">
-                <button type="button" class="btn btn-outline-success btn-sm w-100 quick-filter" data-filter="attached_cert_no_extract">
-                    <i class="fas fa-file-check me-1"></i>
-                    شهادة مرفقة ولم تدخل مستخلص
-                </button>
-            </div>
-            <div class="col-md-2">
-                <button type="button" class="btn btn-outline-warning btn-sm w-100 quick-filter" data-filter="missing_drilling_scraping">
-                    <i class="fas fa-exclamation-triangle me-1"></i>
-                    نماذج حفر دقيق وكشط غير مرفق
-                </button>
-            </div>
-            <div class="col-md-2">
-                <button type="button" class="btn btn-outline-danger btn-sm w-100 quick-filter" data-filter="missing_scrap">
-                    <i class="fas fa-trash-alt me-1"></i>
-                    نماذج تخريد غير مرفق
-                </button>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-outline-warning btn-sm px-3 quick-filter rounded-pill shadow-sm fw-bold" data-filter="favorites">
+                        <i class="fas fa-star me-1"></i> المفضلة
+                    </button>
+                    <button type="button" class="btn btn-outline-info btn-sm px-3 quick-filter rounded-pill shadow-sm fw-bold" data-filter="confirmed_no_extract">
+                        <i class="fas fa-certificate me-1"></i> شهادة مؤكدة ولم تدخل مستخلص
+                    </button>
+                    <button type="button" class="btn btn-outline-success btn-sm px-3 quick-filter rounded-pill shadow-sm fw-bold" data-filter="attached_cert_no_extract">
+                        <i class="fas fa-file-check me-1"></i> شهادة مرفقة ولم تدخل مستخلص
+                    </button>
+                    <button type="button" class="btn btn-outline-warning btn-sm px-3 quick-filter rounded-pill shadow-sm fw-bold" data-filter="missing_drilling_scraping">
+                        <i class="fas fa-exclamation-triangle me-1"></i> نماذج حفر دقيق وكشط غير مرفق
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm px-3 quick-filter rounded-pill shadow-sm fw-bold" data-filter="missing_scrap">
+                        <i class="fas fa-trash-alt me-1"></i> نماذج تخريد غير مرفق
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Work Orders Table -->
-<div class="card">
-    <div class="card-header">
+<div class="card dash-card shadow-sm border-0">
+    <div class="card-header bg-white border-0 py-3" style="border-radius: 20px 20px 0 0;">
         <div class="d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">
                 <i class="fas fa-list me-2"></i>
                 قائمة أوامر العمل
                 <span class="badge bg-primary ms-2" id="tableRecordCount"><?= number_format($displayedCount) ?> أمر عمل</span>
             </h5>
-            <div class="btn-group" role="group">
-                <button type="button" class="btn btn-success btn-sm" id="exportCurrentTableBtn" title="تصدير الجدول الحالي إلى Excel">
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-light rounded-pill btn-sm px-3 shadow-sm border-0 fw-bold text-success" id="exportCurrentTableBtn" title="تصدير الجدول الحالي إلى Excel">
                     <i class="fas fa-file-excel me-1"></i>
                     تصدير
                 </button>
-                <button type="button" class="btn btn-info btn-sm" id="toggleFormsViewBtn">
+                <button type="button" class="btn btn-light rounded-pill btn-sm px-3 shadow-sm border-0 fw-bold text-info" id="toggleFormsViewBtn">
                     <i class="fas fa-file-alt me-1"></i>
                     وضع النماذج
                 </button>
-                <button type="button" class="btn btn-success btn-sm" id="toggleFullViewBtn">
+                <button type="button" class="btn btn-light rounded-pill btn-sm px-3 shadow-sm border-0 fw-bold text-primary" id="toggleFullViewBtn">
                     <i class="fas fa-th me-1"></i>
                     الوضع الكامل
                 </button>
@@ -602,8 +543,8 @@ ob_start();
             </div>
         </div>
         <div class="table-responsive">
-            <table class="table table-hover" id="workOrdersTable" width="100%" cellspacing="0">
-                <thead class="table-dark">
+            <table class="table table-hover align-middle" id="workOrdersTable" width="100%" cellspacing="0" style="color: #475569;">
+                <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; color: #64748b;">
                     <tr>
                         <th style="width: 50px;">★</th>
                         <th>رقم الأمر</th>
@@ -1296,7 +1237,9 @@ ob_start();
 
 /* تحسين عرض القوائم المنسدلة */
 .form-select-sm {
-    padding: 6px 8px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-right: 8px;
     font-size: 0.9em;
     border-radius: 6px;
 }
@@ -1484,6 +1427,88 @@ ob_start();
     }
 }
 
+/* تحسينات النوافذ المنبثقة (Modals) */
+.modal-content {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #edf2f9;
+    border-radius: 16px 16px 0 0;
+    padding: 1.25rem 1.5rem;
+}
+.modal-footer {
+    border-top: 1px solid #edf2f9;
+    padding: 1.25rem 1.5rem;
+}
+
+/* تحسينات عناصر DataTables */
+div.dataTables_wrapper div.dataTables_filter input {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    padding: 0.375rem 0.75rem;
+}
+div.dataTables_wrapper div.dataTables_filter input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    outline: 0;
+}
+div.dataTables_wrapper div.dataTables_length select {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+}
+
+/* تحسين رأس الجدول */
+#workOrdersTable thead th {
+    background-color: #f8f9fa !important;
+    color: #6c757d !important;
+    font-weight: 700;
+    font-size: 0.75rem;
+    border-bottom: 2px solid #edf2f9 !important;
+    white-space: nowrap;
+}
+
+/* أشرطة التمرير المخصصة (Custom Scrollbars) */
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+.table-responsive::-webkit-scrollbar-track {
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* تأثيرات التمرير الدقيقة لصفوف الجدول (Row Micro-interactions) */
+#workOrdersTable tbody tr {
+    transition: all 0.2s ease-in-out;
+}
+#workOrdersTable tbody tr:hover td {
+    background-color: #f8fafc !important;
+}
+#workOrdersTable tbody tr:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+    transform: translateY(-1px);
+    position: relative;
+    z-index: 10;
+}
+
+/* الشارات الناعمة (Soft Badges) */
+.badge-soft-success { background-color: #d1e7dd !important; color: #0f5132 !important; border: 1px solid #badbcc !important; }
+.badge-soft-primary { background-color: #cfe2ff !important; color: #084298 !important; border: 1px solid #b6d4fe !important; }
+.badge-soft-danger { background-color: #f8d7da !important; color: #842029 !important; border: 1px solid #f5c2c7 !important; }
+.badge-soft-warning { background-color: #fff3cd !important; color: #664d03 !important; border: 1px solid #ffecb5 !important; }
+.badge-soft-info { background-color: #cff4fc !important; color: #055160 !important; border: 1px solid #b6effb !important; }
+.badge-soft-secondary { background-color: #e2e3e5 !important; color: #41464b !important; border: 1px solid #d3d6d8 !important; }
+
 /* تحسينات للشاشات الصغيرة */
 @media (max-width: 1200px) {
     #workOrdersTable th,
@@ -1492,7 +1517,12 @@ ob_start();
         font-size: 0.85em;
     }
 
-    .form-select-sm,
+    .form-select-sm {
+        font-size: 0.75em;
+        padding-top: 4px;
+        padding-bottom: 4px;
+        padding-right: 6px;
+    }
     .form-control-sm {
         font-size: 0.75em;
         padding: 4px 6px;
@@ -2128,7 +2158,15 @@ $(document).ready(function() {
                             'return': 'إرجاع',
                             'disbursement_return_completed': 'صرف وإرجاع'
                         };
-                        return '<span class="badge bg-secondary">' + (statusLabels[disbursementStatus] || 'غير محدد') + '</span>';
+                        const disClassMap = {
+                            'none': 'secondary',
+                            'completed': 'success',
+                            'disbursement': 'primary',
+                            'return': 'warning',
+                            'disbursement_return_completed': 'info'
+                        };
+                        const disClass = disClassMap[disbursementStatus] || 'secondary';
+                        return '<span class="badge rounded-pill badge-soft-' + disClass + ' px-3 py-1 fw-bold shadow-none">' + (statusLabels[disbursementStatus] || 'غير محدد') + '</span>';
                         <?php endif; ?>
                     }
                 },
@@ -2154,7 +2192,7 @@ $(document).ready(function() {
                             'inactive': { class: 'secondary', label: 'غير نشط' }
                         };
                         const statusInfo = statusMap[status] || { class: 'secondary', label: 'غير محدد' };
-                        return '<span class="badge bg-' + statusInfo.class + '">' + statusInfo.label + '</span>';
+                        return '<span class="badge rounded-pill badge-soft-' + statusInfo.class + ' px-3 py-1 fw-bold shadow-none">' + statusInfo.label + '</span>';
                         <?php endif; ?>
                     }
                 },
@@ -2191,28 +2229,28 @@ $(document).ready(function() {
                 {
                     "targets": 21,
                     "render": function(data, type, row) {
-                        let html = '<div class="btn-group" role="group">';
+                        let html = '<div class="d-flex gap-1 justify-content-center">';
 
                         <?php if (hasPermission('work_orders_view_details')): ?>
-                        html += '<button type="button" class="btn btn-sm btn-outline-info" ';
+                        html += '<button type="button" class="btn btn-sm btn-light rounded-circle text-info shadow-sm border-0" ';
                         html += 'onclick="viewWorkOrder(' + row.id + ')" title="عرض">';
                         html += '<i class="fas fa-eye"></i></button>';
                         <?php endif; ?>
 
                         <?php if (hasPermission('work_orders_edit')): ?>
-                        html += '<button type="button" class="btn btn-sm btn-outline-primary" ';
+                        html += '<button type="button" class="btn btn-sm btn-light rounded-circle text-primary shadow-sm border-0" ';
                         html += 'onclick="editWorkOrder(' + row.id + ')" title="تعديل">';
                         html += '<i class="fas fa-edit"></i></button>';
                         <?php endif; ?>
 
                         <?php if (hasPermission('work_orders_attachments')): ?>
-                        html += '<button type="button" class="btn btn-sm btn-outline-success" ';
+                        html += '<button type="button" class="btn btn-sm btn-light rounded-circle text-success shadow-sm border-0" ';
                         html += 'onclick="manageAttachments(' + row.id + ')" title="إدارة النماذج المرفقة">';
                         html += '<i class="fas fa-paperclip"></i></button>';
                         <?php endif; ?>
 
                         <?php if (hasPermission('work_orders_delete')): ?>
-                        html += '<button type="button" class="btn btn-sm btn-outline-danger" ';
+                        html += '<button type="button" class="btn btn-sm btn-light rounded-circle text-danger shadow-sm border-0" ';
                         html += 'onclick="deleteWorkOrder(' + row.id + ', \'' + escapeHtml(row.work_order_number) + '\')" title="حذف">';
                         html += '<i class="fas fa-trash"></i></button>';
                         <?php endif; ?>
@@ -2224,7 +2262,7 @@ $(document).ready(function() {
                 { "orderable": false, "targets": -1 }
             ],
             "language": {
-                "sProcessing": "جارٍ التحميل...",
+                "sProcessing": '<div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div> جارٍ التحميل...',
                 "sLengthMenu": "أظهر _MENU_ مدخلات",
                 "sZeroRecords": "لم يعثر على أية سجلات",
                 "sInfo": "إظهار _START_ إلى _END_ من أصل _TOTAL_ مدخل",
