@@ -132,12 +132,14 @@ $workItems = [];
 $preselectedWorkOrderId = $_GET['work_order_id'] ?? null;
 $preselectedWorkOrder = null;
 if ($preselectedWorkOrderId) {
-    foreach ($workOrders as $wo) {
-        if ($wo['id'] == $preselectedWorkOrderId) {
-            $preselectedWorkOrder = $wo;
-            break;
-        }
-    }
+    $preselectedStmt = $db->prepare("
+        SELECT wo.id, wo.work_order_number, b.name as branch_name, wo.estimated_value
+        FROM work_orders wo
+        JOIN branches b ON wo.branch_id = b.id
+        WHERE wo.id = ?
+    ");
+    $preselectedStmt->execute([$preselectedWorkOrderId]);
+    $preselectedWorkOrder = $preselectedStmt->fetch(PDO::FETCH_ASSOC) ?: null;
 }
 
 // بدء تخزين المحتوى
@@ -200,27 +202,34 @@ ob_start();
                         <label for="work_order_id" class="form-label">
                             أمر العمل <span class="text-danger">*</span>
                         </label>
-                        <div class="work-order-search-container position-relative">
-                            <input type="text" class="form-control" id="work_order_search"
-                                   placeholder="ابحث عن أمر العمل برقم الأمر أو اسم الفرع..."
-                                   autocomplete="off">
-                            <div id="work_order_dropdown" class="dropdown-menu w-100" style="max-height: 300px; overflow-y: auto;">
-                                <!-- سيتم عرض نتائج البحث هنا -->
-                            </div>
-                        </div>
-                        <input type="hidden" id="work_order_id" name="work_order_id" value="<?= htmlspecialchars($formData['work_order_id']) ?>" required>
-                        <small class="form-text text-muted">
-                            <i class="fas fa-search me-1"></i>
-                            ابدأ الكتابة للبحث السريع في أوامر العمل
-                        </small>
+                        
                         <?php if ($preselectedWorkOrder): ?>
-                        <div class="mt-2">
-                            <span class="badge bg-primary">
-                                <i class="fas fa-clipboard-list me-1"></i>
-                                <?= htmlspecialchars($preselectedWorkOrder['work_order_number']) ?>
-                            </span>
-                        </div>
+                            <!-- أمر العمل محدد مسبقاً -->
+                            <div class="p-2 border rounded bg-light">
+                                <span class="badge bg-primary fs-6">
+                                    <i class="fas fa-clipboard-list me-1"></i>
+                                    <?= htmlspecialchars($preselectedWorkOrder['work_order_number']) ?>
+                                    - <?= htmlspecialchars($preselectedWorkOrder['branch_name']) ?>
+                                </span>
+                                <input type="hidden" id="work_order_search" value="<?= htmlspecialchars($preselectedWorkOrder['work_order_number']) ?> - <?= htmlspecialchars($preselectedWorkOrder['branch_name']) ?>">
+                            </div>
+                        <?php else: ?>
+                            <!-- بحث عن أمر العمل -->
+                            <div class="work-order-search-container position-relative">
+                                <input type="text" class="form-control" id="work_order_search"
+                                       placeholder="ابحث عن أمر العمل برقم الأمر أو اسم الفرع..."
+                                       autocomplete="off">
+                                <div id="work_order_dropdown" class="dropdown-menu w-100" style="max-height: 300px; overflow-y: auto;">
+                                    <!-- سيتم عرض نتائج البحث هنا -->
+                                </div>
+                            </div>
+                            <small class="form-text text-muted">
+                                <i class="fas fa-search me-1"></i>
+                                ابدأ الكتابة للبحث السريع في أوامر العمل
+                            </small>
                         <?php endif; ?>
+                        
+                        <input type="hidden" id="work_order_id" name="work_order_id" value="<?= htmlspecialchars($formData['work_order_id']) ?>" required>
                     </div>
 
                     <!-- بند العمل -->
@@ -524,17 +533,17 @@ function initializeWorkOrderSearch() {
     const dropdown = document.getElementById('work_order_dropdown');
     const hiddenInput = document.getElementById('work_order_id');
 
-    if (!searchInput || !dropdown || !hiddenInput) return;
-
-    // إذا كان هناك قيمة محددة مسبقاً، اعرضها
-    if (hiddenInput.value) {
+    // إذا كان هناك قيمة محددة مسبقاً، اعرضها وجلب البنود
+    if (hiddenInput && hiddenInput.value) {
         const selectedOrder = workOrdersData.find(wo => wo.id == hiddenInput.value);
         if (selectedOrder) {
-            searchInput.value = `${selectedOrder.work_order_number} - ${selectedOrder.branch_name}`;
-            // جلب بنود الأعمال المرتبطة بعقد أمر العمل المختار مسبقاً
-            loadContractWorkItems(hiddenInput.value);
+            if (searchInput) searchInput.value = `${selectedOrder.work_order_number} - ${selectedOrder.branch_name}`;
         }
+        // جلب بنود الأعمال المرتبطة بعقد أمر العمل المختار مسبقاً دائماً
+        loadContractWorkItems(hiddenInput.value);
     }
+
+    if (!searchInput || !dropdown || !hiddenInput) return;
 
     searchInput.addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();
