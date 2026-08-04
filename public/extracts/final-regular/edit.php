@@ -141,112 +141,117 @@ ob_start();
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h2 class="h4 mb-1">
-                        <i class="fas fa-edit text-warning me-2"></i>
+                    <h5 class="fw-bold text-dark mb-1">
+                        <i class="fas fa-file-invoice text-primary me-2"></i>
                         تعديل المستخلص النهائي العادي
-                    </h2>
-                    <p class="text-muted mb-0">تعديل المستخلص رقم: <?= htmlspecialchars($extract['extract_number']) ?></p>
+                    </h5>
+                    <p class="text-muted mb-0 small">تعديل المستخلص رقم: <?= htmlspecialchars($extract['extract_number']) ?></p>
                 </div>
-                <div>
-                    <a href="view.php?id=<?= $extractId ?>" class="btn btn-outline-primary me-2">
+                <div class="d-flex gap-2">
+                    <a href="view.php?id=<?= $extractId ?>" class="btn btn-outline-primary rounded-pill px-3 shadow-sm btn-sm">
                         <i class="fas fa-eye me-1"></i>
                         عرض التفاصيل
                     </a>
-                    <a href="index.php" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-right me-1"></i>
-                        العودة للقائمة
+                    <a href="index.php" class="btn btn-light rounded-pill px-3 shadow-sm text-secondary fw-bold border-0 btn-sm">
+                        <i class="fas fa-arrow-right me-2"></i>العودة للقائمة
                     </a>
                 </div>
             </div>
 
+            <!-- Container for Bootstrap Alerts -->
+            <div id="alertContainer" class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050; width: 100%; max-width: 600px;"></div>
+
             <!-- تنبيه حالة المستخلص -->
-            <div class="alert alert-info mb-4">
+            <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
                 <i class="fas fa-info-circle me-2"></i>
                 <strong>ملاحظة:</strong> يمكن تعديل المستخلص فقط في مرحلة المسودة. بعد التقديم لن يكون التعديل متاحاً.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
 
             <!-- نموذج تعديل المستخلص -->
             <form id="editFinalRegularExtractForm" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="extract_id" value="<?= $extractId ?>">
                 
-                <div class="row">
-                    <!-- معلومات المستخلص الأساسية -->
-                    <div class="col-lg-8">
-                        <div class="card shadow-sm mb-4">
-                            <div class="card-header bg-light">
-                                <h5 class="card-title mb-0">
-                                    <i class="fas fa-info-circle text-warning me-2"></i>
-                                    معلومات المستخلص الأساسية
-                                </h5>
+                <!-- معلومات المستخلص الأساسية -->
+                <div class="card dash-card shadow-sm border-0 mb-3">
+                    <div class="card-header bg-white border-0 py-2" style="border-radius: 20px 20px 0 0;">
+                        <h6 class="card-title mb-0 fw-bold text-dark">
+                            <i class="fas fa-info-circle text-primary opacity-75 me-2"></i>معلومات المستخلص الأساسية
+                        </h6>
+                    </div>
+                    <div class="card-body py-2">
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <label for="extract_number" class="form-label small fw-bold mb-1">رقم المستخلص <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-sm" id="extract_number" name="extract_number" 
+                                       value="<?= htmlspecialchars($extract['extract_number']) ?>" required>
                             </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="extract_number" class="form-label">رقم المستخلص <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="extract_number" name="extract_number" 
-                                               value="<?= htmlspecialchars($extract['extract_number']) ?>" required>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="invoice_number" class="form-label">رقم الفاتورة</label>
-                                        <input type="text" class="form-control" id="invoice_number" name="invoice_number"
-                                               value="<?= htmlspecialchars($extract['invoice_number'] ?? '') ?>">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="branch_id" class="form-label">الفرع <span class="text-danger">*</span></label>
-                                        <select class="form-select" id="branch_id" name="branch_id" required>
-                                            <option value="">اختر الفرع</option>
-                                            <?php foreach ($branches as $branch): ?>
-                                                <option value="<?= $branch['id'] ?>" <?= $branch['id'] == $extract['branch_id'] ? 'selected' : '' ?>>
-                                                    <?= htmlspecialchars($branch['name']) ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="extract_date" class="form-label">تاريخ المستخلص <span class="text-danger">*</span></label>
-                                        <input type="date" class="form-control" id="extract_date" name="extract_date"
-                                               value="<?= htmlspecialchars($extract['extract_date']) ?>" required>
-                                    </div>
-                                    <div class="col-12 mb-3">
-                                        <label for="description" class="form-label">وصف المستخلص</label>
-                                        <textarea class="form-control" id="description" name="description" rows="3" 
-                                                  placeholder="وصف تفصيلي للمستخلص النهائي العادي..."><?= htmlspecialchars($extract['description'] ?? '') ?></textarea>
-                                    </div>
-                                </div>
+                            <div class="col-md-3">
+                                <label for="invoice_number" class="form-label small fw-bold mb-1">رقم الفاتورة</label>
+                                <input type="text" class="form-control form-control-sm" id="invoice_number" name="invoice_number"
+                                       value="<?= htmlspecialchars($extract['invoice_number'] ?? '') ?>" placeholder="اختياري">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="extract_date" class="form-label small fw-bold mb-1">تاريخ المستخلص <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control form-control-sm" id="extract_date" name="extract_date"
+                                       value="<?= htmlspecialchars($extract['extract_date']) ?>" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="branch_id" class="form-label small fw-bold mb-1">الفرع <span class="text-danger">*</span></label>
+                                <select class="form-select form-select-sm" id="branch_id" name="branch_id" required>
+                                    <option value="">سيتم تحديده تلقائياً</option>
+                                    <?php foreach ($branches as $branch): ?>
+                                        <option value="<?= $branch['id'] ?>" <?= $branch['id'] == $extract['branch_id'] ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($branch['name']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-12">
+                                <label for="description" class="form-label small fw-bold mb-1">وصف المستخلص</label>
+                                <input type="text" class="form-control form-control-sm" id="description" name="description"
+                                       placeholder="وصف تفصيلي للمستخلص..." value="<?= htmlspecialchars($extract['description'] ?? '') ?>">
                             </div>
                         </div>
+                    </div>
+                </div>
 
+                <div class="row g-4 mb-4">
+                    <!-- العمود الأيمن (أوامر العمل المتاحة) -->
+                    <div class="col-lg-6">
                         <!-- الجزء الأول: أوامر العمل المتاحة -->
-                        <div class="card shadow-sm mb-4">
-                            <div class="card-header bg-light">
-                                <h5 class="card-title mb-0">
-                                    <i class="fas fa-list text-primary me-2"></i>
-                                    أوامر العمل المتاحة للإضافة
-                                    <span class="badge bg-secondary ms-2" id="availableCount"><?= count($availableWorkOrders) ?></span>
-                                </h5>
+                        <div class="card dash-card shadow-sm border-0 h-100">
+                            <div class="card-header bg-white border-0 py-2 d-flex justify-content-between align-items-center" style="border-radius: 20px 20px 0 0;">
+                                <h6 class="card-title mb-0 fw-bold text-dark">
+                                    <i class="fas fa-list text-primary opacity-75 me-2"></i>أوامر العمل المتاحة
+                                    <span class="badge bg-secondary-soft text-secondary rounded-pill ms-1" id="availableCount"><?= count($availableWorkOrders) ?></span>
+                                </h6>
+                                <div style="max-width: 200px;">
+                                    <input type="tel" inputmode="numeric" pattern="[0-9]*" id="customSearchAvailable" class="form-control form-control-sm rounded-pill px-3 shadow-none border-1" placeholder="ابحث برقم الأمر...">
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table id="availableWorkOrdersTable" class="table table-sm table-hover">
-                                        <thead class="table-light">
+                            <div class="card-body p-0">
+                                <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+                                    <table id="availableWorkOrdersTable" class="table premium-table table-hover table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                                        <thead style="background-color: #f8fafc; color: #64748b; position: sticky; top: 0; z-index: 1;">
                                             <tr>
-                                                <th>رقم الأمر</th>
-                                                <th>كود النوع</th>
-                                                <th>القيمة الفعلية</th>
-                                                <th>الإجراء</th>
+                                                <th class="ps-3 border-0">رقم الأمر</th>
+                                                <th class="border-0">النوع</th>
+                                                <th class="border-0">القيمة الفعلية</th>
+                                                <th class="pe-3 border-0 text-center">إضافة</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php foreach ($availableWorkOrders as $wo): ?>
                                                 <tr data-work-order-id="<?= $wo['id'] ?>">
-                                                    <td><?= htmlspecialchars($wo['work_order_number']) ?></td>
-                                                    <td><?= htmlspecialchars($wo['work_order_type_code']) ?></td>
-                                                    <td><?= number_format($wo['actual_value'] ?: $wo['estimated_value'], 2) ?> ريال</td>
-                                                    <td>
-                                                        <button type="button" class="btn btn-sm btn-primary add-work-order"
+                                                    <td class="ps-3 fw-bold"><?= htmlspecialchars($wo['work_order_number']) ?></td>
+                                                    <td><span class="badge bg-light text-dark border"><?= htmlspecialchars($wo['work_order_type_code']) ?></span></td>
+                                                    <td><?= number_format($wo['actual_value'] ?: $wo['estimated_value'], 2) ?> <small class="text-muted">ريال</small></td>
+                                                    <td class="pe-3 text-center">
+                                                        <button type="button" class="btn btn-sm btn-primary rounded-circle add-work-order" style="width: 28px; height: 28px; padding: 0; display: inline-flex; align-items: center; justify-content: center;"
                                                                 data-id="<?= $wo['id'] ?>"
                                                                 data-number="<?= htmlspecialchars($wo['work_order_number']) ?>"
                                                                 data-type="<?= htmlspecialchars($wo['work_order_type_code']) ?>"
@@ -256,7 +261,7 @@ ob_start();
                                                                 data-branch-name="<?= htmlspecialchars($wo['branch_name']) ?>"
                                                                 data-value="<?= $wo['actual_value'] ?: $wo['estimated_value'] ?>"
                                                                 data-receipt-date="<?= $wo['receipt_date'] ?? '' ?>"
-                                                                data-assignment-date="<?= $wo['assignment_date'] ?? '' ?>">
+                                                                data-assignment-date="<?= $wo['assignment_date'] ?? '' ?>" title="إضافة">
                                                             <i class="fas fa-plus"></i>
                                                         </button>
                                                     </td>
@@ -267,66 +272,67 @@ ob_start();
                                 </div>
                             </div>
                         </div>
+                    </div>
 
+                    <!-- العمود الأيسر (أوامر العمل المختارة، المرفقات، والملخص) -->
+                    <div class="col-lg-6">
                         <!-- الجزء الثاني: أوامر العمل المختارة -->
-                        <div class="card shadow-sm mb-4">
-                            <div class="card-header bg-light">
-                                <h5 class="card-title mb-0">
-                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                    أوامر العمل المختارة
-                                    <span class="badge bg-success ms-2" id="selectedCount"><?= count($extractWorkOrders) ?></span>
-                                </h5>
+                        <div class="card dash-card shadow-sm border-0 mb-4">
+                            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center" style="border-radius: 20px 20px 0 0;">
+                                <h6 class="card-title mb-0 fw-bold text-dark">
+                                    <i class="fas fa-check-circle text-success opacity-75 me-2"></i>الأوامر المختارة
+                                    <span class="badge bg-success-soft text-success rounded-pill ms-1" id="selectedCount"><?= count($extractWorkOrders) ?></span>
+                                </h6>
                             </div>
-                            <div class="card-body">
-                                <div id="selectedWorkOrdersContainer">
-                                    <div class="text-center text-muted py-4" id="emptyMessage" style="<?= count($extractWorkOrders) > 0 ? 'display: none;' : '' ?>">
-                                        <i class="fas fa-inbox fa-3x mb-3"></i>
-                                        <p>لم يتم اختيار أي أوامر عمل بعد</p>
-                                        <small>استخدم القسم أعلاه لإضافة أوامر العمل</small>
+                            <div class="card-body p-0">
+                                <div id="selectedWorkOrdersContainer" class="d-flex flex-column" style="min-height: 150px;">
+                                    <div class="text-center text-muted py-5 my-auto" id="emptyMessage" style="<?= count($extractWorkOrders) > 0 ? 'display: none;' : '' ?>">
+                                        <div class="icon-circle bg-light mx-auto mb-3" style="width: 60px; height: 60px; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                                            <i class="fas fa-inbox text-muted"></i>
+                                        </div>
+                                        <p class="mb-0 fw-bold">لم يتم اختيار أي أوامر عمل بعد</p>
+                                        <small>استخدم القائمة لإضافة أوامر العمل</small>
                                     </div>
-                                </div>
-
-                                <div id="selectedWorkOrdersTable" style="<?= count($extractWorkOrders) > 0 ? '' : 'display: none;' ?>">
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-hover">
-                                            <thead class="table-light">
+                                    
+                                    <div id="selectedWorkOrdersTable" style="<?= count($extractWorkOrders) > 0 ? '' : 'display: none;' ?>" class="table-responsive">
+                                        <table class="table premium-table table-hover table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                                            <thead style="background-color: #f8fafc; color: #64748b; position: sticky; top: 0; z-index: 1;">
                                                 <tr>
-                                                    <th>رقم الأمر</th>
-                                                    <th>النوع</th>
-                                                    <th>القيمة الفعلية</th>
-                                                    <th>قيمة المستخلص <span class="text-danger">*</span></th>
-                                                    <th>تاريخ الإنجاز <span class="text-danger">*</span></th>
-                                                    <th>الغرامة</th>
-                                                    <th>الإجراء</th>
+                                                    <th class="ps-2 border-0">رقم الأمر</th>
+                                                    <th class="border-0" style="width: 100px;">قيمة المستخلص <span class="text-danger">*</span></th>
+                                                    <th class="border-0" style="width: 90px;">الغرامة</th>
+                                                    <th class="border-0" style="width: 110px;">تاريخ الإنجاز</th>
+                                                    <th class="pe-2 border-0 text-center">حذف</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="selectedWorkOrdersBody">
                                                 <?php foreach ($extractWorkOrders as $wo): ?>
                                                 <tr data-work-order-id="<?= $wo['work_order_id'] ?>">
-                                                    <td><?= htmlspecialchars($wo['work_order_number']) ?></td>
-                                                    <td><?= htmlspecialchars($wo['work_order_type_code']) ?></td>
-                                                    <td><?= number_format($wo['actual_value'] ?: $wo['estimated_value'], 2) ?> ريال</td>
+                                                    <td class="ps-2 fw-bold"><?= htmlspecialchars($wo['work_order_number']) ?> <br><small class="text-muted fw-normal"><?= htmlspecialchars($wo['work_order_type_code']) ?></small></td>
                                                     <td>
-                                                        <input type="number" step="0.01" class="form-control form-control-sm extract-value"
-                                                               name="extract_values[<?= $wo['work_order_id'] ?>]"
-                                                               value="<?= $wo['extract_value'] ?>"
-                                                               required>
+                                                        <div class="input-group input-group-sm" style="width: 140px;">
+                                                            <input type="number" step="0.01" class="form-control text-center fw-bold text-primary extract-value"
+                                                                   name="extract_values[<?= $wo['work_order_id'] ?>]"
+                                                                   value="<?= $wo['extract_value'] ?>" required>
+                                                            <span class="input-group-text bg-light"><small>ريال</small></span>
+                                                        </div>
+                                                        <div class="mt-1 text-muted" style="font-size: 0.7rem;">الفعلي: <?= number_format($wo['actual_value'] ?: $wo['estimated_value']) ?></div>
                                                     </td>
                                                     <td>
-                                                        <input type="date" class="form-control form-control-sm completion-date"
+                                                        <div class="input-group input-group-sm" style="width: 110px;">
+                                                            <input type="number" step="0.01" class="form-control text-center text-danger penalty-amount"
+                                                                   name="penalty_amounts[<?= $wo['work_order_id'] ?>]"
+                                                                   value="<?= $wo['penalty_amount'] ?? 0 ?>" min="0">
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <input type="date" class="form-control form-control-sm completion-date text-center" style="width: 120px;"
                                                                name="completion_dates[<?= $wo['work_order_id'] ?>]"
-                                                               value="<?= $wo['completion_date'] ?>"
-                                                               required>
+                                                               value="<?= $wo['completion_date'] ?>" required>
                                                     </td>
-                                                    <td>
-                                                        <input type="number" step="0.01" class="form-control form-control-sm penalty-amount"
-                                                               name="penalty_amounts[<?= $wo['work_order_id'] ?>]"
-                                                               value="<?= $wo['penalty_amount'] ?? 0 ?>"
-                                                               min="0">
-                                                    </td>
-                                                    <td>
-                                                        <button type="button" class="btn btn-sm btn-danger remove-work-order">
-                                                            <i class="fas fa-times"></i>
+                                                    <td class="pe-2 text-center">
+                                                        <button type="button" class="btn btn-sm btn-light text-danger rounded-circle remove-work-order" style="width: 28px; height: 28px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="حذف">
+                                                            <i class="fas fa-trash-alt"></i>
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -337,62 +343,54 @@ ob_start();
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- الشريط الجانبي -->
-                    <div class="col-lg-4">
-                        <!-- ملخص المستخلص -->
-                        <div class="card shadow-sm mb-4">
-                            <div class="card-header bg-light">
-                                <h5 class="card-title mb-0">
-                                    <i class="fas fa-calculator text-warning me-2"></i>
-                                    ملخص المستخلص
-                                </h5>
+                        <!-- المرفقات -->
+                        <div class="card dash-card shadow-sm border-0 mb-4">
+                            <div class="card-body py-3">
+                                <h6 class="fw-bold text-dark mb-2"><i class="fas fa-paperclip text-primary me-2"></i>المرفقات</h6>
+                                <input type="file" class="form-control form-control-sm mb-1" id="attachments" name="attachments[]" multiple 
+                                       accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                                <small class="text-muted d-block" style="font-size: 0.75rem;">يمكنك رفع ملفات PDF, Word, Excel, أو صور</small>
+                                <div id="attachmentsList" class="mt-2"></div>
                             </div>
-                            <div class="card-body">
-                                <div class="row text-center">
-                                    <div class="col-12 mb-3">
-                                        <div class="border rounded p-3">
-                                            <h6 class="text-muted mb-1">إجمالي المبلغ</h6>
-                                            <h4 class="text-success mb-0" id="totalAmount">0.00 ريال</h4>
-                                        </div>
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="card dash-card shadow-sm border-0 mb-4 bg-primary-soft">
+                            <div class="card-body py-3 d-flex flex-column justify-content-center">
+                                <div class="row text-center g-2 align-items-center">
+                                    <div class="col-3 px-1">
+                                        <small class="text-muted fw-bold d-block mb-1" style="font-size: 0.7rem;">إجمالي المبالغ</small>
+                                        <h6 class="text-dark fw-bold mb-0" id="totalAmount">0.00 <span class="sar-icon text-muted" style="width:8px; height:8px;"><svg><use href="#sar-symbol"/></svg></span></h6>
                                     </div>
-                                    <div class="col-6 mb-3">
-                                        <div class="border rounded p-2">
-                                            <small class="text-muted">الضريبة (15%)</small>
-                                            <div class="fw-bold" id="taxAmount">0.00 ريال</div>
-                                        </div>
+                                    <div class="col-1 text-muted px-0"><i class="fas fa-plus fa-sm"></i></div>
+                                    <div class="col-3 px-1 border-start border-primary border-opacity-25">
+                                        <small class="text-muted fw-bold d-block mb-1" style="font-size: 0.7rem;">الضريبة (15%)</small>
+                                        <h6 class="text-dark fw-bold mb-0" id="taxAmount">0.00 <span class="sar-icon text-muted" style="width:8px; height:8px;"><svg><use href="#sar-symbol"/></svg></span></h6>
                                     </div>
-                                    <div class="col-6 mb-3">
-                                        <div class="border rounded p-2">
-                                            <small class="text-muted">إجمالي الغرامات</small>
-                                            <div class="fw-bold text-danger" id="totalPenalty">0.00 ريال</div>
-                                        </div>
+                                    <div class="col-1 text-muted px-0"><i class="fas fa-minus fa-sm"></i></div>
+                                    <div class="col-4 px-1 border-start border-primary border-opacity-25">
+                                        <small class="text-muted fw-bold d-block mb-1" style="font-size: 0.7rem;">الغرامات</small>
+                                        <h6 class="text-danger fw-bold mb-0" id="totalPenalty">0.00 <span class="sar-icon text-muted" style="width:8px; height:8px;"><svg><use href="#sar-symbol"/></svg></span></h6>
                                     </div>
-                                    <div class="col-12 mb-3">
-                                        <div class="border rounded p-3 bg-light">
-                                            <h6 class="text-muted mb-1">الصافي</h6>
-                                            <h4 class="text-primary mb-0" id="netAmount">0.00 ريال</h4>
-                                        </div>
+                                </div>
+                                <div class="row mt-3 text-center">
+                                    <div class="col-12 px-2 border-top border-primary border-opacity-25 pt-2">
+                                        <small class="text-muted fw-bold d-block mb-1">الصافي النهائي</small>
+                                        <h4 class="text-success fw-bold mb-0" id="netAmount">0.00 <span class="sar-icon-lg text-muted"><svg><use href="#sar-symbol"/></svg></span></h4>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- أزرار الحفظ -->
-                        <div class="card shadow-sm">
-                            <div class="card-body">
-                                <div class="d-grid gap-2">
-                                    <button type="submit" class="btn btn-warning btn-lg">
-                                        <i class="fas fa-save me-2"></i>
-                                        حفظ التعديلات
-                                    </button>
-                                    <a href="view.php?id=<?= $extractId ?>" class="btn btn-outline-secondary">
-                                        <i class="fas fa-times me-1"></i>
-                                        إلغاء
-                                    </a>
-                                </div>
-                            </div>
+                        <div class="d-grid gap-2 mt-3">
+                            <button type="submit" class="btn btn-primary rounded-pill py-2 fw-bold shadow-sm" name="action" value="save">
+                                <i class="fas fa-save me-2"></i>حفظ التعديلات
+                            </button>
+                            <a href="view.php?id=<?= $extractId ?>" class="btn btn-light rounded-pill py-2 fw-bold shadow-sm text-secondary">
+                                <i class="fas fa-times me-2"></i>إلغاء
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -409,12 +407,21 @@ ob_start();
 <script>
 $(document).ready(function() {
     // تهيئة DataTables
-    $('#availableWorkOrdersTable').DataTable({
-        language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/ar.json'
-        },
-        pageLength: 10,
+    var availableTable = $('#availableWorkOrdersTable').DataTable({
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/ar.json' },
+        pageLength: 50,
+        scrollY: "280px",
+        scrollCollapse: true,
+        info: false,
+        dom: 't',
         order: [[0, 'desc']]
+    });
+
+    // Custom search input functionality (numeric only)
+    $('#customSearchAvailable').on('input', function() {
+        var val = $(this).val().replace(/[^0-9]/g, '');
+        if ($(this).val() !== val) $(this).val(val);
+        availableTable.search(val).draw();
     });
 
     // مصفوفة أوامر العمل المختارة
@@ -514,24 +521,28 @@ $(document).ready(function() {
 
         const row = `
             <tr data-work-order-id="${wo.id}">
-                <td>${wo.number}</td>
-                <td>${wo.type}</td>
-                <td>${wo.value.toLocaleString('ar-SA', {minimumFractionDigits: 2})} ريال</td>
+                <td class="ps-2 fw-bold">${wo.number} <br><small class="text-muted fw-normal">${wo.type}</small></td>
                 <td>
-                    <input type="number" step="0.01" class="form-control form-control-sm extract-value"
-                           name="extract_values[${wo.id}]" value="${extractValue}" required>
+                    <div class="input-group input-group-sm" style="width: 140px;">
+                        <input type="number" step="0.01" class="form-control text-center fw-bold text-primary extract-value"
+                               name="extract_values[${wo.id}]" value="${extractValue}" required>
+                        <span class="input-group-text bg-light"><small>ريال</small></span>
+                    </div>
+                    <div class="mt-1 text-muted" style="font-size: 0.7rem;">الفعلي: ${parseFloat(wo.value).toLocaleString('ar-SA')}</div>
                 </td>
                 <td>
-                    <input type="date" class="form-control form-control-sm completion-date"
+                    <div class="input-group input-group-sm" style="width: 110px;">
+                        <input type="number" step="0.01" class="form-control text-center text-danger penalty-amount"
+                               name="penalty_amounts[${wo.id}]" value="${penaltyAmount}" min="0">
+                    </div>
+                </td>
+                <td>
+                    <input type="date" class="form-control form-control-sm completion-date text-center" style="width: 120px;"
                            name="completion_dates[${wo.id}]" value="${completionDate}" required>
                 </td>
-                <td>
-                    <input type="number" step="0.01" class="form-control form-control-sm penalty-amount"
-                           name="penalty_amounts[${wo.id}]" value="${penaltyAmount}" min="0">
-                </td>
-                <td>
-                    <button type="button" class="btn btn-sm btn-danger remove-work-order">
-                        <i class="fas fa-times"></i>
+                <td class="pe-2 text-center">
+                    <button type="button" class="btn btn-sm btn-light text-danger rounded-circle remove-work-order" style="width: 28px; height: 28px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="حذف">
+                        <i class="fas fa-trash-alt"></i>
                     </button>
                 </td>
             </tr>
@@ -555,7 +566,6 @@ $(document).ready(function() {
         }
     }
 
-    // تحديث الملخص
     function updateSummary() {
         let total = 0;
         let totalPenalty = 0;
@@ -573,11 +583,54 @@ $(document).ready(function() {
         const tax = total * 0.15;
         const net = total + tax - totalPenalty;
 
-        $('#totalAmount').text(total.toLocaleString('ar-SA', {minimumFractionDigits: 2}) + ' ريال');
-        $('#taxAmount').text(tax.toLocaleString('ar-SA', {minimumFractionDigits: 2}) + ' ريال');
-        $('#totalPenalty').text(totalPenalty.toLocaleString('ar-SA', {minimumFractionDigits: 2}) + ' ريال');
-        $('#netAmount').text(net.toLocaleString('ar-SA', {minimumFractionDigits: 2}) + ' ريال');
+        const formatter = new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        
+        $('#totalAmount').html(formatter.format(total) + ' <span class="sar-icon text-muted" style="width:8px; height:8px;"><svg><use href="#sar-symbol"/></svg></span>');
+        $('#taxAmount').html(formatter.format(tax) + ' <span class="sar-icon text-muted" style="width:8px; height:8px;"><svg><use href="#sar-symbol"/></svg></span>');
+        $('#totalPenalty').html(formatter.format(totalPenalty) + ' <span class="sar-icon text-muted" style="width:8px; height:8px;"><svg><use href="#sar-symbol"/></svg></span>');
+        $('#netAmount').html(formatter.format(net) + ' <span class="sar-icon-lg text-muted"><svg><use href="#sar-symbol"/></svg></span>');
     }
+
+    // التنقل بالأسهم بين حقول الجدول المختار للتحرك في جميع الاتجاهات
+    $(document).on('keydown', '#selectedWorkOrdersTable input', function(e) {
+        const keys = ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Enter'];
+        if (keys.includes(e.key)) {
+            // السماح بالتنقل داخل حقل التاريخ يمين/يسار بالأسهم
+            if (e.target.type === 'date' && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+                return;
+            }
+            
+            e.preventDefault();
+            const $this = $(this);
+            const $currentRow = $this.closest('tr');
+            const $inputsInRow = $currentRow.find('input:visible:not([disabled])');
+            const colIndex = $inputsInRow.index(this);
+            
+            let $targetInput = null;
+
+            if (e.key === 'ArrowDown' || e.key === 'Enter') {
+                const $targetRow = $currentRow.next('tr');
+                if ($targetRow.length) $targetInput = $targetRow.find('input:visible:not([disabled])').eq(colIndex);
+            } else if (e.key === 'ArrowUp') {
+                const $targetRow = $currentRow.prev('tr');
+                if ($targetRow.length) $targetInput = $targetRow.find('input:visible:not([disabled])').eq(colIndex);
+            } else if (e.key === 'ArrowLeft') {
+                if (colIndex < $inputsInRow.length - 1) $targetInput = $inputsInRow.eq(colIndex + 1);
+            } else if (e.key === 'ArrowRight') {
+                if (colIndex > 0) $targetInput = $inputsInRow.eq(colIndex - 1);
+            }
+            
+            if ($targetInput && $targetInput.length) {
+                $targetInput.focus();
+                if ($targetInput.attr('type') !== 'date') {
+                    $targetInput.select();
+                }
+            }
+        }
+    });
 
     // تقديم النموذج
     $('#editFinalRegularExtractForm').on('submit', function(e) {

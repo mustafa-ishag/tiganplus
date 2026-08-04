@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
@@ -53,6 +53,21 @@ try {
     if (!$workOrder) {
         throw new InvalidArgumentException('أمر العمل غير موجود');
     }
+
+    // جلب بنود أمر العمل (سابقاً بنود الإنتاجية)
+    $workItemsStmt = $db->prepare("
+        SELECT 
+            pwi.*,
+            cwi.item_number,
+            cwi.description as contract_description,
+            cwi.unit as contract_unit
+        FROM productivity_work_items pwi
+        LEFT JOIN contract_work_items cwi ON pwi.contract_work_item_id = cwi.id
+        WHERE pwi.work_order_id = ?
+        ORDER BY pwi.id ASC
+    ");
+    $workItemsStmt->execute([$workOrderId]);
+    $workItems = $workItemsStmt->fetchAll(PDO::FETCH_ASSOC);
 
     // جلب المرفقات
     $attachmentsStmt = $db->prepare("
@@ -659,8 +674,73 @@ try {
         </div>';
     }
 
-    $html .= '</div>
+        $html .= '</div>
             </div>
+        </div>
+    </div>';
+
+    // إضافة قسم بنود أمر العمل
+    $html .= '<div class="col-12">
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                <h6 class="card-title mb-0 text-primary fw-bold">
+                    <i class="fas fa-tasks me-2"></i>
+                    بنود أمر العمل (مؤشرات الإنجاز)
+                </h6>
+                <a href="' . path('productivity/work-items/index.php?work_order_id=' . $workOrderId) . '" class="btn btn-sm btn-primary">
+                    <i class="fas fa-external-link-alt me-1"></i>
+                    إدارة البنود والإنجاز اليومي
+                </a>
+            </div>
+            <div class="card-body p-0">';
+            
+    if (!empty($workItems)) {
+        $html .= '<div class="table-responsive">
+            <table class="table table-bordered table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>رقم البند</th>
+                        <th>الوصف</th>
+                        <th>الوحدة</th>
+                        <th>الكمية المستهدفة</th>
+                        <th>السعر</th>
+                        <th>الإجمالي</th>
+                        <th>الكمية المنجزة</th>
+                        <th>نسبة الإنجاز</th>
+                    </tr>
+                </thead>
+                <tbody>';
+        foreach ($workItems as $item) {
+            $progress = $item['target_quantity'] > 0 ? min(100, round(($item['actual_quantity_completed'] / $item['target_quantity']) * 100)) : 0;
+            $progressClass = $progress >= 100 ? 'success' : ($progress > 0 ? 'primary' : 'secondary');
+            
+            $html .= '<tr>
+                <td><strong>' . htmlspecialchars($item['item_number'] ?? 'غير محدد') . '</strong></td>
+                <td>' . htmlspecialchars($item['contract_description'] ?? $item['work_item_description']) . '</td>
+                <td>' . htmlspecialchars($item['contract_unit'] ?? $item['unit']) . '</td>
+                <td>' . number_format($item['target_quantity'], 2) . '</td>
+                <td>' . number_format($item['unit_price'], 2) . '</td>
+                <td>' . number_format($item['total_value'], 2) . '</td>
+                <td><span class="text-success fw-bold">' . number_format($item['actual_quantity_completed'], 2) . '</span></td>
+                <td style="width: 150px;">
+                    <div class="d-flex align-items-center">
+                        <span class="me-2 text-' . $progressClass . '">' . $progress . '%</span>
+                        <div class="progress flex-grow-1" style="height: 6px;">
+                            <div class="progress-bar bg-' . $progressClass . '" role="progressbar" style="width: ' . $progress . '%" aria-valuenow="' . $progress . '" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </td>
+            </tr>';
+        }
+        $html .= '</tbody></table></div>';
+    } else {
+        $html .= '<div class="text-center py-4 text-muted">
+            <i class="fas fa-clipboard-list fa-3x mb-3" style="opacity: 0.3;"></i>
+            <p class="mb-0">لا توجد بنود مرتبطة بأمر العمل هذا.</p>
+        </div>';
+    }
+
+    $html .= '</div>
         </div>
     </div>';
 

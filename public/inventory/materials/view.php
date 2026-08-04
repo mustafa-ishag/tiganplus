@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // بدء الجلسة إذا لم تكن نشطة
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -79,178 +79,146 @@ $currentPage = 'materials';
 ob_start();
 ?>
 
-<div class="container-fluid">
+<div class="container-fluid py-4">
     <!-- رأس الصفحة -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2 class="h3 mb-0">
-                <i class="fas fa-box me-2"></i>
-                تفاصيل المادة
-            </h2>
-            <p class="text-muted mb-0">عرض تفاصيل وإحصائيات المادة</p>
-        </div>
-        <div class="col-md-4 text-end">
-            <div class="btn-group" role="group">
-                <a href="index.php" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-right me-1"></i>
-                    العودة إلى القائمة
-                </a>
-                <?php if (hasPermission('inventory_materials_edit')): ?>
-                    <a href="edit.php?id=<?= $material['id'] ?>" class="btn btn-warning">
-                        <i class="fas fa-edit me-1"></i>
-                        تعديل
-                    </a>
-                <?php endif; ?>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center">
+            <div class="icon-circle bg-primary text-white shadow-sm me-3" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                <i class="fas fa-box-open"></i>
             </div>
+            <div>
+                <h4 class="fw-bold text-dark mb-1">تفاصيل المادة</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0 m-0 p-0 bg-transparent">
+                        <li class="breadcrumb-item"><a href="index.php" class="text-muted text-decoration-none">المواد</a></li>
+                        <li class="breadcrumb-item active text-primary fw-bold" aria-current="page"><?= htmlspecialchars($material['item_number']) ?></li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <div class="btn-group gap-2" role="group">
+            <a href="index.php" class="btn btn-white rounded-pill px-4 fw-bold text-muted border-0 shadow-sm hover-elevate">
+                <i class="fas fa-arrow-right me-2"></i>العودة للقائمة
+            </a>
+            <?php if (hasPermission('inventory_materials_edit')): ?>
+                <a href="edit.php?id=<?= $material['id'] ?>" class="btn btn-warning rounded-pill px-4 fw-bold shadow-sm hover-elevate text-dark">
+                    <i class="fas fa-edit me-2"></i>تعديل المادة
+                </a>
+            <?php endif; ?>
         </div>
     </div>
 
     <div class="row">
         <!-- معلومات المادة الأساسية -->
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-info-circle me-2"></i>
-                        معلومات المادة
-                    </h5>
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; overflow: hidden;">
+                <div class="card-header bg-white border-0 p-4 d-flex align-items-center justify-content-between" style="border-bottom: 1px solid rgba(0,0,0,0.03) !important;">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-primary-soft me-3" style="width: 40px; height: 40px;">
+                            <i class="fas fa-info-circle text-primary"></i>
+                        </div>
+                        <h6 class="mb-0 fw-bold text-dark" style="font-size: 1.1rem;">المعلومات الأساسية</h6>
+                    </div>
+                    <?php if ($material['is_active']): ?>
+                        <span class="badge bg-success-soft text-success rounded-pill px-3 py-2"><i class="fas fa-circle me-1" style="font-size: 8px;"></i>نشط</span>
+                    <?php else: ?>
+                        <span class="badge bg-secondary-soft text-secondary rounded-pill px-3 py-2"><i class="fas fa-circle me-1" style="font-size: 8px;"></i>غير نشط</span>
+                    <?php endif; ?>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <table class="table table-borderless">
-                                <tr>
-                                    <td class="fw-bold text-muted">رقم البند:</td>
-                                    <td><span
-                                            class="badge bg-primary fs-6"><?= htmlspecialchars($material['item_number']) ?></span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold text-muted">رقم المجموعة:</td>
-                                    <td><span
-                                            class="badge bg-secondary"><?= htmlspecialchars($material['group_number'] ?? '') ?></span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold text-muted">الوصف:</td>
-                                    <td><strong><?= htmlspecialchars($material['description'] ?? '') ?></strong></td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold text-muted">الوحدة:</td>
-                                    <td><?= htmlspecialchars($material['unit'] ?? '') ?></td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold text-muted">المخزون الحالي:</td>
-                                    <td>
-                                        <span
-                                            class="fw-bold fs-5 <?= $isOutOfStock ? 'text-danger' : ($isLowStock ? 'text-warning' : 'text-success') ?>">
-                                            <?= formatNumber($material['current_stock'], 3) ?>
-                                            <?= htmlspecialchars($material['unit'] ?? '') ?>
-                                        </span>
-                                        <?php if ($isLowStock): ?>
-                                            <i class="fas fa-exclamation-triangle text-warning ms-1"
-                                                title="مخزون منخفض"></i>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold text-muted">الحد الأدنى:</td>
-                                    <td><?= formatNumber($material['minimum_stock'], 3) ?>
-                                        <?= htmlspecialchars($material['unit'] ?? '') ?>
-                                    </td>
-                                </tr>
+                <div class="card-body p-4">
+                    <!-- الوصف (Full Width) -->
+                    <div class="p-4 bg-light rounded-4 mb-4 border border-white" style="box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                        <span class="text-muted small fw-bold d-block mb-2"><i class="fas fa-align-right me-2"></i>الوصف</span>
+                        <h5 class="text-dark fw-bold mb-0 lh-base"><?= htmlspecialchars($material['description'] ?? '') ?></h5>
+                    </div>
 
-                            </table>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-4 h-100 border border-white" style="box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                                <span class="text-muted small fw-bold d-block mb-2">رقم البند</span>
+                                <span class="badge bg-white text-primary shadow-sm rounded-pill px-3 py-2 fs-6 border border-primary border-opacity-10 font-monospace"><?= htmlspecialchars($material['item_number']) ?></span>
+                            </div>
                         </div>
                         <div class="col-md-6">
-                            <table class="table table-borderless">
-                                <tr>
-                                    <td class="fw-bold text-muted">الحد الأقصى:</td>
-                                    <td>
-                                        <?php if ($material['maximum_stock'] > 0): ?>
-                                            <?= formatNumber($material['maximum_stock'], 3) ?>
-                                            <?= htmlspecialchars($material['unit'] ?? '') ?>
-                                        <?php else: ?>
-                                            <span class="text-muted">غير محدد</span>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td class="fw-bold text-muted">الحالة:</td>
-                                    <td>
-                                        <?php if ($material['is_active']): ?>
-                                            <span class="badge bg-success">نشط</span>
-                                        <?php else: ?>
-                                            <span class="badge bg-secondary">غير نشط</span>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold text-muted">تاريخ الإنشاء:</td>
-                                    <td><small class="text-muted"><?= formatDate($material['created_at']) ?></small>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold text-muted">آخر تحديث:</td>
-                                    <td><small class="text-muted"><?= formatDate($material['updated_at']) ?></small>
-                                    </td>
-                                </tr>
-                            </table>
+                            <div class="p-3 bg-light rounded-4 h-100 border border-white" style="box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                                <span class="text-muted small fw-bold d-block mb-2">رقم المجموعة</span>
+                                <?php if ($material['group_number']): ?>
+                                    <span class="badge bg-white text-dark shadow-sm rounded-pill px-3 py-2 fs-6 font-monospace border border-dark border-opacity-10"><?= htmlspecialchars($material['group_number']) ?></span>
+                                <?php else: ?>
+                                    <span class="text-muted small">غير محدد</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-4 h-100 border border-white" style="box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                                <span class="text-muted small fw-bold d-block mb-2">الوحدة القياسية</span>
+                                <div class="d-flex align-items-center mt-2">
+                                    <div class="icon-circle bg-white text-secondary shadow-sm me-3" style="width: 32px; height: 32px;"><i class="fas fa-balance-scale"></i></div>
+                                    <span class="fw-bold text-dark fs-5"><?= htmlspecialchars($material['unit'] ?? '') ?></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-4 h-100 border border-white" style="box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                                <span class="text-muted small fw-bold d-block mb-2">تاريخ الإنشاء / التحديث</span>
+                                <div class="small text-dark fw-bold mb-2 mt-2"><i class="far fa-calendar-alt text-muted me-2"></i><?= formatDate($material['created_at']) ?></div>
+                                <div class="small text-muted"><i class="far fa-clock text-muted me-2"></i><?= formatDate($material['updated_at']) ?></div>
+                            </div>
                         </div>
                     </div>
 
                     <?php if (isset($material['notes']) && $material['notes']): ?>
-                        <div class="mt-3">
-                            <h6 class="text-muted">ملاحظات:</h6>
-                            <div class="alert alert-light">
+                        <div class="p-4 rounded-4" style="background: rgba(13, 110, 253, 0.03); border: 1px dashed rgba(13, 110, 253, 0.2);">
+                            <h6 class="text-primary fw-bold mb-2"><i class="fas fa-sticky-note me-2"></i>ملاحظات إضافية:</h6>
+                            <div class="text-muted small lh-lg">
                                 <?= nl2br(htmlspecialchars($material['notes'])) ?>
                             </div>
                         </div>
                     <?php endif; ?>
-
-
                 </div>
             </div>
 
             <!-- المعاملات الأخيرة -->
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0">
-                        <i class="fas fa-history me-2"></i>
-                        المعاملات الأخيرة
-                    </h6>
+            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                <div class="card-header bg-white border-0 p-4 d-flex align-items-center justify-content-between" style="border-bottom: 1px solid rgba(0,0,0,0.03) !important;">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-info-soft me-3" style="width: 40px; height: 40px;">
+                            <i class="fas fa-history text-info"></i>
+                        </div>
+                        <h6 class="mb-0 fw-bold text-dark" style="font-size: 1.1rem;">المعاملات الأخيرة للمادة</h6>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     <?php if (empty($recentTransactions)): ?>
-                        <div class="text-center py-4">
-                            <i class="fas fa-history fa-2x text-muted mb-2"></i>
-                            <p class="text-muted mb-0">لا توجد معاملات لهذه المادة</p>
+                        <div class="text-center py-5">
+                            <div class="icon-circle bg-secondary-soft mx-auto mb-3" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                <i class="fas fa-receipt text-secondary"></i>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-1">لا توجد معاملات</h6>
+                            <p class="text-muted mb-0 small">لم يتم إجراء أي حركة على هذه المادة حتى الآن.</p>
                         </div>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
+                            <table class="table table-hover align-middle mb-0 border-0">
+                                <thead style="background-color: #f8fafc;">
                                     <tr>
-                                        <th>رقم المعاملة</th>
-                                        <th>النوع</th>
-                                        <th>التاريخ</th>
-                                        <th>الكمية</th>
-                                        <th>الحالة</th>
+                                        <th class="border-0 fw-bold text-muted ps-4 py-3" style="font-size: 0.85rem;">رقم المعاملة</th>
+                                        <th class="border-0 fw-bold text-muted py-3" style="font-size: 0.85rem;">النوع</th>
+                                        <th class="border-0 fw-bold text-muted py-3" style="font-size: 0.85rem;">التاريخ</th>
+                                        <th class="border-0 fw-bold text-muted py-3" style="font-size: 0.85rem;">الكمية</th>
+                                        <th class="border-0 fw-bold text-muted pe-4 py-3" style="font-size: 0.85rem;">الحالة</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach ($recentTransactions as $transaction): ?>
-                                        <tr>
-                                            <td>
+                                        <tr style="border-bottom: 1px solid rgba(0,0,0,0.03);">
+                                            <td class="ps-4 py-3">
                                                 <a href="../transactions/view.php?id=<?= $transaction['id'] ?>"
-                                                    class="font-monospace text-decoration-none text-primary fw-semibold"
-                                                    title="عرض تفاصيل المعاملة">
+                                                    class="font-monospace text-decoration-none text-primary fw-bold bg-primary-soft px-3 py-1 rounded-pill">
                                                     <?= htmlspecialchars($transaction['transaction_number']) ?>
-                                                    <i class="fas fa-external-link-alt ms-1" style="font-size:0.7rem;"></i>
                                                 </a>
                                             </td>
-                                            <td>
+                                            <td class="py-3">
                                                 <?php
                                                 $typeLabels = [
                                                     'incoming' => ['وارد', 'success'],
@@ -260,16 +228,16 @@ ob_start();
                                                     'initial_balance' => ['رصيد افتتاحي', 'primary'],
                                                     'loan_out' => ['سلفة صادرة', 'dark'],
                                                     'loan_in' => ['سلفة واردة', 'secondary'],
-                                                    'loan_return' => ['إرجاع سلفة', 'light'],
+                                                    'loan_return' => ['إرجاع سلفة', 'dark'],
                                                     'stocktake_adjustment' => ['تسوية جرد', 'dark']
                                                 ];
                                                 $typeInfo = $typeLabels[$transaction['transaction_type']] ?? ['غير معروف', 'secondary'];
                                                 ?>
-                                                <span class="badge bg-<?= $typeInfo[1] ?>"><?= $typeInfo[0] ?></span>
+                                                <span class="badge bg-<?= $typeInfo[1] ?>-soft text-<?= $typeInfo[1] ?> rounded-pill px-3 py-2"><i class="fas fa-circle me-1" style="font-size: 6px;"></i><?= $typeInfo[0] ?></span>
                                             </td>
-                                            <td><small><?= formatDateTime($transaction['created_at']) ?></small></td>
-                                            <td><?= formatNumber($transaction['quantity'], 3) ?></td>
-                                            <td>
+                                            <td class="py-3"><span class="text-muted small fw-bold"><i class="far fa-clock me-2"></i><?= formatDateTime($transaction['created_at']) ?></span></td>
+                                            <td class="py-3"><span class="fw-bold fs-6 text-dark"><?= formatNumber($transaction['quantity'], 3) ?></span></td>
+                                            <td class="pe-4 py-3">
                                                 <?php
                                                 $statusLabels = [
                                                     'pending' => ['معلق', 'warning'],
@@ -278,7 +246,7 @@ ob_start();
                                                 ];
                                                 $statusInfo = $statusLabels[$transaction['status']] ?? ['غير معروف', 'secondary'];
                                                 ?>
-                                                <span class="badge bg-<?= $statusInfo[1] ?>"><?= $statusInfo[0] ?></span>
+                                                <span class="badge bg-white shadow-sm border border-<?= $statusInfo[1] ?> border-opacity-25 text-<?= $statusInfo[1] ?> rounded-pill px-3 py-2"><?= $statusInfo[0] ?></span>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -291,45 +259,50 @@ ob_start();
         </div>
 
         <!-- الشريط الجانبي -->
-        <div class="col-md-4">
+        <div class="col-lg-4">
             <!-- حالة المخزون -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h6 class="mb-0">
-                        <i class="fas fa-chart-bar me-2"></i>
-                        حالة المخزون
-                    </h6>
-                </div>
-                <div class="card-body">
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; overflow: hidden; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);">
+                <div class="card-body p-4 p-xl-5 text-center">
+                    <div class="icon-circle mx-auto mb-4 shadow-sm <?= $isOutOfStock ? 'bg-danger text-white' : ($isLowStock ? 'bg-warning text-white' : 'bg-success text-white') ?>" style="width: 72px; height: 72px; font-size: 1.75rem;">
+                        <i class="fas <?= $isOutOfStock ? 'fa-times' : ($isLowStock ? 'fa-exclamation' : 'fa-check') ?>"></i>
+                    </div>
+                    
+                    <h5 class="fw-bold text-dark mb-1">حالة المخزون</h5>
                     <?php if ($isOutOfStock): ?>
-                        <div class="alert alert-danger">
-                            <i class="fas fa-times-circle me-2"></i>
-                            <strong>نفد المخزون!</strong><br>
-                            <small>المادة غير متوفرة حالياً</small>
-                        </div>
+                        <p class="text-danger fw-bold small mb-4">نفد المخزون بالكامل!</p>
                     <?php elseif ($isLowStock): ?>
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>مخزون منخفض!</strong><br>
-                            <small>المخزون أقل من الحد الأدنى المطلوب</small>
-                        </div>
+                        <p class="text-warning fw-bold small mb-4">المخزون منخفض ويحتاج لتعويض</p>
                     <?php else: ?>
-                        <div class="alert alert-success">
-                            <i class="fas fa-check-circle me-2"></i>
-                            <strong>المخزون جيد</strong><br>
-                            <small>المخزون أعلى من الحد الأدنى</small>
-                        </div>
+                        <p class="text-success fw-bold small mb-4">المخزون في مستويات جيدة</p>
                     <?php endif; ?>
 
-                    <!-- مؤشر المخزون -->
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <small class="text-muted">المخزون الحالي:
-                                <?= formatNumber($material['current_stock'], 3) ?></small>
-                            <small class="text-muted">الحد الأقصى:
-                                <?= $material['maximum_stock'] > 0 ? formatNumber($material['maximum_stock'], 3) : '∞' ?>
-                            </small>
+                    <div class="display-4 fw-bold mb-2 <?= $isOutOfStock ? 'text-danger' : ($isLowStock ? 'text-warning' : 'text-success') ?>" style="letter-spacing: -1px;">
+                        <?= formatNumber($material['current_stock'], 3) ?>
+                    </div>
+                    <div class="text-muted small fw-bold mb-4 border-bottom pb-4">الكمية الحالية المتوفرة (<?= htmlspecialchars($material['unit'] ?? '') ?>)</div>
+
+                    <!-- إحصائيات سريعة -->
+                    <div class="row text-center g-3 mb-4">
+                        <div class="col-6">
+                            <div class="p-3 bg-white rounded-4 shadow-sm border border-light h-100">
+                                <div class="fs-4 fw-bold text-dark mb-1">
+                                    <?= formatNumber($material['minimum_stock'], 0) ?>
+                                </div>
+                                <span class="text-muted small fw-bold d-block">الحد الأدنى</span>
+                            </div>
                         </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-white rounded-4 shadow-sm border border-light h-100">
+                                <div class="fs-4 fw-bold text-dark mb-1">
+                                    <?= $material['maximum_stock'] > 0 ? formatNumber($material['maximum_stock'], 0) : '∞' ?>
+                                </div>
+                                <span class="text-muted small fw-bold d-block">الحد الأقصى</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- شريط التقدم -->
+                    <div class="text-start">
                         <?php
                         $percentage = 0;
                         if ($material['maximum_stock'] > 0) {
@@ -345,90 +318,68 @@ ob_start();
                             $progressClass = 'bg-warning';
                         }
                         ?>
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar <?= $progressClass ?>" style="width: <?= $percentage ?>%"></div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <small class="text-muted fw-bold">نسبة الامتلاء</small>
+                            <small class="fw-bold <?= $progressClass === 'bg-success' ? 'text-success' : ($progressClass === 'bg-warning' ? 'text-warning' : 'text-danger') ?>"><?= round($percentage) ?>%</small>
                         </div>
-                    </div>
-
-                    <!-- إحصائيات سريعة -->
-                    <div class="row text-center">
-                        <div class="col-4">
-                            <div class="border-end">
-                                <div class="fs-6 fw-bold text-primary">
-                                    <?= formatNumber($material['current_stock'], 0) ?>
-                                </div>
-                                <small class="text-muted">الحالي</small>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="border-end">
-                                <div class="fs-6 fw-bold text-warning">
-                                    <?= formatNumber($material['minimum_stock'], 0) ?>
-                                </div>
-                                <small class="text-muted">الأدنى</small>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="fs-6 fw-bold text-success">
-                                <?= $material['maximum_stock'] > 0 ? formatNumber($material['maximum_stock'], 0) : '∞' ?>
-                            </div>
-                            <small class="text-muted">الأقصى</small>
+                        <div class="progress rounded-pill bg-light shadow-inner" style="height: 12px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);">
+                            <div class="progress-bar <?= $progressClass ?> rounded-pill" style="width: <?= $percentage ?>%"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- الباركود -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h6 class="mb-0">
-                        <i class="fas fa-barcode me-2"></i>
-                        باركود المادة
-                    </h6>
-                </div>
-                <div class="card-body text-center">
-                    <svg id="barcodeDisplay"></svg>
-                    <div class="mt-2">
-                        <small class="text-muted d-block mb-2">رقم البند: <strong><?= htmlspecialchars($material['item_number']) ?></strong></small>
-                        <button class="btn btn-outline-primary btn-sm" onclick="printBarcode()">
-                            <i class="fas fa-print me-1"></i> طباعة الملصق
-                        </button>
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+                <div class="card-header bg-white border-0 p-4 d-flex align-items-center" style="border-bottom: 1px solid rgba(0,0,0,0.03) !important;">
+                    <div class="icon-circle bg-secondary-soft me-3" style="width: 40px; height: 40px;">
+                        <i class="fas fa-barcode text-secondary"></i>
                     </div>
+                    <h6 class="mb-0 fw-bold text-dark" style="font-size: 1.1rem;">باركود المادة</h6>
+                </div>
+                <div class="card-body p-4 text-center">
+                    <div class="p-4 bg-light rounded-4 mb-4 d-inline-block shadow-sm w-100 overflow-hidden border border-white" style="box-shadow: inset 0 2px 4px rgba(0,0,0,0.02) !important;">
+                        <svg id="barcodeDisplay" style="max-width: 100%; height: auto;"></svg>
+                    </div>
+                    <button class="btn btn-outline-primary rounded-pill px-4 fw-bold w-100 py-2 hover-elevate border-2" onclick="printBarcode()">
+                        <i class="fas fa-print me-2"></i>طباعة الملصق
+                    </button>
                 </div>
             </div>
 
             <!-- إجراءات سريعة -->
             <?php if (hasPermission('inventory_materials_edit')): ?>
-                <div class="card">
-                    <div class="card-header">
-                        <h6 class="mb-0">
-                            <i class="fas fa-tools me-2"></i>
-                            إجراءات سريعة
-                        </h6>
+                <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                    <div class="card-header bg-white border-0 p-4 d-flex align-items-center" style="border-bottom: 1px solid rgba(0,0,0,0.03) !important;">
+                        <div class="icon-circle bg-success-soft me-3" style="width: 40px; height: 40px;">
+                            <i class="fas fa-bolt text-success"></i>
+                        </div>
+                        <h6 class="mb-0 fw-bold text-dark" style="font-size: 1.1rem;">إجراءات سريعة</h6>
                     </div>
-                    <div class="card-body">
-                        <div class="d-grid gap-2">
+                    <div class="card-body p-4">
+                        <div class="d-grid gap-3">
                             <a href="../transactions/create.php?type=incoming&material_id=<?= $material['id'] ?>"
-                                class="btn btn-success btn-sm">
-                                <i class="fas fa-plus me-1"></i>
-                                إضافة وارد
+                                class="btn btn-success rounded-pill fw-bold shadow-sm py-3 hover-elevate d-flex justify-content-between align-items-center px-4">
+                                <span><i class="fas fa-plus-circle me-2"></i>إضافة وارد جديد</span>
+                                <i class="fas fa-chevron-left opacity-50"></i>
                             </a>
                             <a href="../transactions/create.php?type=outgoing&material_id=<?= $material['id'] ?>"
-                                class="btn btn-danger btn-sm">
-                                <i class="fas fa-minus me-1"></i>
-                                إضافة صادر
+                                class="btn btn-danger rounded-pill fw-bold shadow-sm py-3 hover-elevate d-flex justify-content-between align-items-center px-4">
+                                <span><i class="fas fa-minus-circle me-2"></i>إضافة صادر جديد</span>
+                                <i class="fas fa-chevron-left opacity-50"></i>
                             </a>
+                            
+                            <hr class="text-muted my-2 opacity-25">
+                            
                             <?php if ($material['is_active']): ?>
-                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                <button type="button" class="btn btn-light text-danger rounded-pill fw-bold py-2 hover-elevate border-0"
                                     onclick="deactivateMaterial(<?= $material['id'] ?>)">
-                                    <i class="fas fa-ban me-1"></i>
-                                    إلغاء تفعيل
+                                    <i class="fas fa-ban me-2"></i>إلغاء التفعيل
                                 </button>
                             <?php else: ?>
-                                <button type="button" class="btn btn-outline-success btn-sm"
+                                <button type="button" class="btn btn-light text-success rounded-pill fw-bold py-2 hover-elevate border-0"
                                     onclick="activateMaterial(<?= $material['id'] ?>)">
-                                    <i class="fas fa-check me-1"></i>
-                                    تفعيل
+                                    <i class="fas fa-check-circle me-2"></i>إعادة التفعيل
                                 </button>
                             <?php endif; ?>
                         </div>

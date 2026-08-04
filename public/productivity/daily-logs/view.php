@@ -71,7 +71,7 @@ $sql = "
     JOIN work_orders wo ON pwi.work_order_id = wo.id
     JOIN branches b ON wo.branch_id = b.id
     LEFT JOIN work_order_types wot ON wo.work_order_type_id = wot.id
-    LEFT JOIN work_items wi ON pwi.work_item_id = wi.id
+    LEFT JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
     LEFT JOIN users u ON pdl.created_by = u.id
     WHERE pdl.id = ?
 ";

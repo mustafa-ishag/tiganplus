@@ -50,17 +50,17 @@ $sql = "
         b.name as branch_name,
         wot.type_code,
         wot.description as work_order_type_name,
-        wi.item_number,
-        wi.description as original_description,
-        wi.unit as original_unit,
-        -- استخدام وصف البند من productivity_work_items أولاً، ثم من work_items كبديل
-        COALESCE(pwi.work_item_description, wi.description) as work_item_description,
-        COALESCE(pwi.unit, wi.unit) as unit
+        cwi.item_number,
+        cwi.description as original_description,
+        cwi.unit as original_unit,
+        -- استخدام وصف البند من productivity_work_items أولاً، ثم من contract_work_items كبديل
+        COALESCE(pwi.work_item_description, cwi.description) as work_item_description,
+        COALESCE(pwi.unit, cwi.unit) as unit
     FROM productivity_work_items pwi
     JOIN work_orders wo ON pwi.work_order_id = wo.id
     JOIN branches b ON wo.branch_id = b.id
     LEFT JOIN work_order_types wot ON wo.work_order_type_id = wot.id
-    LEFT JOIN work_items wi ON pwi.work_item_id = wi.id
+    LEFT JOIN contract_work_items cwi ON pwi.contract_work_item_id = cwi.id
     WHERE pwi.id = ?
 ";
 
@@ -174,7 +174,7 @@ $deptText = $item['department'] == 'connections' ? 'التوصيلات' : 'ال�
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="<?= path('productivity/index.php') ?>">نظام الإنتاجية</a></li>
-                <li class="breadcrumb-item"><a href="<?= path('productivity/work-orders/index.php') ?>">أوامر العمل</a></li>
+                <li class="breadcrumb-item"><a href="<?= path('work-orders/index.php') ?>">أوامر العمل</a></li>
                 <li class="breadcrumb-item"><a href="<?= path('productivity/work-items/index.php?work_order_id=' . $item['work_order_id']) ?>">بنود الإنتاجية</a></li>
                 <li class="breadcrumb-item"><a href="<?= path('productivity/work-items/view.php?id=' . $item['id']) ?>">تفاصيل البند</a></li>
                 <li class="breadcrumb-item active">تعديل البند</li>

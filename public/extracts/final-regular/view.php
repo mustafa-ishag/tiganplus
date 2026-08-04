@@ -96,6 +96,28 @@ try {
     $stmt->execute([$extract_id]);
     $workOrders = $stmt->fetchAll();
 
+    // جلب مراحل الاعتماد من قاعدة البيانات
+    $approvalStagesQuery = "SELECT * FROM approval_stages WHERE is_active = 1 ORDER BY stage_order";
+    $approvalStagesFromDB = $db->query($approvalStagesQuery)->fetchAll();
+
+    // جلب بيانات الاعتمادات المبسطة
+    $approvalsQuery = "
+        SELECT
+            fre.approval_stage,
+            DATE(fre.disbursed_date) as disbursement_date,
+            fre.disbursed_by as approved_by,
+            fre.disbursed_date as approval_date,
+            fre.disbursed_notes as approval_notes,
+            u.full_name as approved_by_name
+        FROM final_regular_extracts fre
+        LEFT JOIN users u ON fre.disbursed_by = u.id
+        WHERE fre.id = ?
+    ";
+
+    $stmt = $db->prepare($approvalsQuery);
+    $stmt->execute([$extract_id]);
+    $approvals = $stmt->fetch();
+
 } catch (Exception $e) {
     echo "خطأ في جلب البيانات: " . $e->getMessage();
     exit();
@@ -110,10 +132,8 @@ try {
         ORDER BY stage_order
     ")->fetchAll();
 
-    $stageNames = ['مسودة']; // للحالة NULL
-    $approvalStages = [
-        ['key' => null, 'name' => 'مسودة', 'icon' => 'fas fa-edit', 'color' => 'secondary']
-    ];
+    $stageNames = [];
+    $approvalStages = [];
 
     $stageIcons = [
         'technical_support' => 'fas fa-tools',
@@ -190,295 +210,259 @@ $breadcrumbs = [
 ob_start();
 ?>
 
+<style>
+/* Modern Dash Card Style */
+.dash-card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.dash-card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+.bg-primary-soft { background-color: rgba(13, 110, 253, 0.05) !important; border: 1px solid rgba(13, 110, 253, 0.1); }
+.bg-success-soft { background-color: rgba(25, 135, 84, 0.05) !important; border: 1px solid rgba(25, 135, 84, 0.1); }
+.bg-warning-soft { background-color: rgba(255, 193, 7, 0.05) !important; border: 1px solid rgba(255, 193, 7, 0.1); }
+.bg-danger-soft { background-color: rgba(220, 53, 69, 0.05) !important; border: 1px solid rgba(220, 53, 69, 0.1); }
+.bg-info-soft { background-color: rgba(13, 202, 240, 0.05) !important; }
+.bg-secondary-soft { background-color: rgba(108, 117, 125, 0.05) !important; }
+.bg-dark-soft { background-color: rgba(33, 37, 41, 0.05) !important; }
+.icon-circle {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+}
+.table-sm th, .table-sm td { padding: 0.75rem 0.5rem; }
+</style>
+
+<!-- Container for Bootstrap Alerts (Replaces SweetAlert) -->
+<div id="alertContainer" class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050; width: 100%; max-width: 600px;"></div>
+
 <div class="container-fluid px-4">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-0 text-success">
-                <i class="fas fa-file-invoice text-success me-2"></i>
-                تفاصيل المستخلص النهائي العادي
-            </h1>
-            <p class="text-muted mb-0">عرض تفاصيل المستخلص رقم: <?php echo htmlspecialchars($extract['extract_number']); ?></p>
+            <div class="d-flex align-items-center mb-1">
+                <h5 class="fw-bold text-dark mb-0 me-3">
+                    <i class="fas fa-file-invoice text-primary me-2"></i>عرض المستخلص النهائي العادي
+                </h5>
+                <?php
+                // تحديد حالة المستخلص
+                $currentStageColor = 'secondary';
+                $currentStageName = 'مسودة';
+                foreach ($approvalStages as $stage) {
+                    if ($extract['approval_stage'] === $stage['key']) {
+                        $currentStageColor = $stage['color'];
+                        $currentStageName = $stage['name'];
+                        break;
+                    }
+                }
+                ?>
+                <span class="badge bg-<?php echo $currentStageColor; ?>-soft text-<?php echo $currentStageColor; ?> border rounded-pill px-3 py-1">
+                    <i class="fas fa-circle me-1" style="font-size: 0.5rem; vertical-align: middle;"></i> <?php echo $currentStageName; ?>
+                </span>
+            </div>
+            <p class="text-muted mb-0 small">رقم المستخلص: <span class="fw-bold text-dark"><?php echo htmlspecialchars($extract['extract_number']); ?></span></p>
         </div>
-        <div>
-            <a href="export-invoice.php?id=<?php echo $extract_id; ?>" class="btn btn-success me-2" target="_blank">
-                <i class="fas fa-file-excel me-1"></i>
-                تصدير الفاتورة الضريبية
-            </a>
-            <a href="index.php" class="btn btn-outline-secondary me-2">
-                <i class="fas fa-arrow-left me-1"></i>
-                العودة للقائمة
+        <div class="d-flex gap-2">
+            <?php if (!isset($extract['qoyod_status']) || $extract['qoyod_status'] !== 'synced'): ?>
+                <button onclick="syncWithQoyod(<?php echo $extract['id']; ?>, 'final_regular')" class="btn btn-info rounded-pill px-3 shadow-sm btn-sm text-white" id="btnSyncQoyod">
+                    <i class="fas fa-cloud-upload-alt me-1"></i> رفع لقيود
+                </button>
+            <?php else: ?>
+                <span class="badge bg-success-soft text-success border rounded-pill px-3 py-2 d-flex align-items-center" style="font-size: 0.85rem;">
+                    <i class="fas fa-check-circle me-1"></i> متزامن مع قيود (<?php echo htmlspecialchars($extract['qoyod_invoice_reference'] ?? 'تم'); ?>)
+                </span>
+            <?php endif; ?>
+            <a href="export-invoice.php?id=<?php echo $extract_id; ?>" class="btn btn-success rounded-pill px-3 shadow-sm btn-sm" download>
+                <i class="fas fa-file-excel me-1"></i> تصدير الفاتورة
             </a>
             <?php if ($extract['approval_stage'] === null): ?>
-            <a href="create.php?id=<?php echo $extract['id']; ?>" class="btn btn-warning">
-                <i class="fas fa-edit me-1"></i>
-                تعديل
+            <a href="create.php?id=<?php echo $extract['id']; ?>" class="btn btn-warning rounded-pill px-3 shadow-sm btn-sm">
+                <i class="fas fa-edit me-1"></i> تعديل
             </a>
             <?php endif; ?>
+            <a href="index.php" class="btn btn-light rounded-pill px-3 shadow-sm text-secondary fw-bold border-0 btn-sm">
+                <i class="fas fa-arrow-right me-2"></i>العودة
+            </a>
+        </div>
+    </div>
+
+    <!-- Financial Summary (Horizontal) -->
+    <div class="card dash-card bg-primary-soft mb-4 border-0">
+        <div class="card-body py-3 d-flex flex-column justify-content-center">
+            <div class="row text-center g-2 align-items-center">
+                <div class="col-3 px-3">
+                    <small class="text-muted fw-bold d-block mb-1">المبلغ الإجمالي</small>
+                    <h4 class="text-dark fw-bold mb-0"><?php echo number_format($extract['total_amount'], 2); ?> <span class="sar-icon-lg text-muted"><svg><use href="#sar-symbol"/></svg></span></h4>
+                </div>
+                <div class="col-3 border-start border-primary border-opacity-25 px-3">
+                    <small class="text-muted fw-bold d-block mb-1">مبلغ الضريبة (<?php echo number_format($extract['tax_rate'], 0); ?>%)</small>
+                    <h4 class="text-dark fw-bold mb-0"><?php echo number_format($extract['tax_amount'], 2); ?> <span class="sar-icon-lg text-muted"><svg><use href="#sar-symbol"/></svg></span></h4>
+                </div>
+                <div class="col-3 border-start border-end border-danger border-opacity-25 px-3">
+                    <small class="text-muted fw-bold d-block mb-1 text-danger">إجمالي الغرامات</small>
+                    <h4 class="text-danger fw-bold mb-0"><?php echo number_format($extract['total_penalty_amount'], 2); ?> <span class="sar-icon-lg text-danger opacity-75"><svg><use href="#sar-symbol"/></svg></span></h4>
+                </div>
+                <div class="col-3 px-3">
+                    <small class="text-muted fw-bold d-block mb-1">الصافي (بدون ضريبة)</small>
+                    <h3 class="text-success fw-bold mb-0"><?php echo number_format($extract['net_amount'], 2); ?> <span class="sar-icon-lg text-success opacity-75"><svg><use href="#sar-symbol"/></svg></span></h3>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Extract Details Card -->
-    <div class="row mb-4">
-        <div class="col-lg-8">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-success">
-                        <i class="fas fa-info-circle me-2"></i>
-                        معلومات المستخلص
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <table class="table table-borderless">
-                                <tr>
-                                    <td class="fw-bold">رقم المستخلص:</td>
-                                    <td><span class="badge bg-success"><?php echo htmlspecialchars($extract['extract_number']); ?></span></td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">رقم العقد:</td>
-                                    <td>
-                                        <?php if (!empty($extract['contract_number'])): ?>
-                                            <span class="badge bg-dark"><?php echo htmlspecialchars($extract['contract_number']); ?></span>
-                                        <?php else: ?>
-                                            <span class="text-muted">لا يوجد</span>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">رقم PO:</td>
-                                    <td>
-                                        <?php if (!empty($extract['po_number'])): ?>
-                                            <span class="badge bg-info"><?php echo htmlspecialchars($extract['po_number']); ?></span>
-                                        <?php else: ?>
-                                            <span class="text-muted">لا يوجد</span>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">رقم صحيفة الإدخال:</td>
-                                    <td>
-                                        <?php if (!empty($extract['entry_sheet_number'])): ?>
-                                            <span class="badge bg-secondary"><?php echo htmlspecialchars($extract['entry_sheet_number']); ?></span>
-                                        <?php else: ?>
-                                            <span class="text-muted">لا يوجد</span>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">رقم الفاتورة:</td>
-                                    <td><?php echo htmlspecialchars($extract['invoice_number'] ?? 'لا يوجد'); ?></td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">الفرع:</td>
-                                    <td><?php echo htmlspecialchars($extract['branch_name']); ?></td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">تاريخ المستخلص:</td>
-                                    <td><?php echo date('Y-m-d', strtotime($extract['extract_date'])); ?></td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">تاريخ التقديم:</td>
-                                    <td>
-                                        <?php if ($extract['submission_date']): ?>
-                                            <?php echo date('Y-m-d', strtotime($extract['submission_date'])); ?>
-                                        <?php else: ?>
-                                            <span class="text-muted">لم يتم التقديم</span>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div class="col-md-6">
-                            <table class="table table-borderless">
-                                <tr>
-                                    <td class="fw-bold">المبلغ الإجمالي:</td>
-                                    <td><?php echo number_format($extract['total_amount'], 2); ?> ريال</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">الضريبة (<?php echo $extract['tax_rate']; ?>%):</td>
-                                    <td><?php echo number_format($extract['tax_amount'], 2); ?> ريال</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">إجمالي الغرامات:</td>
-                                    <td class="text-danger"><?php echo number_format($extract['total_penalty_amount'], 2); ?> ريال</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">المبلغ الصافي:</td>
-                                    <td class="fw-bold text-success"><?php echo number_format($extract['net_amount'], 2); ?> ريال</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">أنشأ بواسطة:</td>
-                                    <td><?php echo htmlspecialchars($extract['created_by_name']); ?></td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                    
-                    <?php if ($extract['description']): ?>
-                    <div class="mt-3">
-                        <h6 class="fw-bold">الوصف:</h6>
-                        <p class="text-muted"><?php echo nl2br(htmlspecialchars($extract['description'])); ?></p>
-                    </div>
-                    <?php endif; ?>
-                </div>
-            </div>
+    <div class="card dash-card mb-4 border-0 shadow-sm bg-white">
+        <div class="card-header bg-white border-0 py-3" style="border-radius: 20px 20px 0 0;">
+            <h6 class="card-title mb-0 fw-bold text-dark">
+                <i class="fas fa-info-circle text-primary opacity-75 me-2"></i>معلومات المستخلص الأساسية
+            </h6>
         </div>
-        
-        <div class="col-lg-4">
-            <!-- Approval Stage Card -->
-            <div class="card shadow mb-3">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-clipboard-check me-2"></i>
-                        مرحلة الاعتماد الحالية
-                    </h6>
+        <div class="card-body py-3 pt-0">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold mb-1 text-muted"><i class="fas fa-hashtag me-1"></i>رقم المستخلص</label>
+                    <p class="mb-0 fw-bold text-dark"><?php echo htmlspecialchars($extract['extract_number']); ?></p>
                 </div>
-                <div class="card-body text-center">
-                    <?php
-                    $currentStage = null;
-                    foreach ($approvalStages as $stage) {
-                        if ($stage['key'] === $extract['approval_stage']) {
-                            $currentStage = $stage;
-                            break;
-                        }
-                    }
-                    if (!$currentStage && $extract['approval_stage'] === null) {
-                        $currentStage = $approvalStages[0]; // مسودة
-                    }
-                    ?>
-                    
-                    <?php if ($currentStage): ?>
-                        <div class="mb-3">
-                            <i class="<?php echo $currentStage['icon']; ?> fa-3x text-<?php echo $currentStage['color']; ?> mb-2"></i>
-                            <h5 class="text-<?php echo $currentStage['color']; ?>"><?php echo $currentStage['name']; ?></h5>
-                        </div>
-                        
-                        <!-- تحديث مرحلة الاعتماد -->
-                        <select class="form-select approval-stage-select" 
-                                data-extract-id="<?= $extract['id'] ?>"
-                                onchange="updateApprovalStage(<?= $extract['id'] ?>, this.value, this)">
-                            <?php foreach ($approvalStages as $stage): ?>
-                                <option value="<?php echo $stage['key'] ?? ''; ?>" 
-                                        <?php echo ($stage['key'] === $extract['approval_stage']) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($stage['name']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    <?php endif; ?>
-                </div>
-            </div>
-            
-            <!-- Demolition Status Card -->
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-warning">
-                        <i class="fas fa-hammer me-2"></i>
-                        حالة التخريد
-                    </h6>
-                </div>
-                <div class="card-body text-center">
-                    <?php if ($totalWorkOrders > 0): ?>
-                        <?php if ($pendingDemolition > 0): ?>
-                            <div class="mb-3">
-                                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-2"></i>
-                                <h5 class="text-warning">غير مكتمل</h5>
-                                <p class="mb-0">
-                                    <span class="badge bg-success"><?php echo $completedDemolition; ?></span>
-                                    /
-                                    <span class="badge bg-secondary"><?php echo $totalWorkOrders; ?></span>
-                                    مكتمل
-                                </p>
-                                <small class="text-muted"><?php echo $pendingDemolition; ?> متبقي</small>
-                            </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold mb-1 text-muted"><i class="fas fa-file-signature me-1"></i>رقم العقد</label>
+                    <p class="mb-0">
+                        <?php if (!empty($extract['contract_number'])): ?>
+                            <span class="badge bg-dark-soft text-dark border px-2 py-1"><?php echo htmlspecialchars($extract['contract_number']); ?></span>
                         <?php else: ?>
-                            <div class="mb-3">
-                                <i class="fas fa-check-circle fa-3x text-success mb-2"></i>
-                                <h5 class="text-success">مكتمل</h5>
-                                <p class="mb-0">جميع نماذج التخريد مرفقة</p>
-                            </div>
+                            <span class="text-muted small">لا يوجد</span>
                         <?php endif; ?>
-                    <?php else: ?>
-                        <div class="mb-3">
-                            <i class="fas fa-info-circle fa-3x text-muted mb-2"></i>
-                            <h5 class="text-muted">لا توجد أوامر عمل</h5>
-                        </div>
-                    <?php endif; ?>
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold mb-1 text-muted"><i class="fas fa-shopping-cart me-1"></i>رقم PO</label>
+                    <p class="mb-0">
+                        <?php if (!empty($extract['po_number'])): ?>
+                            <span class="badge bg-info-soft text-info border px-2 py-1"><?php echo htmlspecialchars($extract['po_number']); ?></span>
+                        <?php else: ?>
+                            <span class="text-muted small">لا يوجد</span>
+                        <?php endif; ?>
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold mb-1 text-muted"><i class="fas fa-file-excel me-1"></i>صحيفة الإدخال</label>
+                    <p class="mb-0">
+                        <?php if (!empty($extract['entry_sheet_number'])): ?>
+                            <span class="badge bg-secondary-soft text-secondary border px-2 py-1"><?php echo htmlspecialchars($extract['entry_sheet_number']); ?></span>
+                        <?php else: ?>
+                            <span class="text-muted small">لا يوجد</span>
+                        <?php endif; ?>
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold mb-1 text-muted"><i class="fas fa-receipt me-1"></i>رقم الفاتورة</label>
+                    <p class="mb-0 fw-bold"><?php echo htmlspecialchars($extract['invoice_number'] ?? 'لا يوجد'); ?></p>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold mb-1 text-muted"><i class="fas fa-code-branch me-1"></i>الفرع</label>
+                    <p class="mb-0 fw-bold"><?php echo htmlspecialchars($extract['branch_name'] ?? 'غير محدد'); ?></p>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold mb-1 text-muted"><i class="fas fa-calendar-alt me-1"></i>تاريخ المستخلص</label>
+                    <p class="mb-0 fw-bold"><?php echo date('Y-m-d', strtotime($extract['extract_date'])); ?></p>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold mb-1 text-muted"><i class="fas fa-calendar-check me-1"></i>تاريخ التقديم</label>
+                    <p class="mb-0 fw-bold"><?php echo $extract['submission_date'] ? date('Y-m-d', strtotime($extract['submission_date'])) : '<span class="text-warning">لم يتم التقديم</span>'; ?></p>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold mb-1 text-muted"><i class="fas fa-clock me-1"></i>تاريخ الإنشاء</label>
+                    <p class="mb-0 fw-bold"><?php echo date('Y-m-d H:i', strtotime($extract['created_at'])); ?></p>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold mb-1 text-muted"><i class="fas fa-user me-1"></i>أنشئ بواسطة</label>
+                    <p class="mb-0 fw-bold"><?php echo htmlspecialchars($extract['created_by_name'] ?? 'غير محدد'); ?></p>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label small fw-bold mb-1 text-muted"><i class="fas fa-sticky-note me-1"></i>ملاحظات المستخلص</label>
+                    <p class="mb-0 p-2 bg-light rounded border text-dark"><?php echo htmlspecialchars($extract['description'] ?? 'لا توجد ملاحظات'); ?></p>
                 </div>
             </div>
         </div>
     </div>
 
+
+
     <!-- Work Orders Table -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-success">
-                <i class="fas fa-list me-2"></i>
-                أوامر العمل المرتبطة (<?php echo count($workOrders); ?> أوامر)
+    <div class="card dash-card mb-4 border-0 shadow-sm bg-white">
+        <div class="card-header bg-white border-0 py-3" style="border-radius: 20px 20px 0 0;">
+            <h6 class="card-title mb-0 fw-bold text-dark">
+                <i class="fas fa-list text-info opacity-75 me-2"></i>أوامر العمل المرتبطة <span class="badge bg-secondary-soft text-secondary rounded-pill ms-1"><?php echo count($workOrders); ?></span>
             </h6>
         </div>
-        <div class="card-body">
+        <div class="card-body py-0 pb-3">
             <?php if (count($workOrders) > 0): ?>
             <div class="table-responsive">
-                <table class="table table-bordered" id="workOrdersTable">
+                <table class="table table-hover premium-table align-middle mb-0" id="workOrdersTable">
                     <thead>
-                        <tr>
-                            <th>رقم الأمر</th>
-                            <th>كود النوع</th>
-                            <th>الجهة الحالية</th>
-                            <th>القسم</th>
-                            <th>تاريخ الإنجاز</th>
-                            <th>قيمة المستخلص</th>
-                            <th>الغرامة</th>
-                            <th>التخريد</th>
+                        <tr class="table-light text-muted small">
+                            <th class="border-0 rounded-start ps-3">رقم الأمر</th>
+                            <th class="border-0 text-center">النوع</th>
+                            <th class="border-0 text-center">الجهة الحالية</th>
+                            <th class="border-0 text-center">القسم</th>
+                            <th class="border-0">تاريخ الإنجاز</th>
+                            <th class="border-0">قيمة المستخلص</th>
+                            <th class="border-0">الغرامة</th>
+                            <th class="border-0 text-center rounded-end pe-3">التخريد</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="border-top-0">
                         <?php foreach ($workOrders as $wo): ?>
-                        <tr>
-                            <td>
-                                <span class="badge bg-primary"><?php echo htmlspecialchars($wo['work_order_number']); ?></span>
+                        <tr style="vertical-align: middle;">
+                            <td class="fw-bold ps-3">
+                                <?php echo htmlspecialchars($wo['work_order_number']); ?>
                             </td>
-                            <td><?php echo htmlspecialchars($wo['type_code'] ?? 'غير محدد'); ?></td>
-                            <td><?php echo htmlspecialchars($wo['current_entity_name'] ?? 'غير محدد'); ?></td>
-                            <td>
+                            <td class="text-center">
+                                <span class="badge bg-primary-soft text-primary border rounded-pill" style="font-size: 0.7rem;">
+                                    <?php echo htmlspecialchars($wo['type_code'] ?? 'غير محدد'); ?>
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-dark border"><?php echo htmlspecialchars($wo['current_entity_name'] ?? 'غير محدد'); ?></span>
+                            </td>
+                            <td class="text-center">
                                 <?php
                                 switch($wo['department']) {
                                     case 'connections':
-                                        echo '<span class="badge bg-info">التوصيلات</span>';
+                                        echo '<span class="badge bg-info-soft text-info border">التوصيلات</span>';
                                         break;
                                     case 'projects':
-                                        echo '<span class="badge bg-warning">المشاريع</span>';
+                                        echo '<span class="badge bg-warning-soft text-warning border">المشاريع</span>';
                                         break;
                                     default:
-                                        echo '<span class="badge bg-secondary">' . htmlspecialchars($wo['department']) . '</span>';
+                                        echo '<span class="badge bg-secondary-soft text-secondary border">' . htmlspecialchars($wo['department']) . '</span>';
                                 }
                                 ?>
                             </td>
                             <td>
                                 <?php if ($extract['approval_stage'] === null): ?>
                                     <!-- قابل للتحرير في حالة المسودة -->
-                                    <input type="date" class="form-control form-control-sm completion-date-input"
+                                    <input type="date" class="form-control form-control-sm completion-date-input rounded-3 shadow-none border-secondary text-dark px-2"
                                            data-work-order-id="<?php echo $wo['work_order_id']; ?>"
                                            value="<?php echo date('Y-m-d', strtotime($wo['completion_date'])); ?>"
-                                           onchange="updateCompletionDate(<?php echo $wo['work_order_id']; ?>, this.value)">
-                                    <small class="text-muted">قابل للتعديل</small>
+                                           onchange="updateCompletionDate(<?php echo $wo['work_order_id']; ?>, this.value)" style="min-width: 140px; font-size: 0.85rem;">
                                 <?php else: ?>
                                     <!-- للقراءة فقط بعد التقديم -->
-                                    <?php echo date('Y-m-d', strtotime($wo['completion_date'])); ?>
-                                    <br><small class="text-muted">مقفل بعد التقديم</small>
+                                    <span class="text-muted fw-bold"><?php echo date('Y-m-d', strtotime($wo['completion_date'])); ?></span>
                                 <?php endif; ?>
                             </td>
-                            <td><?php echo number_format($wo['extract_value'], 2); ?> ريال</td>
+                            <td class="fw-bold text-primary">
+                                <?php echo number_format($wo['extract_value'], 2); ?> <span class="sar-icon text-muted"><svg><use href="#sar-symbol"/></svg></span>
+                            </td>
                             <td>
                                 <?php if ($wo['penalty_amount'] > 0): ?>
-                                    <span class="text-danger"><?php echo number_format($wo['penalty_amount'], 2); ?> ريال</span>
+                                    <span class="fw-bold text-danger"><?php echo number_format($wo['penalty_amount'], 2); ?> <span class="sar-icon text-muted"><svg><use href="#sar-symbol"/></svg></span></span>
                                 <?php else: ?>
-                                    <span class="text-muted">لا يوجد</span>
+                                    <span class="text-muted small">لا يوجد</span>
                                 <?php endif; ?>
                             </td>
-                            <td>
+                            <td class="text-center pe-3">
                                 <?php
                                 switch($wo['demolition_status']) {
                                     case 'attached':
@@ -511,6 +495,134 @@ ob_start();
             <?php endif; ?>
         </div>
     </div>
+
+    <!-- إدارة الاعتماد -->
+    <div class="card dash-card mb-4 border-0 shadow-sm bg-white">
+        <div class="card-header bg-warning-soft border-0 py-3" style="border-radius: 20px 20px 0 0;">
+            <h6 class="card-title mb-0 fw-bold text-dark">
+                <i class="fas fa-check-circle text-warning me-2"></i>إدارة الاعتماد
+            </h6>
+        </div>
+        <div class="card-body py-4">
+            <div class="table-responsive mb-4">
+                <table class="table table-borderless mb-0">
+                    <thead class="text-muted small border-bottom">
+                        <tr>
+                            <th width="25%" class="pb-2">مرحلة الاعتماد</th>
+                            <th width="20%" class="pb-2">تاريخ الصرف</th>
+                            <th width="30%" class="pb-2">ملاحظات الاعتماد</th>
+                            <th width="25%" class="pb-2">معلومات الاعتماد</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="pt-3">
+                                <select class="form-select form-select-sm approval-stage-select rounded-3 shadow-none border-secondary text-dark fw-bold px-2"
+                                        data-extract-id="<?php echo $extract_id; ?>"
+                                        onchange="updateExtractField(<?php echo $extract_id; ?>, 'approval_stage', this.value, this)">
+                                    <?php foreach ($approvalStagesFromDB as $stage): ?>
+                                        <?php
+                                        $isSelected = false;
+                                        if ($extract['approval_stage'] === null && $stage['stage_key'] === 'draft') {
+                                            $isSelected = true; // المستخلصات القديمة
+                                        } elseif ($extract['approval_stage'] === $stage['stage_key']) {
+                                            $isSelected = true;
+                                        }
+                                        ?>
+                                        <option value="<?= htmlspecialchars($stage['stage_key']) ?>"
+                                                <?= $isSelected ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($stage['stage_name']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                            <td class="pt-3">
+                                <input type="date" class="form-control form-control-sm disbursement-date-input rounded-3 shadow-none text-secondary px-2"
+                                       data-extract-id="<?php echo $extract_id; ?>"
+                                       value="<?php echo $approvals['disbursement_date'] ?? ''; ?>"
+                                       onchange="updateExtractField(<?php echo $extract_id; ?>, 'disbursement_date', this.value, this)">
+                            </td>
+                            <td class="pt-3">
+                                <input type="text" class="form-control form-control-sm approval-notes-input rounded-3 shadow-none text-secondary px-2"
+                                       data-extract-id="<?php echo $extract_id; ?>"
+                                       value="<?php echo htmlspecialchars($approvals['approval_notes'] ?? ''); ?>"
+                                       placeholder="أدخل ملاحظات الاعتماد..."
+                                       onchange="updateExtractField(<?php echo $extract_id; ?>, 'approval_notes', this.value, this)">
+                            </td>
+                            <td class="pt-3">
+                                <div class="small">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="fas fa-user-circle text-muted me-2 fs-6"></i>
+                                        <span id="approved_by_display" class="text-primary fw-bold">
+                                            <?php echo htmlspecialchars($approvals['approved_by_name'] ?? 'لم يتم الاعتماد بعد'); ?>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-clock text-muted me-2 fs-6"></i>
+                                        <span id="approval_date_display" class="text-muted">
+                                            <?php
+                                            if (!empty($approvals['approval_date'])) {
+                                                echo date('Y-m-d H:i', strtotime($approvals['approval_date']));
+                                            } else {
+                                                echo 'لم يتم الاعتماد بعد';
+                                            }
+                                            ?>
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- شريط حالة الاعتماد -->
+            <div class="bg-light rounded-4 p-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fw-bold text-dark small">مرحلة الاعتماد الحالية:</span>
+                    <span id="current_stage_badge" class="badge bg-<?php
+                        // البحث عن المرحلة الحالية في قاعدة البيانات
+                        $currentStageColor = 'secondary';
+                        $currentStageName = 'غير محدد';
+                        foreach ($approvalStagesFromDB as $stage) {
+                            if ($extract['approval_stage'] === $stage['stage_key'] ||
+                                ($extract['approval_stage'] === null && $stage['stage_key'] === 'draft')) {
+                                $currentStageColor = $stage['stage_color'];
+                                $currentStageName = $stage['stage_name'];
+                                break;
+                            }
+                        }
+                        echo $currentStageColor;
+                    ?>-soft text-<?php echo $currentStageColor; ?> rounded-pill px-3 py-2 border">
+                        <?php echo $currentStageName; ?>
+                    </span>
+                </div>
+                <div class="progress rounded-pill bg-white border" style="height: 12px;">
+                    <?php
+                    // حساب التقدم بناءً على ترتيب المراحل من قاعدة البيانات
+                    $currentStageOrder = 0;
+                    $totalStages = count($approvalStagesFromDB);
+                    foreach ($approvalStagesFromDB as $stage) {
+                        if ($extract['approval_stage'] === $stage['stage_key'] ||
+                            ($extract['approval_stage'] === null && $stage['stage_key'] === 'draft')) {
+                            $currentStageOrder = $stage['stage_order'];
+                            break;
+                        }
+                    }
+                    $progressPercentage = $totalStages > 0 ? round(($currentStageOrder / $totalStages) * 100) : 0;
+                    ?>
+                    <div id="approval_progress_bar" class="progress-bar bg-<?php echo $currentStageColor; ?> progress-bar-striped progress-bar-animated" role="progressbar"
+                         style="width: <?php echo $progressPercentage; ?>%"
+                         aria-valuenow="<?php echo $progressPercentage; ?>"
+                         aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                </div>
+                <div class="small text-muted mt-2 fw-bold text-end" id="progress_text">
+                    <?php echo $progressPercentage; ?>% مكتمل (<?php echo $currentStageOrder; ?> من <?php echo $totalStages; ?> مراحل)
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <?php
@@ -522,6 +634,16 @@ include __DIR__ . '/../../includes/layout.php';
 ?>
 
 <script>
+// إعداد بيانات مراحل الاعتماد
+const approvalStagesData = <?php echo json_encode($approvalStagesFromDB); ?>;
+const stageNames = {};
+const stageColors = {};
+
+approvalStagesData.forEach(stage => {
+    stageNames[stage.stage_key] = stage.stage_name;
+    stageColors[stage.stage_key] = stage.stage_color;
+});
+
 $(document).ready(function() {
     // Initialize DataTable for work orders
     if ($('#workOrdersTable').length && !$.fn.DataTable.isDataTable('#workOrdersTable')) {
@@ -558,64 +680,103 @@ $(document).ready(function() {
     });
 });
 
-// تحديث مرحلة الاعتماد
-function updateApprovalStage(extractId, newStage, selectElement) {
+// دالة التحديث المباشر للحقول
+function updateExtractField(extractId, field, value, element) {
+    console.log('Updating field:', field, 'with value:', value, 'for extract:', extractId);
+
     // إظهار مؤشر التحميل
-    const originalHtml = selectElement.innerHTML;
-    selectElement.disabled = true;
+    const originalValue = $(element).val();
+    $(element).prop('disabled', true);
 
-    // إرسال طلب AJAX
-    fetch('update-approval-ajax.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+    // إضافة مؤشر بصري للتحديث
+    $(element).addClass('updating-field');
+
+    $.ajax({
+        url: 'update-approval-ajax.php',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
             extract_id: extractId,
-            approval_stage: newStage
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // إظهار رسالة نجاح
-            Swal.fire({
-                icon: 'success',
-                title: 'تم التحديث بنجاح',
-                text: data.message,
-                timer: 2000,
-                showConfirmButton: false
-            });
+            approval_stage: field === 'approval_stage' ? value : $('.approval-stage-select').val(),
+            disbursement_date: field === 'disbursement_date' ? value : $('.disbursement-date-input').val(),
+            approval_notes: field === 'approval_notes' ? value : $('.approval-notes-input').val()
+        }),
+        dataType: 'json',
+        success: function(response) {
+            console.log('Success response:', response);
 
-            // تحديث الصفحة لإظهار التغييرات
-            setTimeout(() => {
-                location.reload();
-            }, 2000);
-        } else {
-            // إظهار رسالة خطأ
+            if (response.success) {
+                // إظهار نجاح التحديث
+                $(element).removeClass('updating-field').addClass('field-success');
+
+                // إظهار رسالة نجاح
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم التحديث بنجاح',
+                    text: response.message,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+                // إزالة تأثير النجاح بعد ثانيتين
+                setTimeout(function() {
+                    $(element).removeClass('field-success');
+                }, 2000);
+
+                // إعادة تحميل الصفحة بعد ثانيتين لتحديث العرض
+                setTimeout(function() {
+                    location.reload();
+                }, 2000);
+
+            } else {
+                // إظهار خطأ
+                $(element).removeClass('updating-field').addClass('field-error');
+                $(element).val(originalValue); // إرجاع القيمة الأصلية
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ',
+                    text: response.message || 'حدث خطأ في التحديث'
+                });
+
+                // إزالة تأثير الخطأ بعد 3 ثوانٍ
+                setTimeout(function() {
+                    $(element).removeClass('field-error');
+                }, 3000);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.log('Error:', xhr.responseText);
+
+            // إظهار خطأ
+            $(element).removeClass('updating-field').addClass('field-error');
+            $(element).val(originalValue); // إرجاع القيمة الأصلية
+
+            let errorMessage = 'حدث خطأ في الاتصال';
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.message) {
+                    errorMessage = response.message;
+                }
+            } catch (e) {
+                // استخدام الرسالة الافتراضية
+            }
+
             Swal.fire({
                 icon: 'error',
-                title: 'خطأ في التحديث',
-                text: data.message || 'حدث خطأ غير متوقع'
+                title: 'خطأ',
+                text: errorMessage
             });
 
-            // إعادة القيمة السابقة
-            selectElement.value = selectElement.getAttribute('data-original-value') || '';
+            // إزالة تأثير الخطأ بعد 3 ثوانٍ
+            setTimeout(function() {
+                $(element).removeClass('field-error');
+            }, 3000);
+        },
+        complete: function() {
+            // إعادة تفعيل الحقل
+            $(element).prop('disabled', false);
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'خطأ في الاتصال',
-            text: 'تعذر الاتصال بالخادم'
-        });
-
-        // إعادة القيمة السابقة
-        selectElement.value = selectElement.getAttribute('data-original-value') || '';
-    })
-    .finally(() => {
-        selectElement.disabled = false;
     });
 }
 
@@ -732,6 +893,61 @@ function performCompletionDateUpdate(workOrderId, newDate) {
         input.disabled = false;
     });
 }
+
+function syncWithQoyod(extractId, extractType) {
+    if (!confirm('هل أنت متأكد من رغبتك في رفع هذا المستخلص كفاتورة ضريبية في نظام قيود؟')) {
+        return;
+    }
+    
+    const btn = document.getElementById('btnSyncQoyod');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> جاري الرفع...';
+    
+    fetch('<?php echo path("api/qoyod/sync_extract.php"); ?>', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            extract_id: extractId,
+            extract_type: extractType
+        })
+    })
+    .then(response => response.json().then(data => ({status: response.status, body: data})))
+    .then(({status, body}) => {
+        if (body.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'تم الرفع بنجاح',
+                text: body.message,
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'خطأ',
+                text: body.message || 'حدث خطأ أثناء الرفع'
+            });
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'خطأ في الاتصال',
+            text: 'تعذر الاتصال بالخادم'
+        });
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    });
+}
+
 
 // تهيئة القيم الأصلية عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {

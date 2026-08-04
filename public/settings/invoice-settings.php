@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * صفحة إدارة إعدادات الفواتير الضريبية
  * Invoice Settings Management Page

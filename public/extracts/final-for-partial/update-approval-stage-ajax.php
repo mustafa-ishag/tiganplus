@@ -68,17 +68,55 @@ try {
         // حفظ المرحلة السابقة للمقارنة
         $previousStage = $extract['approval_stage'];
 
-        // تحديث مرحلة الاعتماد
-        $stmt = $db->prepare("
-            UPDATE final_for_partial_extracts
-            SET approval_stage = ?, updated_at = NOW()
-            WHERE id = ?
-        ");
+        // تحويل مسودة الفارغة إلى null لتوافق بعض الحالات
+        $new_stage = $approval_stage;
+        if ($new_stage === '' || $new_stage === 'null' || empty($new_stage)) {
+            $new_stage = null;
+        }
 
-        $stmt->execute([$approval_stage, $extract_id]);
+        // قراءة البيانات الإضافية
+        $disbursement_date = isset($_POST['disbursement_date']) && !empty($_POST['disbursement_date']) ? date('Y-m-d', strtotime($_POST['disbursement_date'])) : null;
+        $approval_notes = isset($_POST['approval_notes']) ? trim($_POST['approval_notes']) : null;
+
+        // تحديد ما إذا كان يجب تحديث معلومات الاعتماد
+        $approved_by_update = "";
+        $params = [$new_stage, $disbursement_date, $approval_notes];
+        
+        if ($new_stage !== $previousStage) {
+            $approved_by_update = ", approved_by = ?, approval_date = NOW()";
+            $params[] = $user_id;
+        }
+
+        $params[] = $extract_id;
+
+        // تحديث مرحلة الاعتماد والبيانات الإضافية
+        $updateQuery = "
+            UPDATE final_for_partial_extracts
+            SET approval_stage = ?,
+                disbursement_date = ?,
+                approval_notes = ?,
+                updated_at = NOW()
+                $approved_by_update
+            WHERE id = ?
+        ";
+
+        $stmt = $db->prepare($updateQuery);
+        $stmt->execute($params);
+
+        // تحديث تاريخ التقديم إذا خرج من المسودة
+        if ($new_stage !== 'draft' && $new_stage !== null && ($previousStage === 'draft' || $previousStage === null)) {
+            $stmt = $db->prepare("UPDATE final_for_partial_extracts SET submission_date = NOW() WHERE id = ? AND submission_date IS NULL");
+            $stmt->execute([$extract_id]);
+        }
+        
+        // إزالة تاريخ التقديم إذا عاد للمسودة
+        if ($new_stage === 'draft' || $new_stage === null) {
+            $stmt = $db->prepare("UPDATE final_for_partial_extracts SET submission_date = NULL WHERE id = ?");
+            $stmt->execute([$extract_id]);
+        }
 
         // إذا تم تحويل المرحلة إلى "مصروف"، تحديث حالة جميع أوامر العمل إلى "مكتمل"
-        if ($approval_stage === 'disbursed') {
+        if ($new_stage === 'disbursed') {
             // البحث عن معرف الجهة "منتهى"
             $stmt = $db->prepare("SELECT id FROM current_entities WHERE name = 'منتهى' LIMIT 1");
             $stmt->execute();
@@ -135,7 +173,7 @@ try {
             }
         }
         // إذا تم الإرجاع من "مصروف" إلى مرحلة سابقة، إرجاع حالة أوامر العمل إلى "نشط"
-        elseif ($previousStage === 'disbursed' && $approval_stage !== 'disbursed') {
+        elseif ($previousStage === 'disbursed' && $new_stage !== 'disbursed') {
             // جلب جميع أوامر العمل المرتبطة بهذا المستخلص النهائي للجزئية
             $stmt = $db->prepare("
                 SELECT DISTINCT wo.id, wo.work_order_number, wo.status
@@ -177,7 +215,7 @@ try {
     }
 
     // تسجيل النشاط
-    $activity_description = "تم تحديث مرحلة الاعتماد من '{$extract['approval_stage']}' إلى '{$approval_stage}'";
+    $activity_description = "تم تحديث مرحلة الاعتماد من '{$extract['approval_stage']}' إلى '{$new_stage}'";
     
     // تسجيل النشاط (إذا كان الجدول موجود)
     try {
@@ -200,7 +238,7 @@ try {
     $message = "تم تحديث مرحلة الاعتماد إلى: {$stage_name}";
 
     // إضافة معلومات عن أوامر العمل المحدثة إذا كانت المرحلة "مصروف"
-    if ($approval_stage === 'disbursed' && isset($updatedCount) && $updatedCount > 0) {
+    if ($new_stage === 'disbursed' && isset($updatedCount) && $updatedCount > 0) {
         $entityPart = isset($finishedEntityId) && $finishedEntityId ? " والجهة الحالية إلى 'منتهى'" : "";
         $message .= "\nتم تحديث حالة {$updatedCount} أمر عمل إلى 'مكتمل'{$entityPart}";
     }
@@ -209,10 +247,26 @@ try {
         $message .= "\nتم إرجاع حالة {$revertedCount} أمر عمل إلى 'نشط'";
     }
 
+    // جلب معلومات المُعتمد لعرضها
+    $approved_by_name = null;
+    $approval_date_formatted = null;
+    if ($new_stage !== null && $new_stage !== 'draft') {
+        $userStmt = $db->prepare("SELECT full_name FROM users WHERE id = ?");
+        $userStmt->execute([$user_id]);
+        $user = $userStmt->fetch();
+        $approved_by_name = $user ? $user['full_name'] : null;
+        $approval_date_formatted = date('Y-m-d H:i');
+    }
+
     echo json_encode([
         'success' => true,
         'message' => $message,
-        'new_stage' => $approval_stage,
+        'data' => [
+            'approval_stage' => $new_stage,
+            'approved_by_name' => $approved_by_name,
+            'approval_date' => $approval_date_formatted
+        ],
+        'new_stage' => $new_stage,
         'stage_name' => $stage_name,
         'updated_work_orders_count' => $updatedCount ?? 0,
         'reverted_work_orders_count' => $revertedCount ?? 0

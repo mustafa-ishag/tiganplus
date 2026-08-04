@@ -93,206 +93,176 @@ ob_start();
 
 <div class="container-fluid">
     <!-- رأس الصفحة -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2 class="h3 mb-0">
-                <i class="fas fa-boxes text-primary me-2"></i>
-                المخزون
-            </h2>
-            <p class="text-muted mb-0">عرض وإدارة جميع المواد في المخزون</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">إدارة المواد</h4>
+            <p class="text-muted mb-0 small">عرض وإدارة جميع المواد والأصناف في المخزون</p>
         </div>
-        <div class="col-md-4 text-end">
-            <div class="btn-group" role="group">
-                <a href="inactive.php" class="btn btn-outline-secondary">
-                    <i class="fas fa-ban me-1"></i>
-                    المواد غير النشطة
+        <div>
+            <a href="inactive.php" class="btn btn-light rounded-pill px-3 shadow-sm border-0 text-secondary fw-bold ms-2">
+                <i class="fas fa-ban me-2"></i> المواد غير النشطة
+            </a>
+            <?php if (hasPermission('inventory_materials_edit')): ?>
+                <a href="import-export.php" class="btn btn-light rounded-pill px-3 shadow-sm border-0 text-success fw-bold ms-2">
+                    <i class="fas fa-file-import me-2"></i> استيراد/تصدير
                 </a>
-                <?php if (hasPermission('inventory_materials_edit')): ?>
-                    <a href="import-export.php" class="btn btn-outline-success">
-                        <i class="fas fa-exchange-alt me-1"></i>
-                        استيراد/تصدير
-                    </a>
-                    <a href="create.php" class="btn btn-primary">
-                        <i class="fas fa-plus me-1"></i>
-                        إضافة مادة جديدة
-                    </a>
-                <?php endif; ?>
-            </div>
+                <a href="create.php" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                    <i class="fas fa-plus me-2"></i> إضافة مادة جديدة
+                </a>
+            <?php endif; ?>
         </div>
     </div>
 
 
 
     <!-- فلاتر سريعة -->
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0">
-                        <i class="fas fa-filter me-1"></i>
-                        فلاتر سريعة
-                    </h6>
+    <div class="dash-card mb-4">
+        <div class="card-header bg-transparent border-0 p-4 pb-2">
+            <h6 class="mb-1 fw-bold text-dark"><i class="fas fa-filter text-primary me-2"></i>فلاتر التصنيف</h6>
+            <p class="text-muted mb-0 small">تصفية المواد حسب الحالة والمخزون</p>
+        </div>
+        <div class="card-body px-4 pb-4 pt-2">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <a href="?status=all" class="btn rounded-pill px-4 fw-bold <?= $status === 'all' ? 'btn-primary shadow-sm' : 'btn-light text-primary border-0' ?>">
+                    جميع المواد <span class="badge <?= $status === 'all' ? 'bg-white text-primary' : 'bg-primary-soft text-primary' ?> ms-2 rounded-pill"><?= number_format($stats['total_materials']) ?></span>
+                </a>
+                <a href="?status=active" class="btn rounded-pill px-4 fw-bold <?= $status === 'active' && empty($filter) ? 'btn-success shadow-sm' : 'btn-light text-success border-0' ?>">
+                    المواد النشطة <span class="badge <?= $status === 'active' && empty($filter) ? 'bg-white text-success' : 'bg-success-soft text-success' ?> ms-2 rounded-pill"><?= number_format($stats['active_materials']) ?></span>
+                </a>
+                <a href="?status=active&filter=low_stock" class="btn rounded-pill px-4 fw-bold <?= $filter === 'low_stock' ? 'btn-warning shadow-sm' : 'btn-light text-warning border-0' ?>">
+                    مخزون منخفض <span class="badge <?= $filter === 'low_stock' ? 'bg-white text-warning' : 'bg-warning-soft text-warning' ?> ms-2 rounded-pill"><?= number_format($stats['low_stock_materials']) ?></span>
+                </a>
+                <a href="?status=active&filter=out_of_stock" class="btn rounded-pill px-4 fw-bold <?= $filter === 'out_of_stock' ? 'btn-danger shadow-sm' : 'btn-light text-danger border-0' ?>">
+                    نفد المخزون <span class="badge <?= $filter === 'out_of_stock' ? 'bg-white text-danger' : 'bg-danger-soft text-danger' ?> ms-2 rounded-pill"><?= number_format($stats['out_of_stock_materials']) ?></span>
+                </a>
+                <a href="?status=inactive" class="btn rounded-pill px-4 fw-bold <?= $status === 'inactive' ? 'btn-secondary shadow-sm' : 'btn-light text-secondary border-0' ?>">
+                    المواد غير النشطة <span class="badge <?= $status === 'inactive' ? 'bg-white text-secondary' : 'bg-secondary-soft text-secondary' ?> ms-2 rounded-pill"><?= number_format($stats['inactive_materials']) ?></span>
+                </a>
+                <a href="index.php" class="btn btn-light rounded-pill px-4 fw-bold text-muted border-0 ms-auto">
+                    <i class="fas fa-sync-alt me-2"></i>إعادة تعيين
+                </a>
+            </div>
+            <div class="d-flex align-items-center p-3 rounded-3" style="background: rgba(13, 110, 253, 0.05); border: 1px dashed rgba(13, 110, 253, 0.2);">
+                <div class="icon-circle bg-primary-soft me-3" style="width: 32px; height: 32px; font-size: 0.8rem; flex-shrink: 0;">
+                    <i class="fas fa-info text-primary"></i>
                 </div>
-                <div class="card-body">
-                    <div class="row g-2">
-                        <div class="col-md-2">
-                            <a href="?status=active" class="btn btn-outline-success w-100 <?= $status === 'active' ? 'active' : '' ?>">
-                                <i class="fas fa-check-circle me-1"></i>
-                                المواد النشطة
-                                <span class="badge bg-success ms-1"><?= number_format($stats['active_materials']) ?></span>
-                            </a>
-                        </div>
-                        <div class="col-md-2">
-                            <a href="?status=inactive" class="btn btn-outline-secondary w-100 <?= $status === 'inactive' ? 'active' : '' ?>">
-                                <i class="fas fa-ban me-1"></i>
-                                المواد غير النشطة
-                                <span class="badge bg-secondary ms-1"><?= number_format($stats['inactive_materials']) ?></span>
-                            </a>
-                        </div>
-                        <div class="col-md-2">
-                            <a href="?status=all" class="btn btn-outline-primary w-100 <?= $status === 'all' ? 'active' : '' ?>">
-                                <i class="fas fa-list me-1"></i>
-                                جميع المواد
-                                <span class="badge bg-primary ms-1"><?= number_format($stats['total_materials']) ?></span>
-                            </a>
-                        </div>
-                        <div class="col-md-2">
-                            <a href="?status=active&filter=low_stock" class="btn btn-outline-warning w-100 <?= $filter === 'low_stock' ? 'active' : '' ?>">
-                                <i class="fas fa-exclamation-triangle me-1"></i>
-                                مخزون منخفض
-                                <span class="badge bg-warning ms-1"><?= number_format($stats['low_stock_materials']) ?></span>
-                            </a>
-                        </div>
-                        <div class="col-md-2">
-                            <a href="?status=active&filter=out_of_stock" class="btn btn-outline-danger w-100 <?= $filter === 'out_of_stock' ? 'active' : '' ?>">
-                                <i class="fas fa-times-circle me-1"></i>
-                                نفد المخزون
-                                <span class="badge bg-danger ms-1"><?= number_format($stats['out_of_stock_materials']) ?></span>
-                            </a>
-                        </div>
-                        <div class="col-md-2">
-                            <a href="index.php" class="btn btn-outline-info w-100">
-                                <i class="fas fa-refresh me-1"></i>
-                                إعادة تعيين
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- معلومات إضافية -->
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <div class="alert alert-info mb-0">
-                                <i class="fas fa-info-circle me-1"></i>
-                                <strong>نصيحة:</strong> استخدم مربع البحث للبحث في رقم البند أو الوصف
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <p class="mb-0 text-muted small"><strong>نصيحة ذكية:</strong> استخدم مربع البحث الموجود في جدول البيانات أدناه للبحث السريع عن أي مادة باستخدام رقم البند أو جزء من الوصف.</p>
             </div>
         </div>
     </div>
 
     <!-- جدول المواد -->
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">قائمة المواد (<?= number_format($totalRecords) ?> مادة)</h5>
-            <div class="btn-group" role="group">
-                <?php if (hasPermission('inventory_reports_export')): ?>
-                <button type="button" class="btn btn-outline-primary btn-sm" onclick="exportToExcel()">
-                    <i class="fas fa-file-excel me-1"></i>
-                    تصدير Excel
-                </button>
-                <?php endif; ?>
-
-                <?php if (hasPermission('inventory_reports_export')): ?>
-                <button type="button" class="btn btn-outline-primary btn-sm" onclick="printTable()">
-                    <i class="fas fa-print me-1"></i>
-                    طباعة
-                </button>
-                <?php endif; ?>
+    <div class="dash-card">
+        <div class="card-header bg-transparent border-0 p-4 pb-2 d-flex justify-content-between align-items-center">
+            <div>
+                <h6 class="mb-1 fw-bold text-dark"><i class="fas fa-list-ul text-info me-2"></i>قائمة المواد</h6>
+                <p class="text-muted mb-0 small">إجمالي السجلات: <?= number_format($totalRecords) ?> مادة</p>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <!-- مربع البحث المخصص -->
+                <div class="position-relative">
+                    <input type="text" id="customSearchInput" class="form-control form-control-sm rounded-pill ps-4" placeholder="ابحث في المواد..." style="width: 250px;">
+                    <i class="fas fa-search position-absolute text-muted" style="top: 50%; left: 12px; transform: translateY(-50%); font-size: 0.85rem;"></i>
+                </div>
+                
+                <div class="btn-group ms-2" role="group">
+                    <?php if (hasPermission('inventory_reports_export')): ?>
+                    <button type="button" class="btn btn-sm btn-light rounded-pill px-3 fw-bold text-success border-0 me-2" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel me-2"></i>تصدير Excel
+                    </button>
+                    <button type="button" class="btn btn-sm btn-light rounded-pill px-3 fw-bold text-primary border-0" onclick="printTable()">
+                        <i class="fas fa-print me-2"></i>طباعة
+                    </button>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
         <div class="card-body p-0">
             <?php if (empty($materials)): ?>
                 <div class="text-center py-5">
-                    <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
-                    <h5 class="text-muted">لا توجد مواد</h5>
-                    <p class="text-muted">لم يتم العثور على مواد تطابق معايير البحث</p>
+                    <div class="icon-circle bg-secondary-soft mx-auto mb-3" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                        <i class="fas fa-box-open text-secondary"></i>
+                    </div>
+                    <h6 class="fw-bold text-dark mb-1">لا توجد مواد</h6>
+                    <p class="text-muted mb-3 small">لم يتم العثور على مواد تطابق معايير البحث الحالية</p>
                     <?php if (hasPermission('inventory_materials_edit')): ?>
-                        <a href="create.php" class="btn btn-primary">
-                            <i class="fas fa-plus me-1"></i>
-                            إضافة أول مادة
+                        <a href="create.php" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                            <i class="fas fa-plus me-2"></i>إضافة أول مادة
                         </a>
                     <?php endif; ?>
                 </div>
             <?php else: ?>
-                <div class="table-responsive">
-                    <table id="materialsTable" class="table table-hover mb-0">
-                        <thead class="table-light">
+                <div class="table-responsive px-4 pb-4">
+                    <table id="materialsTable" class="table table-hover mb-0" style="font-size: 0.85rem;">
+                        <thead style="background: #f8f9fc;">
                             <tr>
-                                <th>رقم البند</th>
-                                <th>رقم المجموعة</th>
-                                <th>الوصف</th>
-                                <th>الوحدة</th>
-                                <th>المخزون الحالي</th>
-                                <th>الحالة</th>
-                                <th>الإجراءات</th>
+                                <th class="ps-3 border-0 text-muted fw-bold" style="font-size: 0.75rem;">رقم البند</th>
+                                <th class="border-0 text-muted fw-bold text-center" style="font-size: 0.75rem;">رقم المجموعة</th>
+                                <th class="border-0 text-muted fw-bold" style="font-size: 0.75rem;">الوصف</th>
+                                <th class="border-0 text-muted fw-bold" style="font-size: 0.75rem;">الوحدة</th>
+                                <th class="border-0 text-muted fw-bold text-center" style="font-size: 0.75rem;">المخزون الحالي</th>
+                                <th class="border-0 text-muted fw-bold text-center" style="font-size: 0.75rem;">الحالة</th>
+                                <th class="pe-3 border-0 text-muted fw-bold text-center" style="font-size: 0.75rem;">الإجراءات</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($materials as $material): ?>
                                 <?php 
-                                $isLowStock = $material['current_stock'] <= $material['minimum_stock'];
+                                $isLowStock = $material['current_stock'] <= $material['minimum_stock'] && $material['current_stock'] > 0;
                                 $isOutOfStock = $material['current_stock'] == 0;
                                 ?>
-                                <tr class="<?= $isOutOfStock ? 'table-danger' : ($isLowStock ? 'table-warning' : '') ?>">
-                                    <td>
-                                        <strong><?= htmlspecialchars($material['item_number']) ?></strong>
+                                <tr>
+                                    <td class="ps-3">
+                                        <a href="view.php?id=<?= $material['id'] ?>" class="text-decoration-none fw-bold text-primary" style="font-size: 0.85rem;">
+                                            <?= htmlspecialchars($material['item_number']) ?>
+                                        </a>
                                     </td>
-                                    <td>
-                                        <span class="badge bg-secondary"><?= htmlspecialchars($material['group_number']) ?></span>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary-soft text-secondary rounded-pill px-2" style="font-size: 0.7rem;"><?= htmlspecialchars($material['group_number']) ?></span>
                                     </td>
                                     <td dir="ltr" class="text-start">
-                                        <div class="text-truncate" style="max-width: 200px;" title="<?= htmlspecialchars($material['description'] ?? '') ?>">
+                                        <div class="text-truncate text-dark fw-bold" style="max-width: 200px; font-size: 0.8rem;" title="<?= htmlspecialchars($material['description'] ?? '') ?>">
                                             <?= htmlspecialchars($material['description'] ?? '') ?>
                                         </div>
                                     </td>
-                                    <td><?= htmlspecialchars($material['unit'] ?? '') ?></td>
-                                    <td>
-                                        <span class="fw-bold <?= $isOutOfStock ? 'text-danger' : ($isLowStock ? 'text-warning' : 'text-success') ?>">
+                                    <td><span class="text-muted" style="font-size: 0.75rem;"><?= htmlspecialchars($material['unit'] ?? '') ?></span></td>
+                                    <td class="text-center">
+                                        <span class="fw-bold <?= $isOutOfStock ? 'text-danger' : ($isLowStock ? 'text-warning' : 'text-success') ?>" style="font-size: 0.9rem;">
                                             <?= formatNumber($material['current_stock'], 3) ?>
                                         </span>
                                         <?php if ($isLowStock): ?>
-                                            <i class="fas fa-exclamation-triangle text-warning ms-1" title="مخزون منخفض"></i>
+                                            <i class="fas fa-exclamation-triangle text-warning ms-1" style="font-size: 0.75rem;" title="مخزون منخفض"></i>
+                                        <?php elseif ($isOutOfStock): ?>
+                                            <i class="fas fa-times-circle text-danger ms-1" style="font-size: 0.75rem;" title="نافد"></i>
                                         <?php endif; ?>
                                     </td>
-                                    <td>
+                                    <td class="text-center">
                                         <?php if ($material['is_active']): ?>
-                                            <span class="badge bg-success">نشط</span>
+                                            <span class="badge bg-success-soft text-success rounded-pill px-2" style="font-size: 0.7rem;">نشط</span>
                                         <?php else: ?>
-                                            <span class="badge bg-secondary">غير نشط</span>
+                                            <span class="badge bg-secondary-soft text-secondary rounded-pill px-2" style="font-size: 0.7rem;">غير نشط</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
+                                    <td class="pe-3 text-center">
+                                        <div class="d-flex justify-content-center gap-1">
                                             <a href="view.php?id=<?= $material['id'] ?>" 
-                                               class="btn btn-sm btn-outline-primary" title="عرض التفاصيل">
-                                                <i class="fas fa-eye"></i>
+                                               class="btn btn-sm btn-light rounded-circle" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" title="عرض التفاصيل">
+                                                <i class="fas fa-eye text-primary" style="font-size: 0.75rem;"></i>
                                             </a>
                                             <?php if (hasPermission('inventory_materials_edit')): ?>
                                                 <a href="edit.php?id=<?= $material['id'] ?>" 
-                                                   class="btn btn-sm btn-outline-warning" title="تعديل">
-                                                    <i class="fas fa-edit"></i>
+                                                   class="btn btn-sm btn-light rounded-circle" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" title="تعديل">
+                                                    <i class="fas fa-edit text-warning" style="font-size: 0.75rem;"></i>
                                                 </a>
                                                 <?php if ($material['is_active']): ?>
-                                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    <button type="button" class="btn btn-sm btn-light rounded-circle" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;"
                                                             onclick="deactivateMaterial(<?= $material['id'] ?>)" title="إلغاء تفعيل">
-                                                        <i class="fas fa-ban"></i>
+                                                        <i class="fas fa-ban text-danger" style="font-size: 0.75rem;"></i>
                                                     </button>
                                                 <?php else: ?>
-                                                    <button type="button" class="btn btn-sm btn-outline-success" 
+                                                    <button type="button" class="btn btn-sm btn-light rounded-circle" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;"
                                                             onclick="activateMaterial(<?= $material['id'] ?>)" title="تفعيل">
-                                                        <i class="fas fa-check"></i>
+                                                        <i class="fas fa-check text-success" style="font-size: 0.75rem;"></i>
                                                     </button>
                                                 <?php endif; ?>
                                             <?php endif; ?>
@@ -303,8 +273,6 @@ ob_start();
                         </tbody>
                     </table>
                 </div>
-
-
             <?php endif; ?>
         </div>
     </div>
@@ -427,13 +395,19 @@ $(document).ready(function() {
                 { "searchable": true, "targets": [0, 1, 2, 3] }, // البحث في رقم البند، المجموعة، الوصف، الوحدة
                 { "className": "text-center", "targets": [1, 4, 5, 6] } // محاذاة وسط
             ],
-            "dom": '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
-                   '<"row"<"col-sm-12"tr>>' +
-                   '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+            "searching": true,
+            "dom": "<'row mb-3'<'col-sm-12'l>>" +
+                   "<'row'<'col-sm-12'tr>>" +
+                   "<'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
             "stateSave": true, // حفظ حالة الجدول (البحث، الترتيب، الصفحة)
             "stateDuration": 60 * 60 * 24, // حفظ لمدة يوم واحد
             "processing": true,
             "deferRender": true // تحسين الأداء للجداول الكبيرة
+        });
+
+        // ربط مربع البحث المخصص بالجدول
+        $('#customSearchInput').on('keyup', function () {
+            $('#materialsTable').DataTable().search(this.value).draw();
         });
     }
 });

@@ -4,6 +4,11 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// إجبار المتصفح على استخدام ترميز UTF-8 لحل مشكلة اللغة الغريبة في الإنتاج
+if (!headers_sent()) {
+    header('Content-Type: text/html; charset=UTF-8');
+}
+
 require_once __DIR__ . '/../../includes/path-helper.php';
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../includes/functions.php';
@@ -67,6 +72,72 @@ if (!function_exists('hasAnyMenuPermission')) {
     <!-- SweetAlert2 -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
+        rel="stylesheet" />
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/countup.js/2.8.0/countUp.umd.min.js"></script>
+
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- HTMX Configuration & Event Listeners -->
+    <script>
+        document.addEventListener('htmx:beforeSwap', function (evt) {
+            // حفظ موضع التمرير للقائمة الجانبية
+            const sidebarNav = document.querySelector('.sidebar-nav');
+            if (sidebarNav) {
+                sessionStorage.setItem('sidebarScrollTop', sidebarNav.scrollTop);
+            }
+        });
+
+        document.addEventListener('htmx:afterSwap', function (evt) {
+            // استعادة موضع التمرير قبل أن يقوم المتصفح بإعادة الرسم لتجنب الوميض
+            const sidebarNav = document.querySelector('.sidebar-nav');
+            const savedScroll = sessionStorage.getItem('sidebarScrollTop');
+            if (sidebarNav && savedScroll) {
+                sidebarNav.scrollTop = parseInt(savedScroll, 10);
+            }
+        });
+
+        document.addEventListener('htmx:beforeSwap', function (evt) {
+            // استبدال const/let بـ var في السكربتات المضمنة لمنع خطأ إعادة التعريف عند التنقل عبر HTMX
+            if (evt.detail && evt.detail.serverResponse) {
+                evt.detail.serverResponse = evt.detail.serverResponse.replace(
+                    /(<script(?:\s[^>]*)?>)([\s\S]*?)(<\/script>)/gi,
+                    function (match, openTag, content, closeTag) {
+                        // استبدال const و let في بداية الأسطر (النطاق العام فقط) بـ var
+                        var fixed = content.replace(/^(\s*)const\s+/gm, '$1var ');
+                        fixed = fixed.replace(/^(\s*)let\s+/gm, '$1var ');
+                        return openTag + fixed + closeTag;
+                    }
+                );
+            }
+        });
+
+        document.addEventListener('htmx:afterSettle', function (evt) {
+            // تأخير بسيط لضمان تقييم السكربتات المضمنة قبل إطلاق الأحداث
+            setTimeout(function () {
+                // إعادة تهيئة أحداث DOM و DataTables
+                window.dispatchEvent(new Event('DOMContentLoaded'));
+                if (typeof jQuery !== 'undefined') {
+                    jQuery(document).trigger('ready');
+                }
+            }, 50);
+        });
+    </script>
+
     <style>
         :root {
             /* الألوان الرئيسية - مطابقة لنظام kn */
@@ -122,6 +193,12 @@ if (!function_exists('hasAnyMenuPermission')) {
 
         * {
             font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body,
+        html {
+            overflow-x: hidden;
+            width: 100%;
         }
 
         body {
@@ -710,6 +787,14 @@ if (!function_exists('hasAnyMenuPermission')) {
                 margin-right: 0 !important;
             }
 
+            .header {
+                padding: 0.5rem 1rem !important;
+            }
+
+            .header .h4 {
+                font-size: 1.1rem !important;
+            }
+
             .mobile-toggle {
                 display: inline-block !important;
                 z-index: 1051;
@@ -1112,7 +1197,7 @@ if (!function_exists('hasAnyMenuPermission')) {
     </style>
 </head>
 
-<body>
+<body hx-boost="true">
     <!-- تعريف رمز الريال السعودي SVG عالمياً -->
     <svg style="display: none;">
         <symbol id="sar-symbol" viewBox="0 0 1124.14 1256.39">
@@ -1155,7 +1240,8 @@ if (!function_exists('hasAnyMenuPermission')) {
                 <!-- أوامر العمل -->
                 <?php if (hasAnyMenuPermission(['menu_work_orders_main', 'menu_work_orders_list', 'menu_work_orders_create', 'menu_work_orders_types', 'menu_work_orders_reports'])): ?>
                     <li class="nav-item nav-dropdown" id="workOrdersDropdown">
-                        <a class="nav-link nav-dropdown-toggle" href="#" onclick="toggleDropdown('workOrdersDropdown')">
+                        <a class="nav-link nav-dropdown-toggle" href="javascript:void(0)"
+                            onclick="toggleDropdown('workOrdersDropdown')">
                             <i class="fas fa-clipboard-list"></i>
                             <span>أوامر العمل</span>
                             <i class="fas fa-chevron-down dropdown-arrow"></i>
@@ -1197,7 +1283,8 @@ if (!function_exists('hasAnyMenuPermission')) {
                 <!-- المستخلصات -->
                 <?php if (hasAnyMenuPermission(['menu_extracts_main', 'menu_extracts_all', 'menu_extracts_partial', 'menu_extracts_final_regular', 'menu_extracts_final_partial', 'menu_extracts_create_partial', 'menu_extracts_create_final_reg', 'menu_extracts_create_final_part'])): ?>
                     <li class="nav-item nav-dropdown" id="extractsDropdown">
-                        <a class="nav-link nav-dropdown-toggle" href="#" onclick="toggleDropdown('extractsDropdown')">
+                        <a class="nav-link nav-dropdown-toggle" href="javascript:void(0)"
+                            onclick="toggleDropdown('extractsDropdown')">
                             <i class="fas fa-file-invoice"></i>
                             <span>المستخلصات</span>
                             <i class="fas fa-chevron-down dropdown-arrow"></i>
@@ -1262,7 +1349,8 @@ if (!function_exists('hasAnyMenuPermission')) {
                 <!-- إدارة المخزون -->
                 <?php if (hasAnyMenuPermission(['menu_inventory_main', 'menu_inventory_dashboard', 'menu_inventory_materials', 'menu_inventory_transactions', 'menu_inventory_requests', 'menu_inventory_inactive', 'menu_inventory_import_export', 'menu_inventory_catalog', 'menu_inventory_work_items', 'menu_inventory_analysis', 'menu_inventory_removed', 'menu_inventory_removed_analysis', 'menu_inventory_clients', 'menu_inventory_loans', 'menu_inventory_stocktaking'])): ?>
                     <li class="nav-item nav-dropdown" id="inventoryDropdown">
-                        <a class="nav-link nav-dropdown-toggle" href="#" onclick="toggleDropdown('inventoryDropdown')">
+                        <a class="nav-link nav-dropdown-toggle" href="javascript:void(0)"
+                            onclick="toggleDropdown('inventoryDropdown')">
                             <i class="fas fa-warehouse"></i>
                             <span>إدارة المخزون</span>
                             <i class="fas fa-chevron-down dropdown-arrow"></i>
@@ -1388,7 +1476,8 @@ if (!function_exists('hasAnyMenuPermission')) {
                 <!-- شهادات الإنجاز -->
                 <?php if (hasAnyMenuPermission(['menu_certificates_main', 'menu_cert_list', 'menu_cert_create', 'menu_cert_reports', 'menu_cert_import'])): ?>
                     <li class="nav-item nav-dropdown" id="certificatesDropdown">
-                        <a class="nav-link nav-dropdown-toggle" href="#" onclick="toggleDropdown('certificatesDropdown')">
+                        <a class="nav-link nav-dropdown-toggle" href="javascript:void(0)"
+                            onclick="toggleDropdown('certificatesDropdown')">
                             <i class="fas fa-certificate"></i>
                             <span>شهادات الإنجاز</span>
                             <i class="fas fa-chevron-down dropdown-arrow"></i>
@@ -1431,7 +1520,8 @@ if (!function_exists('hasAnyMenuPermission')) {
                 <!-- نظام الإنتاجية -->
                 <?php if (hasAnyMenuPermission(['menu_productivity_main', 'menu_prod_dashboard', 'menu_prod_work_orders', 'menu_prod_work_items', 'menu_prod_daily_logs', 'menu_prod_approvals', 'menu_prod_approvers', 'menu_prod_reports'])): ?>
                     <li class="nav-item nav-dropdown" id="productivityDropdown">
-                        <a class="nav-link nav-dropdown-toggle" href="#" onclick="toggleDropdown('productivityDropdown')">
+                        <a class="nav-link nav-dropdown-toggle" href="javascript:void(0)"
+                            onclick="toggleDropdown('productivityDropdown')">
                             <i class="fas fa-chart-line"></i>
                             <span>نظام الإنتاجية</span>
                             <i class="fas fa-chevron-down dropdown-arrow"></i>
@@ -1445,13 +1535,6 @@ if (!function_exists('hasAnyMenuPermission')) {
                                 </a>
                             <?php endif; ?>
 
-                            <?php if (hasPermission('menu_prod_work_orders')): ?>
-                                <a class="nav-dropdown-item <?= $currentPage === 'productivity-work-orders' ? 'active' : '' ?>"
-                                    href="<?= path('productivity/work-orders/index.php') ?>">
-                                    <i class="fas fa-clipboard-list"></i>
-                                    <span>أوامر العمل</span>
-                                </a>
-                            <?php endif; ?>
 
                             <?php if (hasPermission('menu_prod_work_items')): ?>
                                 <a class="nav-dropdown-item <?= $currentPage === 'productivity-work-items' ? 'active' : '' ?>"
@@ -1499,7 +1582,8 @@ if (!function_exists('hasAnyMenuPermission')) {
                 <!-- إدارة الموقع -->
                 <?php if (hasAnyMenuPermission(['menu_site_management_main', 'menu_site_users', 'menu_site_roles', 'menu_site_branches', 'menu_site_reference', 'menu_site_work_items', 'menu_site_admin', 'menu_site_settings', 'menu_site_invoice', 'menu_site_notifications'])): ?>
                     <li class="nav-item nav-dropdown" id="siteManagementDropdown">
-                        <a class="nav-link nav-dropdown-toggle" href="#" onclick="toggleDropdown('siteManagementDropdown')">
+                        <a class="nav-link nav-dropdown-toggle" href="javascript:void(0)"
+                            onclick="toggleDropdown('siteManagementDropdown')">
                             <i class="fas fa-cogs"></i>
                             <span>إدارة الموقع</span>
                             <i class="fas fa-chevron-down dropdown-arrow"></i>
@@ -1543,14 +1627,6 @@ if (!function_exists('hasAnyMenuPermission')) {
                                 </a>
                             <?php endif; ?>
 
-                            <?php if (hasPermission('menu_site_work_items')): ?>
-                                <a class="nav-dropdown-item <?= $currentPage === 'work-items' ? 'active' : '' ?>"
-                                    href="<?= path('admin/work-items/index.php') ?>">
-                                    <i class="fas fa-tools"></i>
-                                    <span>إدارة بنود الأعمال</span>
-                                </a>
-                            <?php endif; ?>
-
                             <?php if (hasPermission('menu_site_admin')): ?>
                                 <a class="nav-dropdown-item <?= $currentPage === 'admin' ? 'active' : '' ?>"
                                     href="<?= path('admin/index.php') ?>">
@@ -1570,6 +1646,11 @@ if (!function_exists('hasAnyMenuPermission')) {
                                 <a class="nav-dropdown-item" href="<?= path('settings/invoice-settings.php') ?>">
                                     <i class="fas fa-file-invoice"></i>
                                     <span>إعدادات الفواتير الضريبية</span>
+                                </a>
+                                <a class="nav-dropdown-item <?= $currentPage === 'qoyod-settings' ? 'active' : '' ?>"
+                                    href="<?= path('settings/qoyod_settings.php') ?>">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <span>إعدادات ربط قيود</span>
                                 </a>
                             <?php endif; ?>
 
@@ -1606,13 +1687,15 @@ if (!function_exists('hasAnyMenuPermission')) {
                         <h1 class="h4 mb-0 fw-bold text-dark text-truncate"><?= htmlspecialchars($pageTitle) ?></h1>
 
                         <?php if (!empty($breadcrumbs)): ?>
-                            <div class="mx-3" style="width: 1px; height: 24px; background-color: #e2e8f0;"></div>
-                            <nav aria-label="breadcrumb">
+                            <div class="mx-3 d-none d-md-block"
+                                style="width: 1px; height: 24px; background-color: #e2e8f0;"></div>
+                            <nav aria-label="breadcrumb" class="d-none d-md-block">
                                 <ol class="breadcrumb mb-0" style="font-size: 0.85rem; font-weight: 500;">
                                     <?php foreach ($breadcrumbs as $index => $crumb): ?>
                                         <?php if ($index === count($breadcrumbs) - 1): ?>
                                             <li class="breadcrumb-item active text-secondary" aria-current="page">
-                                                <?= htmlspecialchars($crumb['title']) ?></li>
+                                                <?= htmlspecialchars($crumb['title']) ?>
+                                            </li>
                                         <?php else: ?>
                                             <li class="breadcrumb-item">
                                                 <a href="<?= path($crumb['url']) ?>"
@@ -1627,14 +1710,14 @@ if (!function_exists('hasAnyMenuPermission')) {
 
                     <div class="dropdown">
                         <button
-                            class="btn btn-light rounded-pill shadow-sm border-0 px-3 py-2 d-flex align-items-center gap-2 dropdown-toggle"
+                            class="btn btn-light rounded-pill shadow-sm border-0 px-2 px-sm-3 py-2 d-flex align-items-center gap-2 dropdown-toggle"
                             type="button" data-bs-toggle="dropdown" aria-expanded="false"
                             style="background-color: #fff;">
                             <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center"
                                 style="width: 32px; height: 32px; font-size: 14px;">
                                 <i class="fas fa-user"></i>
                             </div>
-                            <span class="fw-bold text-dark"
+                            <span class="fw-bold text-dark d-none d-sm-inline-block"
                                 style="font-size: 0.95rem;"><?= htmlspecialchars($user['full_name'] ?? 'مستخدم') ?></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-2"
@@ -1646,7 +1729,8 @@ if (!function_exists('hasAnyMenuPermission')) {
                                         <i class="fas fa-user"></i>
                                     </div>
                                     <h6 class="mb-0 fw-bold text-dark">
-                                        <?= htmlspecialchars($user['full_name'] ?? 'مستخدم') ?></h6>
+                                        <?= htmlspecialchars($user['full_name'] ?? 'مستخدم') ?>
+                                    </h6>
                                     <small class="text-muted">نظام تِقان</small>
                                 </div>
                             </li>
@@ -1666,7 +1750,7 @@ if (!function_exists('hasAnyMenuPermission')) {
                                 <hr class="dropdown-divider my-2">
                             </li>
                             <li><a class="dropdown-item py-2 px-4 d-flex align-items-center gap-3 text-danger"
-                                    href="<?= path('logout.php') ?>">
+                                    href="<?= path('logout.php') ?>" hx-boost="false">
                                     <div class="bg-danger bg-opacity-10 rounded p-2 text-danger d-flex align-items-center justify-content-center"
                                         style="width: 32px; height: 32px;"><i class="fas fa-sign-out-alt"></i></div>
                                     <span class="fw-bold">تسجيل الخروج</span>
@@ -1683,25 +1767,6 @@ if (!function_exists('hasAnyMenuPermission')) {
                 <?php endif; ?>
             </div>
         </div>
-
-        <!-- Bootstrap JavaScript -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-        <!-- jQuery (إذا كان مطلوباً) -->
-        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-        <!-- DataTables JavaScript (إذا كان مطلوباً) -->
-        <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-        <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-
-        <!-- SweetAlert2 JavaScript -->
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
-
-        <!-- Chart.js -->
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
-        <!-- CountUp.js - للأنميشن على الأرقام -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/countup.js/2.8.0/countUp.umd.min.js"></script>
 
         <!-- Custom JavaScript -->
         <script>
@@ -1847,7 +1912,7 @@ if (!function_exists('hasAnyMenuPermission')) {
             }
 
             // استعادة حالة القائمة الجانبية والقوائم المنسدلة عند تحميل الصفحة
-            document.addEventListener('DOMContentLoaded', function () {
+            (function () {
                 const sidebar = document.getElementById('sidebar');
                 const mainContent = document.querySelector('.main-content');
                 const isMobile = window.innerWidth <= 768;
@@ -1911,7 +1976,7 @@ if (!function_exists('hasAnyMenuPermission')) {
                         // لا نحتاج لمنع الحدث الافتراضي هنا
                     });
                 });
-            });
+            })();
 
             // معالجة تغيير حجم الشاشة
             window.addEventListener('resize', function () {
@@ -2162,11 +2227,11 @@ if (!function_exists('hasAnyMenuPermission')) {
             }
 
             // تهيئة الرسوم البيانية عند تحميل الصفحة
-            document.addEventListener('DOMContentLoaded', function () {
+            (function () {
                 initializeDashboardCharts();
                 // تشغيل أنميشن الأرقام بعد تحميل الصفحة
                 setTimeout(animateNumbers, 300);
-            });
+            })();
         </script>
 
         <!-- تثبيت رأس الجدول وشريط التمرير للمستخلصات -->
@@ -2353,7 +2418,6 @@ if (!function_exists('hasAnyMenuPermission')) {
                 }
             });
         </script>
-
 </body>
 
 </html>

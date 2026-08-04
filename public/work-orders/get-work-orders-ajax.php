@@ -368,7 +368,8 @@ try {
                demolition.status as demolition_status,
                f1.status as f1_status,
                assets_receipt.status as assets_receipt_status,
-               con.contract_number as contract_number
+               con.contract_number as contract_number,
+               COALESCE(pwi.overall_progress, 0) as overall_progress
         FROM work_orders wo
         LEFT JOIN work_order_types wot ON wo.work_order_type_id = wot.id
         LEFT JOIN branches b ON wo.branch_id = b.id
@@ -385,6 +386,11 @@ try {
         LEFT JOIN work_order_attachments f1 ON wo.id = f1.work_order_id AND f1.form_type = 'f1_form'
         LEFT JOIN work_order_attachments assets_receipt ON wo.id = assets_receipt.work_order_id AND assets_receipt.form_type = 'assets_receipt_form'
         LEFT JOIN contracts con ON wo.contract_id = con.id
+        LEFT JOIN (
+            SELECT work_order_id, AVG(progress_percentage) as overall_progress 
+            FROM productivity_work_items 
+            GROUP BY work_order_id
+        ) pwi ON wo.id = pwi.work_order_id
         $whereClause
         GROUP BY wo.id
         ORDER BY $orderColumn $orderDir
@@ -450,7 +456,8 @@ try {
             'demolition_status' => $workOrder['demolition_status'] ?? 'not_attached',
             'f1_status' => $workOrder['f1_status'] ?? 'not_attached',
             'assets_receipt_status' => $workOrder['assets_receipt_status'] ?? 'not_applicable',
-            'contract_number' => $workOrder['contract_number'] ?? ''
+            'contract_number' => $workOrder['contract_number'] ?? '',
+            'overall_progress' => round($workOrder['overall_progress'], 1)
         ];
     }
     

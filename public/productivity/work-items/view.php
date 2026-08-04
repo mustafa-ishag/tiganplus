@@ -57,14 +57,14 @@ $sql = "
         wi.standard_price,
         wi.unit as original_unit,
         u.username as created_by_name,
-        -- استخدام وصف البند من productivity_work_items أولاً، ثم من work_items كبديل
+        -- استخدام وصف البند من productivity_work_items أولاً، ثم من contract_work_items كبديل
         COALESCE(pwi.work_item_description, wi.description) as work_item_description,
         COALESCE(pwi.unit, wi.unit) as unit
     FROM productivity_work_items pwi
     JOIN work_orders wo ON pwi.work_order_id = wo.id
     JOIN branches b ON wo.branch_id = b.id
     LEFT JOIN work_order_types wot ON wo.work_order_type_id = wot.id
-    LEFT JOIN work_items wi ON pwi.work_item_id = wi.id
+    LEFT JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
     LEFT JOIN users u ON pwi.created_by = u.id
     WHERE pwi.id = ?
 ";
@@ -174,7 +174,7 @@ $priorityClass = [
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="<?= path('productivity/index.php') ?>">نظام الإنتاجية</a></li>
-                <li class="breadcrumb-item"><a href="<?= path('productivity/work-orders/index.php') ?>">أوامر العمل</a></li>
+                <li class="breadcrumb-item"><a href="<?= path('work-orders/index.php') ?>">أوامر العمل</a></li>
                 <li class="breadcrumb-item"><a href="<?= path('productivity/work-items/index.php?work_order_id=' . $item['work_order_id']) ?>">بنود الإنتاجية</a></li>
                 <li class="breadcrumb-item active">تفاصيل البند</li>
             </ol>

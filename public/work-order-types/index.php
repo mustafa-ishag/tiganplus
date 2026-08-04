@@ -35,42 +35,43 @@ ob_start();
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <p class="text-muted mb-0">إدارة أنواع أوامر العمل</p>
+        <h4 class="fw-bold text-dark mb-1">أنواع أوامر العمل</h4>
+        <p class="text-muted mb-0 small">إدارة أنواع أوامر العمل في النظام</p>
     </div>
     <div>
+        <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="openCreateModal()">
+            <i class="fas fa-plus me-2"></i>
+            إضافة نوع جديد
+        </button>
+
         <!-- Import/Export Dropdown -->
-        <div class="btn-group me-2" role="group">
-            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="btn-group ms-2" role="group">
+            <button type="button" class="btn btn-light rounded-pill px-3 shadow-sm border-0 text-success fw-bold dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="fas fa-exchange-alt me-2"></i>
                 استيراد/تصدير
             </button>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu shadow border-0" style="border-radius: 12px;">
                 <li>
-                    <a class="dropdown-item" href="#" onclick="openExportModal()">
-                        <i class="fas fa-download me-2"></i>
+                    <a class="dropdown-item py-2" href="#" onclick="openExportModal()">
+                        <i class="fas fa-file-export me-2 text-success"></i>
                         تصدير البيانات
                     </a>
                 </li>
                 <li>
-                    <a class="dropdown-item" href="import.php">
-                        <i class="fas fa-upload me-2"></i>
+                    <a class="dropdown-item py-2" href="import.php">
+                        <i class="fas fa-file-import me-2 text-primary"></i>
                         استيراد البيانات
                     </a>
                 </li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
-                    <a class="dropdown-item" href="sample-import.csv" download>
-                        <i class="fas fa-file-csv me-2"></i>
+                    <a class="dropdown-item py-2" href="sample-import.csv" download>
+                        <i class="fas fa-download me-2 text-muted"></i>
                         تحميل نموذج CSV
                     </a>
                 </li>
             </ul>
         </div>
-
-        <button type="button" class="btn btn-primary" onclick="openCreateModal()">
-            <i class="fas fa-plus me-2"></i>
-            إضافة نوع جديد
-        </button>
     </div>
 </div>
 
@@ -84,61 +85,41 @@ ob_start();
 
 <!-- Statistics Cards -->
 <div class="row mb-4">
-    <div class="col-xl-4 col-md-6 mb-4">
-        <div class="card border-start border-primary border-4">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="small fw-bold text-primary text-uppercase mb-1">
-                            إجمالي الأنواع
-                        </div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">
-                            <?= count($workOrderTypes) ?>
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-list fa-2x text-gray-300"></i>
-                    </div>
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="dash-card h-100 p-3 border-0">
+            <div class="d-flex justify-content-between align-items-center h-100">
+                <div class="me-2">
+                    <div class="text-muted fw-bold mb-1" style="font-size: 0.7rem; line-height: 1.2;">إجمالي الأنواع</div>
+                    <div class="h5 mb-0 fw-bold text-dark"><?= count($workOrderTypes) ?></div>
+                </div>
+                <div class="icon-circle bg-primary-soft" style="width: 35px; height: 35px; font-size: 1rem; flex-shrink: 0;">
+                    <i class="fas fa-list-alt text-primary"></i>
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="col-xl-4 col-md-6 mb-4">
-        <div class="card border-start border-success border-4">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="small fw-bold text-success text-uppercase mb-1">
-                            أنواع نشطة
-                        </div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">
-                            <?= count(array_filter($workOrderTypes, fn($type) => $type['status'] === 'active')) ?>
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
-                    </div>
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="dash-card h-100 p-3 border-0">
+            <div class="d-flex justify-content-between align-items-center h-100">
+                <div class="me-2">
+                    <div class="text-muted fw-bold mb-1" style="font-size: 0.7rem; line-height: 1.2;">أنواع نشطة</div>
+                    <div class="h5 mb-0 fw-bold text-dark"><?= count(array_filter($workOrderTypes, fn($type) => $type['status'] === 'active')) ?></div>
+                </div>
+                <div class="icon-circle bg-success-soft" style="width: 35px; height: 35px; font-size: 1rem; flex-shrink: 0;">
+                    <i class="fas fa-check-circle text-success"></i>
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="col-xl-4 col-md-6 mb-4">
-        <div class="card border-start border-warning border-4">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="small fw-bold text-warning text-uppercase mb-1">
-                            أنواع غير نشطة
-                        </div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">
-                            <?= count(array_filter($workOrderTypes, fn($type) => $type['status'] === 'inactive')) ?>
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-pause-circle fa-2x text-gray-300"></i>
-                    </div>
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="dash-card h-100 p-3 border-0">
+            <div class="d-flex justify-content-between align-items-center h-100">
+                <div class="me-2">
+                    <div class="text-muted fw-bold mb-1" style="font-size: 0.7rem; line-height: 1.2;">أنواع غير نشطة</div>
+                    <div class="h5 mb-0 fw-bold text-dark"><?= count(array_filter($workOrderTypes, fn($type) => $type['status'] === 'inactive')) ?></div>
+                </div>
+                <div class="icon-circle bg-warning-soft" style="width: 35px; height: 35px; font-size: 1rem; flex-shrink: 0;">
+                    <i class="fas fa-pause-circle text-warning"></i>
                 </div>
             </div>
         </div>
@@ -146,18 +127,20 @@ ob_start();
 </div>
 
 <!-- Work Order Types Table -->
-<div class="card">
-    <div class="card-header">
-        <h5 class="card-title">
-            <i class="fas fa-list me-2"></i>
-            قائمة أنواع أوامر العمل
-            <span class="badge bg-primary ms-2"><?= count($workOrderTypes) ?> نوع</span>
-        </h5>
+<div class="card dash-card shadow-sm border-0 mb-5">
+    <div class="card-header bg-white border-0 py-3" style="border-radius: 20px 20px 0 0;">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list me-2"></i>
+                قائمة أنواع أوامر العمل
+                <span class="badge bg-primary ms-2"><?= count($workOrderTypes) ?> نوع</span>
+            </h5>
+        </div>
     </div>
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-hover" id="workOrderTypesTable" width="100%" cellspacing="0">
-                <thead class="table-dark">
+            <table class="table table-hover align-middle" id="workOrderTypesTable" width="100%" cellspacing="0" style="color: #475569;">
+                <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; color: #64748b;">
                     <tr>
                         <th>الرمز</th>
                         <th>الوصف</th>
@@ -176,35 +159,35 @@ ob_start();
                             <td><?= htmlspecialchars($type['description']) ?></td>
                             <td>
                                 <?php if ($type['status'] === 'active'): ?>
-                                    <span class="badge bg-success">نشط</span>
+                                    <span class="badge bg-success-soft text-success rounded-pill px-3 py-1 border border-success-subtle">نشط</span>
                                 <?php else: ?>
-                                    <span class="badge bg-warning">غير نشط</span>
+                                    <span class="badge bg-warning-soft text-warning rounded-pill px-3 py-1 border border-warning-subtle">غير نشط</span>
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <?= date('Y-m-d H:i', strtotime($type['created_at'])) ?>
+                                <?= date('Y-m-d', strtotime($type['created_at'])) ?>
                             </td>
                             <td>
-                                <?= date('Y-m-d H:i', strtotime($type['updated_at'])) ?>
+                                <?= date('Y-m-d', strtotime($type['updated_at'])) ?>
                             </td>
                             <td>
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-sm btn-outline-info" 
+                                <div class="d-flex gap-1" role="group">
+                                    <button type="button" class="btn btn-sm btn-light text-info border-0 shadow-sm" style="border-radius: 0.5rem;" 
                                             onclick="viewType(<?= $type['id'] ?>)" 
                                             title="عرض">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                    <button type="button" class="btn btn-sm btn-light text-primary border-0 shadow-sm" style="border-radius: 0.5rem;"
                                             onclick="editType(<?= $type['id'] ?>)"
                                             title="تعديل">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button type="button" class="btn btn-sm btn-outline-<?= $type['status'] === 'active' ? 'warning' : 'success' ?>"
+                                    <button type="button" class="btn btn-sm btn-light <?= $type['status'] === 'active' ? 'text-warning' : 'text-success' ?> border-0 shadow-sm" style="border-radius: 0.5rem;"
                                             onclick="toggleStatus(<?= $type['id'] ?>, '<?= $type['status'] ?>')"
                                             title="<?= $type['status'] === 'active' ? 'إلغاء التفعيل' : 'تفعيل' ?>">
                                         <i class="fas fa-<?= $type['status'] === 'active' ? 'pause' : 'play' ?>"></i>
                                     </button>
-                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                    <button type="button" class="btn btn-sm btn-light text-danger border-0 shadow-sm" style="border-radius: 0.5rem;"
                                             onclick="deleteType(<?= $type['id'] ?>, '<?= htmlspecialchars($type['type_code']) ?>')"
                                             title="حذف">
                                         <i class="fas fa-trash"></i>

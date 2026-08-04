@@ -136,7 +136,7 @@ class ProductivityDailyLog
                 FROM productivity_daily_logs pdl
                 JOIN productivity_work_items pwi ON pdl.work_item_id = pwi.id
                 JOIN work_orders wo ON pwi.work_order_id = wo.id
-                JOIN work_items wi ON pwi.work_item_id = wi.id
+                JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
                 JOIN branches b ON wo.branch_id = b.id
                 JOIN users u ON pdl.created_by = u.id
                 WHERE pdl.id = ?
@@ -233,7 +233,7 @@ class ProductivityDailyLog
                 FROM productivity_daily_logs pdl
                 JOIN productivity_work_items pwi ON pdl.work_item_id = pwi.id
                 JOIN work_orders wo ON pwi.work_order_id = wo.id
-                JOIN work_items wi ON pwi.work_item_id = wi.id
+                JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
                 JOIN branches b ON wo.branch_id = b.id
                 JOIN users u ON pdl.created_by = u.id
                 WHERE 1=1

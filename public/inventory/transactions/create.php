@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // بدء الجلسة إذا لم تكن نشطة
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

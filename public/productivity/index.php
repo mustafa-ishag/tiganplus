@@ -1,4 +1,4 @@
-<?php
+?<?php
 /**
  * لوحة تحكم نظام الإنتاجية
  * Productivity System Dashboard

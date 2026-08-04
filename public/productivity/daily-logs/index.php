@@ -88,7 +88,7 @@ $workItemsQuery = "
     SELECT pwi.id, wo.work_order_number, wi.item_number, wi.description, b.name as branch_name
     FROM productivity_work_items pwi
     JOIN work_orders wo ON pwi.work_order_id = wo.id
-    JOIN work_items wi ON pwi.work_item_id = wi.id
+    JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
     JOIN branches b ON wo.branch_id = b.id
     WHERE pwi.status = 'active'
 ";
@@ -149,7 +149,7 @@ ob_start();
                     <?= htmlspecialchars($selectedWorkOrder['notes']) ?>
                 </p>
                 <div class="mt-2">
-                    <a href="<?= path('productivity/work-orders/index.php') ?>" class="btn btn-sm btn-outline-secondary me-2">
+                    <a href="<?= path('work-orders/index.php') ?>" class="btn btn-sm btn-outline-secondary me-2">
                         <i class="fas fa-arrow-right me-2"></i>
                         العودة لأوامر العمل
                     </a>

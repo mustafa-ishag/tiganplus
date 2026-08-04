@@ -19,7 +19,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // التحقق من الصلاحيات
-if (!hasPermission('work_orders_view')) {
+if (!hasPermission('work_orders_view')) {   
     header('Location: ' . path('dashboard.php'));
     exit();
 }
@@ -562,6 +562,7 @@ ob_start();
                         <th>تاريخ تأكيد الشهادة</th>
                         <th>حالة الصرف</th>
                         <th>الحالة</th>
+                        <th>الإنجاز (%)</th>
                         <th class="forms-column">الحفر الدقيق</th>
                         <th class="forms-column">الكشط</th>
                         <th class="forms-column">التخريد</th>
@@ -1927,6 +1928,7 @@ $(document).ready(function() {
                 { "data": "certificate_confirmed_date" },
                 { "data": "disbursement_status" },
                 { "data": "status" },
+                { "data": "overall_progress" },
                 { "data": "precise_drilling_status" },
                 { "data": "excavation_status" },
                 { "data": "demolition_status" },
@@ -2199,35 +2201,55 @@ $(document).ready(function() {
                 {
                     "targets": 16,
                     "render": function(data, type, row) {
-                        return renderFormStatus(data, 'الحفر الدقيق', row.id, 'precise_drilling_form');
+                        const progress = data ? parseFloat(data) : 0;
+                        let colorClass = 'secondary';
+                        if (progress >= 100) colorClass = 'success';
+                        else if (progress > 50) colorClass = 'primary';
+                        else if (progress > 0) colorClass = 'warning';
+                        
+                        let html = '<div class="d-flex flex-column align-items-center">';
+                        html += '<div class="progress w-100 mb-1" style="height: 6px;">';
+                        html += '<div class="progress-bar bg-' + colorClass + '" role="progressbar" style="width: ' + progress + '%" aria-valuenow="' + progress + '" aria-valuemin="0" aria-valuemax="100"></div>';
+                        html += '</div>';
+                        html += '<div class="d-flex justify-content-between w-100 align-items-center">';
+                        html += '<span class="small fw-bold text-' + colorClass + '">' + progress + '%</span>';
+                        html += '<a href="' + escapeHtml('../productivity/work-items/index.php?work_order_id=' + row.id) + '" class="btn btn-xs btn-outline-primary py-0 px-1" title="إضافة إنجاز يومي"><i class="fas fa-plus"></i></a>';
+                        html += '</div></div>';
+                        return html;
                     }
                 },
                 {
                     "targets": 17,
                     "render": function(data, type, row) {
-                        return renderFormStatus(data, 'الكشط', row.id, 'excavation_form');
+                        return renderFormStatus(data, 'الحفر الدقيق', row.id, 'precise_drilling_form');
                     }
                 },
                 {
                     "targets": 18,
                     "render": function(data, type, row) {
-                        return renderFormStatus(data, 'التخريد', row.id, 'demolition_form');
+                        return renderFormStatus(data, 'الكشط', row.id, 'excavation_form');
                     }
                 },
                 {
                     "targets": 19,
                     "render": function(data, type, row) {
-                        return renderFormStatus(data, 'F1', row.id, 'f1_form');
+                        return renderFormStatus(data, 'التخريد', row.id, 'demolition_form');
                     }
                 },
                 {
                     "targets": 20,
                     "render": function(data, type, row) {
-                        return renderFormStatus(data, 'استلام الأصول (211)', row.id, 'assets_receipt_form');
+                        return renderFormStatus(data, 'F1', row.id, 'f1_form');
                     }
                 },
                 {
                     "targets": 21,
+                    "render": function(data, type, row) {
+                        return renderFormStatus(data, 'استلام الأصول (211)', row.id, 'assets_receipt_form');
+                    }
+                },
+                {
+                    "targets": 22,
                     "render": function(data, type, row) {
                         let html = '<div class="d-flex gap-1 justify-content-center">';
 
@@ -3430,21 +3452,24 @@ function openExportModal() {
     $('#exportModal').modal('show');
 }
 
-// دالة بدء التصدير - تصدير جميع أوامر العمل بدون فلاتر
+// دالة بدء التصدير - تصدير أوامر العمل حسب الفلاتر المختارة
 function startExport() {
     const form = document.getElementById('exportForm');
     const formData = new FormData(form);
 
-    // الحصول على خيارات التصدير من النموذج فقط
+    // الحصول على جميع خيارات التصدير من النموذج
     const format = formData.get('format');
+    const status = formData.get('status');
+    const department = formData.get('department');
+    const branchId = formData.get('branch_id');
     const includeExtracts = formData.get('include_extracts') ? '1' : '0';
     const includeAttachments = formData.get('include_attachments') ? '1' : '0';
 
-    // بناء URL التصدير - بدون أي فلاتر (تصدير جميع البيانات)
+    // بناء URL التصدير - استخدام الفلاتر المختارة من النموذج
     let exportUrl = `export.php?format=${format}`;
-    exportUrl += `&status=all`;
-    exportUrl += `&department=all`;
-    exportUrl += `&branch_id=all`;
+    exportUrl += `&status=${encodeURIComponent(status)}`;
+    exportUrl += `&department=${encodeURIComponent(department)}`;
+    exportUrl += `&branch_id=${encodeURIComponent(branchId)}`;
     exportUrl += `&include_extracts=${includeExtracts}`;
     exportUrl += `&include_attachments=${includeAttachments}`;
 

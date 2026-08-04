@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (session_status() === PHP_SESSION_NONE) session_start();
 if (!defined('ETGAN_SYSTEM')) define('ETGAN_SYSTEM', true);
 require_once __DIR__ . '/../../../config/config.php';

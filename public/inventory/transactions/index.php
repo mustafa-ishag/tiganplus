@@ -103,36 +103,29 @@ $currentPage = 'inventory-transactions';
 ob_start();
 ?>
 
-<div class="container-fluid">
+<div class="container-fluid py-4">
     <!-- رأس الصفحة -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2 class="h3 mb-0">
-                <i class="fas fa-exchange-alt text-primary me-2"></i>
-                معاملات المخزون
-            </h2>
-            <p class="text-muted mb-0">عرض وإدارة جميع معاملات الوارد والصادر والتحويل</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center">
+            <div class="icon-circle bg-primary text-white shadow-sm me-3" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold text-dark mb-1">معاملات المخزون</h4>
+                <p class="text-muted mb-0 small">عرض وإدارة جميع معاملات الوارد والصادر والتحويل</p>
+            </div>
         </div>
-        <div class="col-md-4 text-end">
+        <div class="d-flex gap-2">
             <?php if (hasPermission('inventory_transactions_create')): ?>
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="fas fa-plus me-1"></i>
-                        إضافة معاملة
+                <div class="btn-group shadow-sm hover-elevate rounded-pill" role="group">
+                    <button type="button" class="btn btn-primary fw-bold px-4 rounded-pill dropdown-toggle border-0" data-bs-toggle="dropdown" aria-expanded="false" style="padding-top: 0.6rem; padding-bottom: 0.6rem;">
+                        <i class="fas fa-plus-circle me-2"></i>إضافة معاملة
                     </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="create.php?type=incoming">
-                                <i class="fas fa-arrow-down text-success me-2"></i>معاملة وارد
-                            </a></li>
-                        <li><a class="dropdown-item" href="create.php?type=outgoing">
-                                <i class="fas fa-arrow-up text-danger me-2"></i>معاملة صادر
-                            </a></li>
-                        <li><a class="dropdown-item" href="create.php?type=transfer">
-                                <i class="fas fa-exchange-alt text-info me-2"></i>معاملة تحويل
-                            </a></li>
-                        <li><a class="dropdown-item" href="create.php?type=return">
-                                <i class="fas fa-undo text-warning me-2"></i>معاملة مرتجع
-                            </a></li>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 16px; margin-top: 8px;">
+                        <li><a class="dropdown-item py-2 fw-bold text-success" href="create.php?type=incoming"><i class="fas fa-arrow-down me-2"></i>معاملة وارد</a></li>
+                        <li><a class="dropdown-item py-2 fw-bold text-danger" href="create.php?type=outgoing"><i class="fas fa-arrow-up me-2"></i>معاملة صادر</a></li>
+                        <li><a class="dropdown-item py-2 fw-bold text-info" href="create.php?type=transfer"><i class="fas fa-exchange-alt me-2"></i>معاملة تحويل</a></li>
+                        <li><a class="dropdown-item py-2 fw-bold text-warning" href="create.php?type=return"><i class="fas fa-undo me-2"></i>معاملة مرتجع</a></li>
                     </ul>
                 </div>
             <?php endif; ?>
@@ -140,47 +133,47 @@ ob_start();
     </div>
 
     <!-- إحصائيات سريعة -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-title">إجمالي المعاملات</h6>
-                            <h3 class="mb-0"><?= number_format($stats['total_transactions']) ?></h3>
+                            <span class="text-muted small fw-bold d-block mb-1">إجمالي المعاملات</span>
+                            <h3 class="mb-0 fw-bold text-dark"><?= number_format($stats['total_transactions']) ?></h3>
                         </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-exchange-alt fa-2x opacity-75"></i>
+                        <div class="icon-circle bg-primary-soft text-primary" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                            <i class="fas fa-exchange-alt"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-title">معاملات معتمدة</h6>
-                            <h3 class="mb-0"><?= number_format($stats['approved_transactions']) ?></h3>
+                            <span class="text-muted small fw-bold d-block mb-1">معاملات معتمدة</span>
+                            <h3 class="mb-0 fw-bold text-success"><?= number_format($stats['approved_transactions']) ?></h3>
                         </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                        <div class="icon-circle bg-success-soft text-success" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                            <i class="fas fa-check-circle"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-title">معاملات معلقة</h6>
-                            <h3 class="mb-0"><?= number_format($stats['pending_transactions']) ?></h3>
+                            <span class="text-muted small fw-bold d-block mb-1">معاملات معلقة</span>
+                            <h3 class="mb-0 fw-bold text-warning"><?= number_format($stats['pending_transactions']) ?></h3>
                         </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-clock fa-2x opacity-75"></i>
+                        <div class="icon-circle bg-warning-soft text-warning" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                            <i class="fas fa-clock"></i>
                         </div>
                     </div>
                 </div>
@@ -189,18 +182,21 @@ ob_start();
     </div>
 
     <!-- أدوات البحث والتصفية -->
-    <div class="card mb-4">
-        <div class="card-body">
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+        <div class="card-header bg-white border-0 p-4 pb-0 d-flex align-items-center">
+            <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-filter text-muted me-2"></i>البحث والتصفية</h6>
+        </div>
+        <div class="card-body p-4">
             <form method="GET" class="row g-3">
                 <div class="col-md-3">
-                    <label for="search" class="form-label">البحث</label>
-                    <input type="text" class="form-control" id="search" name="search"
+                    <label for="search" class="form-label small fw-bold text-muted">البحث</label>
+                    <input type="text" class="form-control bg-light border-0" id="search" name="search"
                         value="<?= htmlspecialchars($search) ?>" placeholder="رقم المعاملة أو الملاحظات">
                 </div>
                 <div class="col-md-2">
-                    <label for="transaction_type" class="form-label">نوع المعاملة</label>
-                    <select class="form-select" id="transaction_type" name="transaction_type">
-                        <option value="">جميع الأنواع</option>
+                    <label for="transaction_type" class="form-label small fw-bold text-muted">نوع المعاملة</label>
+                    <select class="form-select bg-light border-0" id="transaction_type" name="transaction_type">
+                        <option value="">الكل</option>
                         <option value="incoming" <?= $transactionType === 'incoming' ? 'selected' : '' ?>>وارد</option>
                         <option value="outgoing" <?= $transactionType === 'outgoing' ? 'selected' : '' ?>>صادر</option>
                         <option value="transfer" <?= $transactionType === 'transfer' ? 'selected' : '' ?>>تحويل</option>
@@ -212,108 +208,103 @@ ob_start();
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label for="status" class="form-label">الحالة</label>
-                    <select class="form-select" id="status" name="status">
-                        <option value="">جميع الحالات</option>
+                    <label for="status" class="form-label small fw-bold text-muted">الحالة</label>
+                    <select class="form-select bg-light border-0" id="status" name="status">
+                        <option value="">الكل</option>
                         <option value="pending" <?= $status === 'pending' ? 'selected' : '' ?>>معلق</option>
                         <option value="approved" <?= $status === 'approved' ? 'selected' : '' ?>>معتمد</option>
                         <option value="rejected" <?= $status === 'rejected' ? 'selected' : '' ?>>مرفوض</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label for="date_from" class="form-label">من تاريخ</label>
-                    <input type="date" class="form-control" id="date_from" name="date_from"
+                    <label for="date_from" class="form-label small fw-bold text-muted">من تاريخ</label>
+                    <input type="date" class="form-control bg-light border-0" id="date_from" name="date_from"
                         value="<?= htmlspecialchars($dateFrom) ?>">
                 </div>
                 <div class="col-md-2">
-                    <label for="date_to" class="form-label">إلى تاريخ</label>
-                    <input type="date" class="form-control" id="date_to" name="date_to"
+                    <label for="date_to" class="form-label small fw-bold text-muted">إلى تاريخ</label>
+                    <input type="date" class="form-control bg-light border-0" id="date_to" name="date_to"
                         value="<?= htmlspecialchars($dateTo) ?>">
                 </div>
                 <div class="col-md-1 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">
+                    <button type="submit" class="btn btn-primary w-100 rounded-3 shadow-sm" style="padding-top: 0.6rem; padding-bottom: 0.6rem;">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
-            </form>
 
-            <!-- تصفية متقدمة -->
-            <div class="row mt-3">
-                <div class="col-md-4">
-                    <label for="material_id" class="form-label">تصفية حسب المادة</label>
-                    <select class="form-select" id="material_id" name="material_id" onchange="this.form.submit()">
+                <!-- تصفية متقدمة -->
+                <div class="col-md-4 mt-3">
+                    <label for="material_id" class="form-label small fw-bold text-muted">تصفية حسب المادة</label>
+                    <select class="form-select bg-light border-0" id="material_id" name="material_id" onchange="this.form.submit()">
                         <option value="">جميع المواد</option>
                         <?php foreach ($materials as $material): ?>
                             <option value="<?= $material['id'] ?>" <?= $materialId == $material['id'] ? 'selected' : '' ?>>
                                 <?= htmlspecialchars($material['item_number']) ?> -
-                                <?= htmlspecialchars($material['description']) ?>
+                                <?= htmlspecialchars(mb_substr($material['description'], 0, 50)) . '...' ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label for="sort_by" class="form-label">ترتيب حسب</label>
-                    <select class="form-select" id="sort_by" name="sort_by" onchange="this.form.submit()">
-                        <option value="transaction_date" <?= $sortBy === 'transaction_date' ? 'selected' : '' ?>>التاريخ
-                        </option>
-                        <option value="transaction_number" <?= $sortBy === 'transaction_number' ? 'selected' : '' ?>>رقم
-                            المعاملة</option>
-                        <option value="transaction_type" <?= $sortBy === 'transaction_type' ? 'selected' : '' ?>>النوع
-                        </option>
+                <div class="col-md-2 mt-3">
+                    <label for="sort_by" class="form-label small fw-bold text-muted">ترتيب حسب</label>
+                    <select class="form-select bg-light border-0" id="sort_by" name="sort_by" onchange="this.form.submit()">
+                        <option value="transaction_date" <?= $sortBy === 'transaction_date' ? 'selected' : '' ?>>التاريخ</option>
+                        <option value="transaction_number" <?= $sortBy === 'transaction_number' ? 'selected' : '' ?>>رقم المعاملة</option>
+                        <option value="transaction_type" <?= $sortBy === 'transaction_type' ? 'selected' : '' ?>>النوع</option>
                         <option value="status" <?= $sortBy === 'status' ? 'selected' : '' ?>>الحالة</option>
                         <option value="created_at" <?= $sortBy === 'created_at' ? 'selected' : '' ?>>تاريخ الإنشاء</option>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label for="sort_order" class="form-label">الاتجاه</label>
-                    <select class="form-select" id="sort_order" name="sort_order" onchange="this.form.submit()">
+                <div class="col-md-2 mt-3">
+                    <label for="sort_order" class="form-label small fw-bold text-muted">الاتجاه</label>
+                    <select class="form-select bg-light border-0" id="sort_order" name="sort_order" onchange="this.form.submit()">
                         <option value="DESC" <?= $sortOrder === 'DESC' ? 'selected' : '' ?>>تنازلي</option>
                         <option value="ASC" <?= $sortOrder === 'ASC' ? 'selected' : '' ?>>تصاعدي</option>
                     </select>
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <a href="index.php" class="btn btn-outline-secondary">
-                        <i class="fas fa-undo me-1"></i>
-                        إعادة تعيين
+                <div class="col-md-4 d-flex align-items-end mt-3">
+                    <a href="index.php" class="btn btn-light w-100 fw-bold text-muted rounded-3 shadow-sm border-0" style="padding-top: 0.6rem; padding-bottom: 0.6rem;">
+                        <i class="fas fa-undo me-2"></i>إعادة تعيين
                     </a>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 
     <!-- جدول المعاملات -->
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">قائمة المعاملات (<?= number_format($totalTransactions) ?> معاملة)</h5>
-            <div class="btn-group" role="group">
-                <button type="button" class="btn btn-outline-primary btn-sm" onclick="exportToExcel()">
-                    <i class="fas fa-file-excel me-1"></i>
-                    تصدير Excel
+    <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
+        <div class="card-header bg-white border-0 p-4 pb-3 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid rgba(0,0,0,0.03) !important;">
+            <h6 class="mb-0 fw-bold text-dark">
+                <i class="fas fa-list text-primary me-2"></i>قائمة المعاملات 
+                <span class="badge bg-primary-soft text-primary ms-2 rounded-pill px-3 py-2"><?= number_format($totalTransactions) ?></span>
+            </h6>
+            <div class="btn-group shadow-sm rounded-pill" role="group">
+                <button type="button" class="btn btn-light btn-sm fw-bold text-success border-0 px-3 py-2" onclick="exportToExcel()">
+                    <i class="fas fa-file-excel me-1"></i>تصدير
                 </button>
-                <button type="button" class="btn btn-outline-primary btn-sm" onclick="printTable()">
-                    <i class="fas fa-print me-1"></i>
-                    طباعة
+                <button type="button" class="btn btn-light btn-sm fw-bold text-secondary border-0 px-3 py-2" onclick="printTable()">
+                    <i class="fas fa-print me-1"></i>طباعة
                 </button>
             </div>
         </div>
-        <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table id="transactionsTable" class="table table-hover mb-0" style="width:100%">
-                        <thead class="table-light">
-                            <tr>
-                                <th>رقم المعاملة</th>
-                                <th>النوع</th>
-                                <th>رقم أمر العمل</th>
-                                <th>التاريخ</th>
-                                <th>عدد البنود</th>
-                                <th>الحالة</th>
-                                <th>المنشئ</th>
-                                <th>الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+        <div class="card-body p-4 pt-0">
+            <div class="table-responsive mt-3">
+                <table id="transactionsTable" class="table table-hover align-middle mb-0" style="width:100%; color: #475569;">
+                    <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; color: #64748b;">
+                        <tr>
+                            <th class="border-0 fw-bold ps-4 py-3">رقم المعاملة</th>
+                            <th class="border-0 fw-bold py-3">النوع</th>
+                            <th class="border-0 fw-bold py-3">رقم أمر العمل</th>
+                            <th class="border-0 fw-bold py-3">التاريخ</th>
+                            <th class="border-0 fw-bold py-3">عدد البنود</th>
+                            <th class="border-0 fw-bold py-3">الحالة</th>
+                            <th class="border-0 fw-bold py-3">المنشئ</th>
+                            <th class="border-0 fw-bold pe-4 py-3 text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

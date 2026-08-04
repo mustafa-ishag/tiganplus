@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * تصدير تقرير المستخلصات الشامل إلى PDF باستخدام mPDF
  * Export Comprehensive Extracts Report to PDF using mPDF

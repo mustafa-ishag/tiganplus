@@ -158,7 +158,30 @@ ob_start();
     </symbol>
 </svg>
 
-
+<style>
+/* Modern Dash Card Style */
+.dash-card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    background-color: #ffffff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.dash-card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+.bg-primary-soft { background-color: rgba(13, 110, 253, 0.05) !important; border: 1px solid rgba(13, 110, 253, 0.1); }
+.bg-success-soft { background-color: rgba(25, 135, 84, 0.05) !important; border: 1px solid rgba(25, 135, 84, 0.1); }
+.bg-warning-soft { background-color: rgba(255, 193, 7, 0.05) !important; border: 1px solid rgba(255, 193, 7, 0.1); }
+.bg-danger-soft { background-color: rgba(220, 53, 69, 0.05) !important; border: 1px solid rgba(220, 53, 69, 0.1); }
+.bg-info-soft { background-color: rgba(13, 202, 240, 0.05) !important; }
+.bg-secondary-soft { background-color: rgba(108, 117, 125, 0.05) !important; }
+.bg-dark-soft { background-color: rgba(33, 37, 41, 0.05) !important; }
+.icon-circle {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+}
+</style>
 
 <div class="container-fluid px-4">
     <!-- Page Header -->
@@ -195,7 +218,7 @@ ob_start();
     </div>
 
     <!-- Statistics Cards - Dynamic -->
-    <div class="row mb-4" id="statisticsCards">
+    <div class="row mb-4 flex-nowrap overflow-auto stats-row" id="statisticsCards">
         <!-- إجمالي المستخلصات -->
         <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
             <div class="dash-card h-100 p-3">
@@ -277,7 +300,7 @@ ob_start();
     </div>
 
     <!-- بطاقات الأقسام الديناميكية (نفس الطريقة المستخدمة في المستخلصات الجزئية) -->
-    <div class="row mb-4">
+    <div class="row mb-4 flex-nowrap overflow-auto stats-row">
         <?php foreach ($departments as $department): ?>
             <?php
             $deptKey = $department['key'];
@@ -311,7 +334,7 @@ ob_start();
     </div>
 
     <!-- Financial Summary -->
-    <div class="row mb-4">
+    <div class="row mb-4 flex-nowrap overflow-auto stats-row">
         <div class="col-md-4 mb-3">
             <div class="dash-card h-100 p-4">
                 <div class="d-flex justify-content-between align-items-center">
@@ -467,7 +490,7 @@ ob_start();
                 </div>
             </div>
             <div class="table-responsive">
-                <table class="table premium-table" id="extractsTable" width="100%" cellspacing="0">
+                <table class="table premium-table table-hover table-bordered" id="extractsTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>رقم المستخلص</th>
@@ -650,10 +673,13 @@ $(document).ready(function() {
         closeOnSelect: false // لا يغلق القائمة عند اختيار عنصر
     });
 
-    // التحقق من عدم تهيئة DataTable مسبقاً
-    if (!$.fn.DataTable.isDataTable('#extractsTable')) {
-        // Initialize DataTable
-        $('#extractsTable').DataTable({
+    // التحقق من تهيئة DataTable مسبقاً وتدميرها لتتوافق مع HTMX
+    if ($.fn.DataTable.isDataTable('#extractsTable')) {
+        $('#extractsTable').DataTable().destroy();
+    }
+    
+    // Initialize DataTable
+    $('#extractsTable').DataTable({
             "language": {
                 "sProcessing": "جارٍ التحميل...",
                 "sLengthMenu": "أظهر _MENU_ مدخلات",
@@ -678,9 +704,6 @@ $(document).ready(function() {
                 { "orderable": false, "targets": -1 }
             ]
         });
-    } else {
-        console.log('DataTable already initialized');
-    }
 
     // Filter functionality
     $('#approvalStageFilter, #branchFilter, #departmentFilter, #dateFromFilter, #dateToFilter, #demolitionFilter').on('change', function() {

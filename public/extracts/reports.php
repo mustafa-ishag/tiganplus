@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * صفحة تقارير المستخلصات الشاملة
  * Comprehensive Extracts Reports Page

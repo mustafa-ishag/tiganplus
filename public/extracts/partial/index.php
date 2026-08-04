@@ -251,6 +251,82 @@ ob_start();
     display: none !important;
 }
 
+/* تحسينات التصميم للهواتف */
+@media (max-width: 767.98px) {
+    /* تصغير عنوان الصفحة */
+    .page-title {
+        font-size: 1.25rem !important;
+    }
+    
+    /* جعل أزرار الإجراءات في الأعلى تتمدد بشكل متناسق */
+    .page-header-actions {
+        width: 100%;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem !important;
+    }
+    .page-header-actions .btn {
+        width: 100%;
+        padding-left: 0.25rem !important;
+        padding-right: 0.25rem !important;
+        font-size: 0.8rem;
+    }
+    /* زر الإضافة يأخذ سطر كامل */
+    .page-header-actions .btn-primary {
+        grid-column: 1 / -1;
+    }
+    
+    /* تمرير أفقي للبطاقات الإحصائية بدلاً من التكديس العمودي المزعج */
+    .stats-row {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 15px;
+        scroll-snap-type: x mandatory;
+    }
+    .stats-row::-webkit-scrollbar {
+        height: 5px;
+    }
+    .stats-row::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    .stats-row::-webkit-scrollbar-thumb {
+        background: var(--primary-color, #4338ca);
+        border-radius: 4px;
+    }
+    .stats-row > .col-xl-2 {
+        flex: 0 0 75%;
+        max-width: 75%;
+        scroll-snap-align: center;
+        padding-right: 0.5rem;
+        padding-left: 0.5rem;
+    }
+    
+    /* تصغير حجم البطاقات المالية */
+    .financial-summary-card {
+        padding: 1.25rem !important;
+    }
+    .financial-summary-card .h3 {
+        font-size: 1.2rem;
+    }
+    .financial-summary-card .icon-circle {
+        width: 45px !important;
+        height: 45px !important;
+        font-size: 1.2rem !important;
+    }
+    
+    /* الجدول: منع التفاف النصوص في رأس الجدول */
+    #extractsTable th {
+        white-space: nowrap;
+        font-size: 0.85rem;
+    }
+    #extractsTable td {
+        font-size: 0.85rem;
+    }
+}
+
 /* End of specific CSS */
 </style>
 
@@ -258,13 +334,13 @@ ob_start();
     <!-- Page Header -->
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
         <div>
-            <h1 class="h3 mb-0 text-primary">
+            <h1 class="h3 mb-0 text-primary page-title">
                 <i class="fas fa-file-alt text-primary me-2"></i>
                 المستخلصات الجزئية
             </h1>
             <p class="text-muted mb-0">إدارة المستخلصات الجزئية (PE-YYYY-XXX) - بدون غرامات</p>
         </div>
-        <div class="d-flex gap-2 flex-wrap justify-content-start justify-content-lg-end">
+        <div class="d-flex gap-2 flex-wrap justify-content-start justify-content-lg-end page-header-actions">
             <a href="../index.php" class="btn btn-light rounded-pill px-3 shadow-sm border-0 text-secondary fw-bold text-nowrap">
                 <i class="fas fa-arrow-right me-1"></i>
                 <span>العودة</span>
@@ -289,7 +365,7 @@ ob_start();
     </div>
 
     <!-- Statistics Cards - Dynamic -->
-    <div class="row mb-4">
+    <div class="row mb-4 flex-nowrap overflow-auto stats-row">
         <!-- إجمالي المستخلصات -->
         <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
             <div class="dash-card h-100 p-3">
@@ -354,7 +430,7 @@ ob_start();
     </div>
 
     <!-- بطاقات الأقسام الديناميكية -->
-    <div class="row mb-4">
+    <div class="row mb-4 flex-nowrap overflow-auto stats-row">
         <?php foreach ($departments as $department): ?>
             <?php
             $deptKey = $department['key'];
@@ -391,9 +467,9 @@ ob_start();
     </div>
 
     <!-- Financial Summary -->
-    <div class="row mb-4">
+    <div class="row mb-4 flex-nowrap overflow-auto stats-row">
         <div class="col-md-4 mb-3">
-            <div class="dash-card h-100 p-4">
+            <div class="dash-card h-100 p-4 financial-summary-card">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <div class="text-muted fw-bold mb-2" style="font-size: 0.75rem;">إجمالي المبالغ الصافية</div>
@@ -409,7 +485,7 @@ ob_start();
             </div>
         </div>
         <div class="col-md-4 mb-3">
-            <div class="dash-card h-100 p-4">
+            <div class="dash-card h-100 p-4 financial-summary-card">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <div class="text-muted fw-bold mb-2" style="font-size: 0.75rem;">متوسط قيمة المستخلص</div>
@@ -425,7 +501,7 @@ ob_start();
             </div>
         </div>
         <div class="col-md-4 mb-3">
-            <div class="dash-card h-100 p-4">
+            <div class="dash-card h-100 p-4 financial-summary-card">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <div class="text-muted fw-bold mb-2" style="font-size: 0.75rem;">نسبة الإنجاز (تم الصرف)</div>
@@ -537,7 +613,7 @@ ob_start();
                 </div>
             </div>
             <div class="table-responsive">
-                <table class="table premium-table" id="extractsTable" width="100%" cellspacing="0">
+                <table class="table table-hover premium-table" id="extractsTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>رقم المستخلص</th>
@@ -578,7 +654,7 @@ ob_start();
                                     $departmentName = 'غير محدد';
                             }
                         ?>
-                        <tr class="<?php echo $certificatesRowClass; ?>">
+                        <tr class="<?php echo $certificatesRowClass; ?>" onclick="handleRowClick(event, <?php echo $extract['id']; ?>)" style="cursor: pointer;" title="انقر لعرض تفاصيل المستخلص">
                             <td>
                                 <span class="badge bg-primary extract-number"><?php echo htmlspecialchars($extract['extract_number']); ?></span>
                             </td>
@@ -944,19 +1020,7 @@ $content = ob_get_clean();
 include __DIR__ . '/../../includes/layout.php';
 ?>
 
-<!-- DataTables CSS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
 
-<!-- Select2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
-
-<!-- DataTables JS -->
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-
-<!-- Select2 JavaScript -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
 $(document).ready(function() {
@@ -975,40 +1039,40 @@ $(document).ready(function() {
         closeOnSelect: false // لا يغلق القائمة عند اختيار عنصر
     });
 
-    // التحقق من عدم تهيئة DataTable مسبقاً
-    if (!$.fn.DataTable.isDataTable('#extractsTable')) {
-        // Initialize DataTable
-        $('#extractsTable').DataTable({
-            "language": {
-                "sProcessing": "جارٍ التحميل...",
-                "sLengthMenu": "أظهر _MENU_ مدخلات",
-                "sZeroRecords": "لم يعثر على أية سجلات",
-                "sInfo": "إظهار _START_ إلى _END_ من أصل _TOTAL_ مدخل",
-                "sInfoEmpty": "يعرض 0 إلى 0 من أصل 0 سجل",
-                "sInfoFiltered": "(منتقاة من مجموع _MAX_ مُدخل)",
-                "sInfoPostFix": "",
-                "sSearch": "ابحث:",
-                "sUrl": "",
-                "oPaginate": {
-                    "sFirst": "الأول",
-                    "sPrevious": "السابق",
-                    "sNext": "التالي",
-                    "sLast": "الأخير"
-                }
-            },
-            "responsive": true,
-            "order": [[ 0, "desc" ]],
-            "pageLength": 25,
-            "columnDefs": [
-                { "orderable": false, "targets": -1 }
-            ]
-        });
-    } else {
-        console.log('DataTable already initialized');
+    // التحقق من تهيئة DataTable مسبقاً وتدميرها لتتوافق مع HTMX
+    if ($.fn.DataTable.isDataTable('#extractsTable')) {
+        $('#extractsTable').DataTable().destroy();
     }
+    
+    // Initialize DataTable
+    $('#extractsTable').DataTable({
+        "language": {
+            "sProcessing": "جارٍ التحميل...",
+            "sLengthMenu": "أظهر _MENU_ مدخلات",
+            "sZeroRecords": "لم يعثر على أية سجلات",
+            "sInfo": "إظهار _START_ إلى _END_ من أصل _TOTAL_ مدخل",
+            "sInfoEmpty": "يعرض 0 إلى 0 من أصل 0 سجل",
+            "sInfoFiltered": "(منتقاة من مجموع _MAX_ مُدخل)",
+            "sInfoPostFix": "",
+            "sSearch": "ابحث:",
+            "sUrl": "",
+            "oPaginate": {
+                "sFirst": "الأول",
+                "sPrevious": "السابق",
+                "sNext": "التالي",
+                "sLast": "الأخير"
+            }
+        },
+        "responsive": true,
+        "order": [[ 0, "desc" ]],
+        "pageLength": 25,
+        "columnDefs": [
+            { "orderable": false, "targets": -1 }
+        ]
+    });
 
     // Filter functionality
-    $('#approvalStageFilter, #departmentFilter, #finalExtractFilter, #dateFromFilter, #dateToFilter').on('change', function() {
+    $('#approvalStageFilter, #departmentFilter, #finalExtractFilter, #dateFromFilter, #dateToFilter').off('change').on('change', function() {
         var table = $('#extractsTable').DataTable();
 
         // إزالة جميع الفلاتر المخصصة القديمة
@@ -1085,7 +1149,7 @@ $(document).ready(function() {
     });
 
     // Collapse Filters Logic
-    $('#filtersHeader').on('click', function() {
+    $('#filtersHeader').off('click').on('click', function() {
         $('#filtersContainer').slideToggle(300);
         const icon = $(this).find('i.fa-chevron-down');
         const text = $('#toggleFiltersText');
@@ -1103,7 +1167,7 @@ $(document).ready(function() {
     $('#filtersContainer').hide();
     
     // زر إعادة تعيين الفلاتر
-    $('#resetFilters').on('click', function() {
+    $('#resetFilters').off('click').on('click', function() {
         // إعادة تعيين جميع الفلاتر
         $('#approvalStageFilter').val(null).trigger('change');
         $('#departmentFilter').val('');
@@ -1128,7 +1192,7 @@ $(document).ready(function() {
     });
 
     // ربط مربع البحث المخصص بـ DataTable
-    $('#customTableSearch').on('keyup', function() {
+    $('#customTableSearch').off('keyup').on('keyup', function() {
         $('#extractsTable').DataTable().search(this.value).draw();
     });
 
@@ -1148,6 +1212,16 @@ function applyApprovalStageColors() {
         $(this).removeClass(classesToRemove.trim());
         $(this).addClass('approval-stage-' + value);
     });
+}
+
+// دالة لمعالجة النقر على صف الجدول
+function handleRowClick(event, id) {
+    // تجاهل النقر إذا كان على القوائم المنسدلة، الأزرار، أو الروابط
+    if (event.target.closest('select, button, a')) {
+        return;
+    }
+    // فتح صفحة عرض المستخلص
+    window.location.href = 'view.php?id=' + id;
 }
 
 function viewExtract(id) {

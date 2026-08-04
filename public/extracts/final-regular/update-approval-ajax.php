@@ -82,10 +82,26 @@ try {
         // حفظ المرحلة السابقة للمقارنة
         $previousStage = $extract['approval_stage'];
 
+        // قراءة البيانات الإضافية
+        $disbursement_date = isset($input['disbursement_date']) && !empty($input['disbursement_date']) ? date('Y-m-d H:i:s', strtotime($input['disbursement_date'])) : null;
+        $approval_notes = isset($input['approval_notes']) ? trim($input['approval_notes']) : null;
+
         // تحديث مرحلة الاعتماد
-        $updateQuery = "UPDATE final_regular_extracts SET approval_stage = ?, updated_at = NOW() WHERE id = ?";
+        $updateQuery = "UPDATE final_regular_extracts SET 
+                        approval_stage = ?, 
+                        disbursed_date = ?, 
+                        disbursed_notes = ?, 
+                        disbursed_by = ?,
+                        updated_at = NOW() 
+                        WHERE id = ?";
         $stmt = $db->prepare($updateQuery);
-        $result = $stmt->execute([$new_stage, $extract_id]);
+        $result = $stmt->execute([
+            $new_stage, 
+            $disbursement_date, 
+            $approval_notes, 
+            $user_id, 
+            $extract_id
+        ]);
         error_log("Update query result: " . ($result ? 'SUCCESS' : 'FAILED') . ", affected rows: " . $stmt->rowCount());
 
         // إذا تم تحديد تاريخ التقديم وكانت المرحلة ليست مسودة

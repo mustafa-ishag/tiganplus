@@ -212,7 +212,7 @@ ob_start();
     </div>
 
     <!-- Statistics Cards - Dynamic -->
-    <div class="row mb-4">
+    <div class="row flex-nowrap overflow-auto hide-scrollbar pb-2 mb-4">
         <!-- إجمالي المستخلصات -->
         <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
             <div class="dash-card h-100 p-3">
@@ -279,7 +279,7 @@ ob_start();
     </div>
 
     <!-- بطاقات الأقسام الديناميكية -->
-    <div class="row mb-4">
+    <div class="row flex-nowrap overflow-auto hide-scrollbar pb-2 mb-4">
         <?php foreach ($departments as $department): ?>
             <?php
             $deptKey = $department['key'];
@@ -314,7 +314,7 @@ ob_start();
     </div>
 
     <!-- Financial Summary -->
-    <div class="row mb-4">
+    <div class="row flex-nowrap overflow-auto hide-scrollbar pb-2 mb-4">
         <div class="col-md-4">
             <div class="dash-card h-100 p-4">
                 <div class="d-flex justify-content-between align-items-center">
@@ -729,9 +729,12 @@ include __DIR__ . '/../../includes/layout.php';
         });
 
         // التحقق من عدم تهيئة DataTable مسبقاً
-        if (!$.fn.DataTable.isDataTable('#extractsTable')) {
-            // Initialize DataTable
-            $('#extractsTable').DataTable({
+        if ($.fn.DataTable.isDataTable('#extractsTable')) {
+            $('#extractsTable').DataTable().destroy();
+        }
+        
+        // Initialize DataTable
+        $('#extractsTable').DataTable({
                 "language": {
                     "sProcessing": "جارٍ التحميل...",
                     "sLengthMenu": "أظهر _MENU_ مدخلات",
@@ -756,9 +759,7 @@ include __DIR__ . '/../../includes/layout.php';
                     { "orderable": false, "targets": -1 }
                 ]
             });
-        } else {
-            console.log('DataTable already initialized');
-        }
+
 
         // Filter functionality
         $('#approvalStageFilter, #branchFilter, #departmentFilter, #dateFromFilter, #dateToFilter, #demolitionFilter').on('change', function () {

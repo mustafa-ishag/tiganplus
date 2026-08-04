@@ -127,7 +127,7 @@ ob_start();
                     <?= htmlspecialchars($selectedWorkOrder['notes']) ?>
                 </p>
                 <div class="mt-2">
-                    <a href="<?= path('productivity/work-orders/index.php') ?>" class="btn btn-sm btn-outline-secondary">
+                    <a href="<?= path('work-orders/index.php') ?>" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-arrow-right me-2"></i>
                         العودة لأوامر العمل
                     </a>

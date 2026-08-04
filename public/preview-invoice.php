@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * معاينة الفاتورة الضريبية
  * Invoice Preview Page

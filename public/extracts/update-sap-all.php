@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * صفحة تحديث SAP الشاملة - تحديث جميع أنواع المستخلصات مرة واحدة
  * Unified SAP Update - Update All Extract Types at Once

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // بدء output buffering لتجنب مشاكل headers
 ob_start();
 

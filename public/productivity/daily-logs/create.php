@@ -202,7 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="<?= path('productivity/index.php') ?>">نظام الإنتاجية</a></li>
                 <?php if ($preselectedWorkItem): ?>
-                <li class="breadcrumb-item"><a href="<?= path('productivity/work-orders/index.php') ?>">أوامر العمل</a></li>
+                <li class="breadcrumb-item"><a href="<?= path('work-orders/index.php') ?>">أوامر العمل</a></li>
                 <li class="breadcrumb-item"><a href="<?= path('productivity/work-items/view.php?id=' . $preselectedWorkItem['id']) ?>">تفاصيل البند</a></li>
                 <?php else: ?>
                 <li class="breadcrumb-item"><a href="<?= path('productivity/daily-logs/index.php') ?>">السجلات اليومية</a></li>

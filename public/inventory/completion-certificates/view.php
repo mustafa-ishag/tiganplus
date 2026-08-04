@@ -51,6 +51,7 @@ try {
             b.name as branch_name,
             b.code as branch_code,
             ce.name as current_entity_name,
+            c.contract_number,
             u_created.username as created_by_name,
             u_updated.username as updated_by_name
         FROM completion_certificates cc
@@ -58,6 +59,7 @@ try {
         LEFT JOIN work_order_types wot ON wo.work_order_type_id = wot.id
         LEFT JOIN branches b ON wo.branch_id = b.id
         LEFT JOIN current_entities ce ON wo.current_entity_id = ce.id
+        LEFT JOIN contracts c ON wo.contract_id = c.id
         LEFT JOIN users u_created ON cc.created_by = u_created.id
         LEFT JOIN users u_updated ON cc.updated_by = u_updated.id
         WHERE cc.id = ?
@@ -181,6 +183,14 @@ ob_start();
                         </td>
                     </tr>
                     <tr>
+                        <td class="fw-bold">العقد:</td>
+                        <td>
+                            <span class="badge bg-secondary">
+                                <?= htmlspecialchars($certificate['contract_number'] ?? 'غير محدد') ?>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
                         <td class="fw-bold">تاريخ الشهادة:</td>
                         <td><?= date('Y-m-d', strtotime($certificate['certificate_date'])) ?></td>
                     </tr>
@@ -299,8 +309,10 @@ ob_start();
                         <th>وصف العمل</th>
                         <th>الوحدة</th>
                         <th>المقايسة</th>
-                        <th>الكمية</th>
-                        <th>نسبة الإنجاز</th>
+                        <th style="width: 80px;">الكمية</th>
+                        <th style="width: 80px;">السعر</th>
+                        <th style="width: 80px;">الإجمالي</th>
+                        <th style="width: 100px;">الإنجاز</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -314,6 +326,8 @@ ob_start();
                         <td><?= htmlspecialchars($work['unit']) ?></td>
                         <td><?= number_format($estimatedQuantity, 3) ?></td>
                         <td><?= number_format($work['quantity'], 3) ?></td>
+                        <td><?= number_format($work['unit_price'] ?? 0, 2) ?></td>
+                        <td><strong class="text-primary"><?= number_format($work['total_value'] ?? 0, 2) ?></strong></td>
                         <td>
                             <div class="progress" style="height: 20px;">
                                 <div class="progress-bar bg-success" role="progressbar"
@@ -333,6 +347,14 @@ ob_start();
                         <th class="text-center">
                             <span class="text-muted"><?= count($works) ?> عمل</span>
                         </th>
+                        <th>-</th>
+                        <th>
+                            <?php 
+                            $totalWorksValue = array_sum(array_column($works, 'total_value'));
+                            echo number_format($totalWorksValue, 2); 
+                            ?>
+                        </th>
+                        <th></th>
                     </tr>
                 </tfoot>
             </table>

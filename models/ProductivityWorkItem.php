@@ -24,7 +24,7 @@ class ProductivityWorkItem
         try {
             $sql = "
                 INSERT INTO productivity_work_items (
-                    work_order_id, work_item_id, target_quantity, unit_price,
+                    work_order_id, contract_work_item_id, target_quantity, unit_price,
                     start_date, target_end_date, status, priority, notes, created_by
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ";
@@ -116,7 +116,7 @@ class ProductivityWorkItem
                        wi.unit, b.name as branch_name, u.full_name as created_by_name
                 FROM productivity_work_items pwi
                 JOIN work_orders wo ON pwi.work_order_id = wo.id
-                JOIN work_items wi ON pwi.work_item_id = wi.id
+                JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
                 JOIN branches b ON wo.branch_id = b.id
                 JOIN users u ON pwi.created_by = u.id
                 WHERE pwi.id = ?
@@ -148,7 +148,7 @@ class ProductivityWorkItem
                            ELSE 0 
                        END as completion_percentage
                 FROM productivity_work_items pwi
-                JOIN work_items wi ON pwi.work_item_id = wi.id
+                JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
                 JOIN users u ON pwi.created_by = u.id
                 LEFT JOIN productivity_daily_logs pdl ON pwi.id = pdl.work_item_id 
                     AND pdl.status = 'approved'
@@ -197,7 +197,7 @@ class ProductivityWorkItem
                        END as completion_percentage
                 FROM productivity_work_items pwi
                 JOIN work_orders wo ON pwi.work_order_id = wo.id
-                JOIN work_items wi ON pwi.work_item_id = wi.id
+                JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
                 JOIN branches b ON wo.branch_id = b.id
                 JOIN users u ON pwi.created_by = u.id
                 LEFT JOIN productivity_daily_logs pdl ON pwi.id = pdl.work_item_id 
@@ -259,7 +259,7 @@ class ProductivityWorkItem
                 SELECT COUNT(DISTINCT pwi.id) as total
                 FROM productivity_work_items pwi
                 JOIN work_orders wo ON pwi.work_order_id = wo.id
-                JOIN work_items wi ON pwi.work_item_id = wi.id
+                JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
                 WHERE 1=1
             ";
             

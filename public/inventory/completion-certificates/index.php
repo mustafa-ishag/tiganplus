@@ -94,6 +94,7 @@ try {
             wot.description as work_order_type_description,
             b.name as branch_name,
             ce.name as current_entity_name,
+            c.contract_number,
             u.username as created_by_name,
             (SELECT COUNT(*) FROM completion_certificate_materials WHERE certificate_id = cc.id) as materials_count,
             (SELECT COUNT(*) FROM completion_certificate_works WHERE certificate_id = cc.id) as works_count
@@ -102,6 +103,7 @@ try {
         LEFT JOIN work_order_types wot ON wo.work_order_type_id = wot.id
         LEFT JOIN branches b ON wo.branch_id = b.id
         LEFT JOIN current_entities ce ON wo.current_entity_id = ce.id
+        LEFT JOIN contracts c ON wo.contract_id = c.id
         LEFT JOIN users u ON cc.created_by = u.id
         WHERE wo.status = 'active'
     ";
@@ -314,6 +316,7 @@ ob_start();
                         <th>رقم أمر العمل</th>
                         <th>نوع الأمر</th>
                         <th>الموقع</th>
+                        <th>العقد</th>
                         <th>الفرع</th>
                         <th>القسم</th>
                         <th>تاريخ الشهادة</th>
@@ -342,6 +345,9 @@ ob_start();
                             <?php else: ?>
                                 <span class="text-muted">غير محدد</span>
                             <?php endif; ?>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary"><?= htmlspecialchars($cert['contract_number'] ?? 'غير محدد') ?></span>
                         </td>
                         <td><?= htmlspecialchars($cert['branch_name'] ?? 'غير محدد') ?></td>
                         <td>

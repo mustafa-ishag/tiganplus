@@ -37,12 +37,16 @@ try {
     $db = getDB();
     
     // التحقق من وجود أمر العمل
-    $workOrderStmt = $db->prepare("SELECT id, work_order_number FROM work_orders WHERE id = ?");
+    $workOrderStmt = $db->prepare("SELECT id, work_order_number, contract_id FROM work_orders WHERE id = ?");
     $workOrderStmt->execute([$workOrderId]);
     $workOrder = $workOrderStmt->fetch();
     
     if (!$workOrder) {
         throw new Exception('أمر العمل غير موجود');
+    }
+    
+    if (empty($workOrder['contract_id'])) {
+        throw new Exception('أمر العمل غير مرتبط بعقد، ولا يمكن توليد بنود أعمال له');
     }
     
     // جلب المواد المصروفة لأمر العمل
@@ -78,22 +82,27 @@ try {
             wi.item_number as work_item_number,
             wi.description as work_item_description,
             wi.unit as work_item_unit,
-            wi.unit_price as work_item_unit_price
+            wi.price as work_item_unit_price
         FROM material_work_items mwi
-        INNER JOIN work_items wi ON mwi.work_item_id = wi.id
+        INNER JOIN contract_work_items wi ON mwi.contract_work_item_id = wi.id
         WHERE mwi.material_id IN (" . str_repeat('?,', count($dispensedMaterials) - 1) . "?)
+        AND wi.contract_id = ?
         AND mwi.is_active = 1
         AND wi.is_active = 1
         ORDER BY mwi.is_primary DESC, wi.item_number
     ";
     
     $materialIds = array_column($dispensedMaterials, 'material_id');
+    // إضافة معرف العقد إلى المعاملات
+    $queryParams = $materialIds;
+    $queryParams[] = $workOrder['contract_id'];
+    
     $relationshipsStmt = $db->prepare($materialWorkItemsQuery);
-    $relationshipsStmt->execute($materialIds);
+    $relationshipsStmt->execute($queryParams);
     $relationships = $relationshipsStmt->fetchAll();
     
     if (empty($relationships)) {
-        throw new Exception('لا توجد علاقات محددة بين المواد المصروفة وبنود الأعمال');
+        throw new Exception('لا توجد علاقات محددة بين المواد المصروفة وبنود الأعمال ضمن عقد أمر العمل هذا');
     }
     
     // تجميع العلاقات حسب المادة
@@ -116,7 +125,7 @@ try {
         }
         
         foreach ($materialRelationships[$materialId] as $rel) {
-            $workItemId = $rel['work_item_id'];
+            $workItemId = $rel['contract_work_item_id'];
             $quantityRatio = $rel['quantity_ratio'];
             $calculatedQuantity = $dispensedQuantity * $quantityRatio;
             

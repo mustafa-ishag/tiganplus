@@ -125,15 +125,8 @@ $workOrdersStmt = $db->prepare($workOrdersQuery);
 $workOrdersStmt->execute($workOrdersParams);
 $workOrders = $workOrdersStmt->fetchAll(PDO::FETCH_ASSOC);
 
-// جلب بنود الأعمال النشطة
-$workItemsStmt = $db->prepare("
-    SELECT id, item_number, description, unit, standard_price
-    FROM work_items 
-    WHERE is_active = 1 
-    ORDER BY item_number
-");
-$workItemsStmt->execute();
-$workItems = $workItemsStmt->fetchAll(PDO::FETCH_ASSOC);
+// بنود الأعمال سيتم جلبها عبر AJAX بناءً على العقد
+$workItems = [];
 
 // التحقق من أمر العمل المحدد مسبقاً
 $preselectedWorkOrderId = $_GET['work_order_id'] ?? null;
@@ -504,7 +497,7 @@ ob_start();
 <script>
 // بيانات أوامر العمل وبنود الأعمال للبحث السريع
 const workOrdersData = <?= json_encode($workOrders) ?>;
-const workItemsData = <?= json_encode($workItems) ?>;
+let workItemsData = []; // سيتم تعبئتها عبر AJAX
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('تهيئة البحث السريع');
@@ -566,7 +559,7 @@ function initializeWorkItemSearch() {
     if (hiddenInput.value) {
         const selectedItem = workItemsData.find(wi => wi.id == hiddenInput.value);
         if (selectedItem) {
-            searchInput.value = `${selectedItem.item_number} - ${selectedItemc.description.substring(0, 30)}...`;
+            searchInput.value = `${selectedItem.item_number} - ${selectedItem.description.substring(0, 30)}...`;
         }
     }
 
@@ -629,7 +622,7 @@ function searchWorkItems(searchTerm, dropdown, hiddenInput, searchInput) {
     // فلترة بنود الأعمال
     const filteredItems = workItemsData.filter(item =>
         item.item_number.toLowerCase().includes(searchTerm) ||
-        itemc.description.toLowerCase().includes(searchTerm)
+        item.description.toLowerCase().includes(searchTerm)
     );
 
     if (filteredItems.length === 0) {
@@ -642,10 +635,10 @@ function searchWorkItems(searchTerm, dropdown, hiddenInput, searchInput) {
     } else {
         dropdown.innerHTML = filteredItems.map(item => `
             <a href="#" class="dropdown-item search-result-item"
-               onclick="selectWorkItem(${item.id}, '${item.item_number}', '${itemc.description.replace(/'/g, "\\'")}', '${itemc.unit}', ${item.standard_price}); return false;">
+               onclick="selectWorkItem(${item.id}, '${item.item_number}', '${item.description.replace(/'/g, "\\'")}', '${item.unit}', ${item.price}); return false;">
                 <div class="item-number">${item.item_number}</div>
-                <div class="item-description">${itemc.description.substring(0, 60)}${itemc.description.length > 60 ? '...' : ''}</div>
-                <div class="item-details">السعر: ${parseFloat(item.standard_price).toLocaleString('ar-SA')} ريال/${itemc.unit}</div>
+                <div class="item-description">${item.description.substring(0, 60)}${item.description.length > 60 ? '...' : ''}</div>
+                <div class="item-details">السعر: ${parseFloat(item.price).toLocaleString('ar-SA')} ريال/${item.unit}</div>
             </a>
         `).join('');
     }
@@ -663,7 +656,32 @@ function selectWorkOrder(id, workOrderNumber, branchName) {
     hiddenInput.value = id;
     dropdown.classList.remove('show');
 
+    // جلب بنود الأعمال المرتبطة بعقد أمر العمل
+    loadContractWorkItems(id);
+
     console.log('تم اختيار أمر العمل:', workOrderNumber);
+}
+
+// جلب بنود العقد الخاص بأمر العمل
+function loadContractWorkItems(workOrderId) {
+    fetch(`../../contracts/get-work-items-ajax.php?work_order_id=${workOrderId}`)
+        .then(response => response.json())
+        .then(res => {
+            if (res.success) {
+                workItemsData = res.data;
+                const searchInput = document.getElementById('work_item_search');
+                const hiddenInput = document.getElementById('work_item_id');
+                if (searchInput) searchInput.value = '';
+                if (hiddenInput) hiddenInput.value = '';
+            } else {
+                console.error("خطأ في جلب البنود:", res.message);
+                workItemsData = [];
+            }
+        })
+        .catch(err => {
+            console.error("Network error:", err);
+            workItemsData = [];
+        });
 }
 
 // دالة اختيار بند العمل

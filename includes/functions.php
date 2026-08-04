@@ -293,6 +293,10 @@ function getDB()
             $dsn = "mysql:host={$host};port={$port};dbname={$database};charset={$charset}";
 
             $pdo = new PDO($dsn, $username, $password, $options);
+            
+            // إجبار ترميز الاتصال لحل مشكلة ظهور لغة غريبة في الإنتاج
+            $pdo->exec("SET NAMES '{$charset}'");
+            $pdo->exec("SET CHARACTER SET '{$charset}'");
         } catch (PDOException $e) {
             error_log("Database connection failed: " . $e->getMessage());
             throw new Exception("فشل في الاتصال بقاعدة البيانات: " . $e->getMessage());
@@ -511,4 +515,3 @@ function getStatusLabel($status)
 
     return ['غير معروف', 'secondary'];
 }
-?>

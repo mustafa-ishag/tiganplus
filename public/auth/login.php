@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * صفحة تسجيل الدخول - نظام تِقان ERP
  * Login Page - Tiqan ERP System
@@ -15,6 +15,64 @@ require_once '../../includes/functions.php';
 if (isset($_SESSION['user_id'])) {
     header('Location: ../dashboard.php');
     exit();
+} elseif (isset($_COOKIE['remember_token'])) {
+    $db = getDB();
+    $token = $_COOKIE['remember_token'];
+    $stmt = $db->prepare("
+        SELECT u.*, r.name as role_name, b.name as branch_name 
+        FROM users u 
+        LEFT JOIN roles r ON u.role_id = r.id 
+        LEFT JOIN branches b ON u.branch_id = b.id 
+        WHERE u.remember_token = ? AND u.status = 'active'
+    ");
+    $stmt->execute([$token]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($user) {
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['full_name'] = $user['full_name'];
+        $_SESSION['role_id'] = $user['role_id'];
+        $_SESSION['role_name'] = $user['role_name'];
+        $_SESSION['branch_id'] = $user['branch_id'];
+        $_SESSION['branch_name'] = $user['branch_name'];
+        $_SESSION['login_time'] = time();
+
+        $permissionsStmt = $db->prepare("
+            SELECT DISTINCT p.name FROM permissions p
+            JOIN role_permissions rp ON p.id = rp.permission_id
+            JOIN user_roles ur ON rp.role_id = ur.role_id
+            WHERE ur.user_id = ?
+        ");
+        $permissionsStmt->execute([$user['id']]);
+        $permissions = $permissionsStmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if (empty($permissions) && !empty($user['role_id'])) {
+            $permissionsStmt = $db->prepare("
+                SELECT DISTINCT p.name FROM permissions p
+                JOIN role_permissions rp ON p.id = rp.permission_id
+                WHERE rp.role_id = ?
+            ");
+            $permissionsStmt->execute([$user['role_id']]);
+            $permissions = $permissionsStmt->fetchAll(PDO::FETCH_COLUMN);
+        }
+
+        $directPermStmt = $db->prepare("
+            SELECT DISTINCT p.name FROM permissions p
+            JOIN user_permissions up ON p.id = up.permission_id
+            WHERE up.user_id = ?
+        ");
+        $directPermStmt->execute([$user['id']]);
+        $directPermissions = $directPermStmt->fetchAll(PDO::FETCH_COLUMN);
+
+        $_SESSION['permissions'] = array_unique(array_merge($permissions, $directPermissions));
+
+        $db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$user['id']]);
+        logActivity($user['id'], 'login', "تسجيل دخول تلقائي (تذكرني) - المستخدم: {$user['username']}");
+
+        header('Location: ../dashboard.php');
+        exit();
+    }
 }
 
 $error = '';
@@ -150,210 +208,196 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تسجيل الدخول - نظام تِقان ERP</title>
     <meta name="description" content="نظام إدارة موارد المؤسسة للمقاولات والإنشاءات">
-    <meta name="author" content="Tiqan ERP System">
-
+    
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="../assets/images/tigan-logo.png">
-
+    
     <!-- Bootstrap RTL CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-
+    
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-
-    <!-- Google Fonts - Arabic -->
+    
+    <!-- Google Fonts - Tajawal -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- SweetAlert2 -->
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
     <style>
         :root {
-            --primary-color: #2563eb;
-            --primary-dark: #1d4ed8;
+            --primary-color: #4338ca;
+            --primary-dark: #3730a3;
             --secondary-color: #64748b;
-            --success-color: #059669;
-            --danger-color: #dc2626;
-            --warning-color: #d97706;
-            --info-color: #0891b2;
-            --light-color: #f8fafc;
-            --dark-color: #1e293b;
-            --border-radius: 12px;
-            --box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --accent-color: #F0F2F5;
+            --text-color: #2C3E50;
+            --bg-color: #f8f9fa;
+            --border-radius-lg: 24px;
+            --border-radius-md: 12px;
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
         }
 
         body {
-            font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #176cb4 0%, #4fa5e6 50%, #0e2942 100%);
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(67, 56, 202, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(55, 48, 163, 0.08) 0px, transparent 50%);
+            background-attachment: fixed;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            overflow-x: hidden;
+            color: var(--text-color);
         }
 
-        /* خلفية متحركة */
-        body::before {
+        .login-wrapper {
+            width: 100%;
+            max-width: 440px;
+            padding: 2rem;
+            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-card {
+            background: #ffffff;
+            border-radius: var(--border-radius-lg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0,0,0,0.05);
+            padding: 3rem 2.5rem;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .login-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-            animation: backgroundMove 20s linear infinite;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), #818cf8);
         }
 
-        @keyframes backgroundMove {
-            0% { transform: translateX(0) translateY(0); }
-            100% { transform: translateX(-10px) translateY(-10px); }
-        }
-
-        .login-container {
-            position: relative;
-            z-index: 10;
-            width: 100%;
-            max-width: 450px;
-            margin: 2rem;
-        }
-
-        .login-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            padding: 3rem 2.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: var(--transition);
-            animation: slideUp 0.6s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .login-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-        }
-
-        .logo-section {
-            text-align: center;
-            margin-bottom: 2.5rem;
-        }
-
-        .logo-icon {
-            width: 100px;
-            height: 100px;
-            border-radius: 20px;
+        .brand-section {
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1.5rem;
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
-            animation: pulse 2s infinite;
-            overflow: hidden;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 8px;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        .brand-logo {
+            width: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-smooth);
         }
 
-        .logo-icon img {
+        .brand-logo:hover {
+            transform: translateY(-3px) scale(1.02);
+        }
+
+        .brand-logo img {
             width: 100%;
             height: 100%;
             object-fit: contain;
         }
 
-        .system-title {
-            color: var(--dark-color);
-            font-weight: 700;
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .brand-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #1e1e2d;
+            margin: 0;
+            letter-spacing: -0.5px;
         }
 
-        .system-subtitle {
+        .brand-subtitle {
+            font-size: 0.95rem;
             color: var(--secondary-color);
-            font-size: 1rem;
-            font-weight: 400;
+            font-weight: 500;
         }
 
-        .form-floating {
+        .form-group {
             margin-bottom: 1.5rem;
             position: relative;
         }
 
+        .form-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #475569;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .input-icon-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 1.1rem;
+            transition: var(--transition-smooth);
+            z-index: 10;
+        }
+
         .form-control {
-            border-radius: var(--border-radius);
-            border: 2px solid #e2e8f0;
-            padding: 1rem 1rem 1rem 3rem;
+            background-color: #f8fafc;
+            border: 2px solid transparent;
+            border-radius: var(--border-radius-md);
+            padding: 0.85rem 3rem 0.85rem 1rem;
             font-size: 1rem;
-            transition: var(--transition);
-            background: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            color: #1e293b;
+            transition: var(--transition-smooth);
+            box-shadow: none !important;
+        }
+
+        .form-control::placeholder {
+            color: #cbd5e1;
+            font-weight: 400;
         }
 
         .form-control:focus {
+            background-color: #ffffff;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
-            background: white;
+            box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.1) !important;
         }
 
-        .form-floating .form-icon {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--secondary-color);
-            z-index: 5;
-            transition: var(--transition);
-        }
-
-        .form-floating:focus-within .form-icon {
+        .form-control:focus + .input-icon,
+        .input-icon-wrapper:focus-within .input-icon {
             color: var(--primary-color);
         }
 
-        .form-floating label {
-            padding-right: 3rem;
-            color: var(--secondary-color);
-        }
-
-        .remember-section {
+        .options-row {
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
             margin-bottom: 2rem;
-        }
-
-        .form-check {
-            display: flex;
-            align-items: center;
+            font-size: 0.9rem;
         }
 
         .form-check-input {
-            margin-left: 0.5rem;
+            width: 1.1rem;
+            height: 1.1rem;
+            border: 2px solid #cbd5e1;
             border-radius: 4px;
+            cursor: pointer;
+            margin-left: 0.5rem;
         }
 
         .form-check-input:checked {
@@ -361,11 +405,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-color: var(--primary-color);
         }
 
+        .form-check-label {
+            color: #64748b;
+            cursor: pointer;
+            font-weight: 500;
+            padding-top: 2px;
+        }
+
         .forgot-password {
             color: var(--primary-color);
             text-decoration: none;
-            font-size: 0.9rem;
-            transition: var(--transition);
+            font-weight: 600;
+            transition: var(--transition-smooth);
         }
 
         .forgot-password:hover {
@@ -373,430 +424,214 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             text-decoration: underline;
         }
 
-        .btn-login {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            border: none;
-            border-radius: var(--border-radius);
-            padding: 1rem 2rem;
-            font-weight: 600;
-            font-size: 1.1rem;
+        .btn-submit {
+            background-color: var(--primary-color);
             color: white;
+            border: none;
+            border-radius: var(--border-radius-md);
             width: 100%;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
+            padding: 0.85rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 12px rgba(67, 56, 202, 0.2);
         }
 
-        .btn-login::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn-login:hover::before {
-            left: 100%;
-        }
-
-        .btn-login:hover {
+        .btn-submit:hover {
+            background-color: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 6px 16px rgba(67, 56, 202, 0.3);
+            color: white;
         }
 
-        .btn-login:active {
+        .btn-submit:active {
             transform: translateY(0);
         }
 
-        .divider {
-            text-align: center;
-            margin: 2rem 0;
-            position: relative;
+        .alert-custom {
+            border-radius: var(--border-radius-md);
+            border: none;
+            padding: 1rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            animation: fadeUp 0.3s ease-out;
         }
 
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: #e2e8f0;
+        .alert-danger-custom {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fee2e2;
         }
 
-        .divider span {
-            background: white;
-            padding: 0 1rem;
-            color: var(--secondary-color);
-            font-size: 0.9rem;
+        .alert-success-custom {
+            background-color: #f0fdf4;
+            color: #166534;
+            border: 1px solid #dcfce7;
         }
 
-        .system-info {
+        /* Copyright Footer */
+        .footer-text {
             text-align: center;
             margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .system-info a {
-            color: var(--primary-color);
-            text-decoration: none;
+            color: #94a3b8;
+            font-size: 0.85rem;
             font-weight: 500;
-            transition: var(--transition);
-        }
-
-        .system-info a:hover {
-            color: var(--primary-dark);
-            text-decoration: underline;
-        }
-
-        .alert {
-            border-radius: var(--border-radius);
-            border: none;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
-            animation: slideDown 0.3s ease-out;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .loading-spinner {
-            display: none;
-            margin-right: 0.5rem;
-        }
-
-        /* تحسينات للشاشات الصغيرة */
-        @media (max-width: 576px) {
-            .login-card {
-                padding: 2rem 1.5rem;
-                margin: 1rem;
-            }
-
-            .system-title {
-                font-size: 1.5rem;
-            }
-
-            .logo-icon {
-                width: 60px;
-                height: 60px;
-            }
-
-            .logo-icon i {
-                font-size: 2rem;
-            }
-        }
-
-        /* تأثيرات إضافية */
-        .floating-elements {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            pointer-events: none;
-        }
-
-        .floating-element {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        .floating-element:nth-child(1) {
-            width: 80px;
-            height: 80px;
-            top: 20%;
-            left: 10%;
-            animation-delay: 0s;
-        }
-
-        .floating-element:nth-child(2) {
-            width: 60px;
-            height: 60px;
-            top: 60%;
-            right: 10%;
-            animation-delay: 2s;
-        }
-
-        .floating-element:nth-child(3) {
-            width: 40px;
-            height: 40px;
-            top: 80%;
-            left: 20%;
-            animation-delay: 4s;
-        }
-
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0px) rotate(0deg);
-                opacity: 0.5;
-            }
-            50% {
-                transform: translateY(-20px) rotate(180deg);
-                opacity: 0.8;
-            }
         }
     </style>
 </head>
 <body>
-    <!-- عناصر متحركة في الخلفية -->
-    <div class="floating-elements">
-        <div class="floating-element"></div>
-        <div class="floating-element"></div>
-        <div class="floating-element"></div>
-    </div>
-
-    <div class="login-container">
+    
+    <div class="login-wrapper">
         <div class="login-card">
-            <!-- شعار النظام -->
-            <div class="logo-section">
-                <div class="logo-icon">
+            
+            <div class="brand-section">
+                <div class="brand-logo">
                     <img src="../assets/images/tigan-logo.png" alt="شعار تِقان">
                 </div>
-                <h1 class="system-title">نظام تِقان ERP</h1>
-                <p class="system-subtitle">إدارة موارد المؤسسة للمقاولات والإنشاءات</p>
+                <h1 class="brand-title">تِقان</h1>
             </div>
 
-            <!-- رسائل التنبيه -->
             <?php if ($error): ?>
-                <div class="alert alert-danger" role="alert">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <?php echo htmlspecialchars($error); ?>
+                <div class="alert-custom alert-danger-custom">
+                    <i class="fas fa-exclamation-circle fs-5"></i>
+                    <span><?php echo htmlspecialchars($error); ?></span>
                 </div>
             <?php endif; ?>
 
             <?php if ($success): ?>
-                <div class="alert alert-success" role="alert">
-                    <i class="fas fa-check-circle me-2"></i>
-                    <?php echo htmlspecialchars($success); ?>
+                <div class="alert-custom alert-success-custom">
+                    <i class="fas fa-check-circle fs-5"></i>
+                    <span><?php echo htmlspecialchars($success); ?></span>
                 </div>
             <?php endif; ?>
 
-            <!-- نموذج تسجيل الدخول -->
+            <div id="jsErrorAlert" class="alert-custom alert-danger-custom d-none">
+                <i class="fas fa-exclamation-circle fs-5"></i>
+                <span id="jsErrorText"></span>
+            </div>
+
             <form method="POST" id="loginForm" novalidate>
-                <div class="form-floating">
-                    <i class="fas fa-user form-icon"></i>
-                    <input type="text"
-                           class="form-control"
-                           id="username"
-                           name="username"
-                           placeholder="اسم المستخدم"
-                           required
-                           autocomplete="username"
-                           value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>">
-                    <label for="username">اسم المستخدم</label>
+                <div class="form-group">
+                    <label for="username" class="form-label">اسم المستخدم</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="أدخل اسم المستخدم" required autocomplete="username" value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>">
+                    </div>
                 </div>
 
-                <div class="form-floating">
-                    <i class="fas fa-lock form-icon"></i>
-                    <input type="password"
-                           class="form-control"
-                           id="password"
-                           name="password"
-                           placeholder="كلمة المرور"
-                           required
-                           autocomplete="current-password">
-                    <label for="password">كلمة المرور</label>
+                <div class="form-group">
+                    <label for="password" class="form-label">كلمة المرور</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="أدخل كلمة المرور" required autocomplete="current-password">
+                    </div>
                 </div>
 
-                <div class="remember-section">
-                    <div class="form-check">
-                        <input class="form-check-input"
-                               type="checkbox"
-                               id="remember_me"
-                               name="remember_me">
+                <div class="options-row">
+                    <div class="form-check d-flex align-items-center mb-0">
+                        <input class="form-check-input" type="checkbox" id="remember_me" name="remember_me" value="1">
                         <label class="form-check-label" for="remember_me">
-                            تذكرني لمدة 30 يوماً
+                            تذكرني
                         </label>
                     </div>
-                    <a href="#" class="forgot-password" onclick="showForgotPassword()">
+                    <a href="javascript:void(0)" class="forgot-password" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">
                         نسيت كلمة المرور؟
                     </a>
                 </div>
 
-                <button type="submit" class="btn-login" id="loginBtn">
-                    <i class="fas fa-spinner fa-spin loading-spinner"></i>
-                    <i class="fas fa-sign-in-alt me-2"></i>
-                    تسجيل الدخول
+                <button type="submit" class="btn-submit" id="loginBtn">
+                    <i class="fas fa-spinner fa-spin d-none" id="loadingSpinner"></i>
+                    <i class="fas fa-sign-in-alt" id="loginIcon"></i>
+                    <span>تسجيل الدخول</span>
                 </button>
             </form>
+            
+        </div>
+        
+        <div class="footer-text">
+            &copy; <?php echo date('Y'); ?> جميع الحقوق محفوظة لنظام تِقان ERP
+        </div>
+    </div>
 
-            <!-- معلومات النظام -->
-            <div class="system-info">
-                <p class="mb-2">
-                    <i class="fas fa-shield-alt me-1"></i>
-                    نظام آمن ومحمي
-                </p>
-                <p class="mb-0">
-                    <a href="../dashboard.php">
-                        <i class="fas fa-home me-1"></i>
-                        العودة للصفحة الرئيسية
-                    </a>
-                </p>
+    <!-- Forgot Password Modal -->
+    <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="forgotPasswordModalLabel">استعادة كلمة المرور</h5>
+                    <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <i class="fas fa-info-circle text-primary mb-3" style="font-size: 3rem;"></i>
+                    <p class="text-muted mb-4">يرجى التواصل مع مسؤول النظام لاستعادة بيانات الدخول:</p>
+                    <div class="p-3 bg-light rounded-3 mb-2 border text-end">
+                        <i class="fas fa-envelope text-primary ms-2"></i> <strong>البريد:</strong> admin@tiqan.com
+                    </div>
+                    <div class="p-3 bg-light rounded-3 mb-2 border text-end">
+                        <i class="fas fa-phone text-success ms-2"></i> <strong>الهاتف:</strong> +966 12 345 6789
+                    </div>
+                </div>
+                <div class="modal-footer border-0 justify-content-center pt-0">
+                    <button type="button" class="btn btn-primary px-4 rounded-3" data-bs-dismiss="modal" style="background-color: var(--primary-color); border-color: var(--primary-color);">حسناً، فهمت</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <script>
         $(document).ready(function() {
-            // تركيز على حقل اسم المستخدم
+
+            // Auto focus
             $('#username').focus();
 
-            // تحسين تجربة المستخدم
-            $('.form-control').on('focus', function() {
-                $(this).parent().addClass('focused');
-            }).on('blur', function() {
-                if (!$(this).val()) {
-                    $(this).parent().removeClass('focused');
-                }
-            });
-
-            // معالجة إرسال النموذج
+            // Form Submit Handling
             $('#loginForm').on('submit', function(e) {
-                e.preventDefault();
-
                 const username = $('#username').val().trim();
                 const password = $('#password').val();
-                const loginBtn = $('#loginBtn');
-                const spinner = $('.loading-spinner');
 
-                // التحقق من صحة البيانات
                 if (!username || !password) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'تنبيه',
-                        text: 'يرجى إدخال اسم المستخدم وكلمة المرور',
-                        confirmButtonText: 'حسناً',
-                        confirmButtonColor: '#2563eb'
-                    });
+                    e.preventDefault();
+                    $('#jsErrorText').text('يرجى إدخال اسم المستخدم وكلمة المرور');
+                    $('#jsErrorAlert').removeClass('d-none');
                     return;
                 }
+                
+                $('#jsErrorAlert').addClass('d-none');
 
-                // إظهار حالة التحميل
-                loginBtn.prop('disabled', true);
-                spinner.show();
-                loginBtn.find('.fa-sign-in-alt').hide();
-
-                // إرسال النموذج
+                // Show loading state slightly delayed to ensure form submits correctly in all browsers
+                const btn = $('#loginBtn');
                 setTimeout(() => {
-                    this.submit();
-                }, 500);
+                    btn.prop('disabled', true);
+                    $('#loginIcon').addClass('d-none');
+                    $('#loadingSpinner').removeClass('d-none');
+                    btn.find('span').text('جاري الدخول...');
+                }, 10);
             });
 
-            // تحسين رسائل التنبيه
-            <?php if ($error): ?>
-                Swal.fire({
-                    icon: 'error',
-                    title: 'خطأ في تسجيل الدخول',
-                    text: '<?php echo addslashes($error); ?>',
-                    confirmButtonText: 'حسناً',
-                    confirmButtonColor: '#dc2626'
-                });
-            <?php endif; ?>
-
-            <?php if ($success): ?>
-                Swal.fire({
-                    icon: 'success',
-                    title: 'تم بنجاح',
-                    text: '<?php echo addslashes($success); ?>',
-                    timer: 2000,
-                    showConfirmButton: false,
-                    allowOutsideClick: false
-                });
-            <?php endif; ?>
-
-            // تأثيرات بصرية إضافية
-            $('.login-card').hover(
-                function() {
-                    $(this).addClass('shadow-lg');
-                },
-                function() {
-                    $(this).removeClass('shadow-lg');
-                }
-            );
-
-            // كشف caps lock
+            // Caps Lock Warning
             $('#password').on('keypress', function(e) {
-                const capsLock = e.originalEvent.getModifierState('CapsLock');
-                if (capsLock) {
-                    if (!$('.caps-warning').length) {
-                        $(this).after('<small class="caps-warning text-warning mt-1 d-block"><i class="fas fa-exclamation-triangle me-1"></i>تم تفعيل Caps Lock</small>');
+                if (e.originalEvent.getModifierState('CapsLock')) {
+                    if ($('#capsWarning').length === 0) {
+                        $(this).parent().after('<small id="capsWarning" class="text-warning mt-1 d-block fw-bold"><i class="fas fa-exclamation-triangle me-1"></i> زر Caps Lock قيد التشغيل</small>');
                     }
                 } else {
-                    $('.caps-warning').remove();
+                    $('#capsWarning').remove();
                 }
+            }).on('blur', function() {
+                $('#capsWarning').remove();
             });
-
-            // إخفاء تحذير caps lock عند فقدان التركيز
-            $('#password').on('blur', function() {
-                $('.caps-warning').remove();
-            });
-        });
-
-        // وظيفة نسيان كلمة المرور
-        function showForgotPassword() {
-            Swal.fire({
-                icon: 'info',
-                title: 'استعادة كلمة المرور',
-                html: `
-                    <p>للحصول على مساعدة في استعادة كلمة المرور، يرجى التواصل مع:</p>
-                    <div class="text-start mt-3">
-                        <p><i class="fas fa-envelope text-primary me-2"></i> admin@etgan.com</p>
-                        <p><i class="fas fa-phone text-success me-2"></i> +966 12 345 6789</p>
-                        <p><i class="fas fa-clock text-info me-2"></i> من 8 صباحاً إلى 5 مساءً</p>
-                    </div>
-                `,
-                confirmButtonText: 'حسناً',
-                confirmButtonColor: '#2563eb'
-            });
-        }
-
-        // تحسين الأداء - تحميل الخطوط مسبقاً
-        const fontLink = document.createElement('link');
-        fontLink.rel = 'preload';
-        fontLink.href = 'https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap';
-        fontLink.as = 'style';
-        document.head.appendChild(fontLink);
-
-        // تحسين إمكانية الوصول
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') {
-                $('#loginForm').submit();
-            }
-        });
-
-        // حماية من الهجمات
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
-                e.preventDefault();
-            }
         });
     </script>
 </body>

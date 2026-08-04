@@ -46,126 +46,137 @@ try {
 ob_start();
 ?>
 
-<!-- Page Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <p class="text-muted mb-0">إضافة أمر عمل جديد للنظام</p>
-    </div>
-    <div>
-        <a href="<?= path('work-orders/index.php') ?>" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-right me-1"></i>
-            العودة للقائمة
-        </a>
-    </div>
-</div>
+<style>
+    /* Minimalist & Premium Design */
+    .form-control, .form-select {
+        border-radius: 0.5rem;
+        padding: 0.6rem 1rem;
+        border: 1px solid transparent;
+        background-color: #f1f5f9; /* Soft gray */
+        font-size: 0.9rem;
+        color: #1e293b;
+        transition: all 0.2s ease-in-out;
+    }
+    .form-control:focus, .form-select:focus {
+        background-color: #ffffff;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.1);
+    }
+    .form-label {
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 0.4rem;
+        font-size: 0.8rem;
+    }
+    .card-custom {
+        border: none;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+    .btn-submit {
+        background-color: var(--primary-color);
+        border: none;
+        border-radius: 0.5rem;
+        padding: 0.6rem 2rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: white;
+        transition: all 0.2s;
+    }
+    .btn-submit:hover {
+        background-color: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(67, 56, 202, 0.2);
+        color: white;
+    }
+    .btn-cancel {
+        border-radius: 0.5rem;
+        padding: 0.6rem 2rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        transition: all 0.2s;
+    }
+    .btn-cancel:hover {
+        background-color: #f8fafc;
+        color: #0f172a;
+    }
+</style>
 
 <?php if (isset($error)): ?>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="fas fa-exclamation-triangle me-2"></i>
+    <div class="alert alert-danger alert-dismissible fade show border-0 rounded-3 shadow-sm py-2" role="alert">
+        <i class="fas fa-exclamation-triangle ms-2"></i>
         <?= htmlspecialchars($error) ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 <?php endif; ?>
 
 <!-- نموذج إضافة أمر العمل -->
-<div class="card">
-    <div class="card-header">
-        <h5 class="card-title">
-            <i class="fas fa-plus-circle text-primary me-2"></i>
-            بيانات أمر العمل الجديد
-        </h5>
-    </div>
-    <div class="card-body">
+<div class="card card-custom mb-4">
+    <div class="card-body p-4 p-lg-5">
         <form id="createWorkOrderForm">
-            <div class="row">
-                <!-- رقم أمر العمل -->
-                <div class="col-md-6 mb-3">
-                    <label for="work_order_number" class="form-label">
-                        رقم أمر العمل <span class="text-danger">*</span>
-                        <small class="text-muted">(9 أرقام فقط)</small>
-                    </label>
-                    <input type="text" class="form-control" id="work_order_number" name="work_order_number"
-                           required maxlength="9" pattern="[0-9]{9}"
-                           placeholder="123456789"
-                           title="يجب إدخال 9 أرقام فقط">
-                    <div class="form-text">
-                        <small id="work_order_number_help" class="text-muted">
-                            <i class="fas fa-info-circle me-1"></i>
-                            أدخل 9 أرقام بالضبط
-                        </small>
-                    </div>
+            
+            <div class="row g-4">
+                <!-- Row 1: Basic Info -->
+                <div class="col-md-3">
+                    <label for="work_order_number" class="form-label">رقم أمر العمل <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="work_order_number" name="work_order_number" required maxlength="9" pattern="[0-9]{9}" placeholder="مثال: 123456789">
                 </div>
-
-                <!-- نوع أمر العمل -->
-                <div class="col-md-6 mb-3">
-                    <label for="work_order_type_id" class="form-label">
-                        نوع أمر العمل <span class="text-danger">*</span>
-                    </label>
+                
+                <div class="col-md-3">
+                    <label for="work_order_type_id" class="form-label">نوع أمر العمل <span class="text-danger">*</span></label>
                     <select class="form-select" id="work_order_type_id" name="work_order_type_id" required>
-                        <option value="">اختر نوع أمر العمل</option>
+                        <option value="">اختر...</option>
                         <?php foreach ($workOrderTypes as $type): ?>
-                            <option value="<?= $type['id'] ?>">
-                                <?= htmlspecialchars($type['type_code']) ?> - <?= htmlspecialchars($type['description']) ?>
-                            </option>
+                            <option value="<?= $type['id'] ?>"><?= htmlspecialchars($type['type_code']) ?> - <?= htmlspecialchars($type['description']) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
 
-                <!-- القسم -->
-                <div class="col-md-6 mb-3">
-                    <label for="department" class="form-label">
-                        القسم <span class="text-danger">*</span>
-                    </label>
+                <div class="col-md-3">
+                    <label for="department" class="form-label">القسم <span class="text-danger">*</span></label>
                     <select class="form-select" id="department" name="department" required>
-                        <option value="">اختر القسم</option>
+                        <option value="">اختر...</option>
                         <option value="connections">التوصيلات</option>
                         <option value="projects">المشاريع</option>
                     </select>
                 </div>
 
-                <!-- الفرع -->
-                <div class="col-md-6 mb-3">
-                    <label for="branch_id" class="form-label">
-                        الفرع <span class="text-danger">*</span>
-                    </label>
+                <div class="col-md-3">
+                    <label for="branch_id" class="form-label">الفرع <span class="text-danger">*</span></label>
                     <select class="form-select" id="branch_id" name="branch_id" required>
-                        <option value="">اختر الفرع</option>
+                        <option value="">اختر...</option>
                         <?php foreach ($branches as $branch): ?>
-                            <option value="<?= $branch['id'] ?>" data-code="<?= $branch['code'] ?>">
-                                <?= htmlspecialchars($branch['name']) ?> (<?= htmlspecialchars($branch['code']) ?>)
-                            </option>
+                            <option value="<?= $branch['id'] ?>" data-code="<?= $branch['code'] ?>"><?= htmlspecialchars($branch['name']) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
 
-                <!-- تاريخ التكليف -->
-                <div class="col-md-6 mb-3">
+                <!-- Row 2: Dates & Financials -->
+                <div class="col-md-3">
                     <label for="assignment_date" class="form-label">تاريخ التكليف</label>
                     <input type="date" class="form-control" id="assignment_date" name="assignment_date">
                 </div>
 
-                <!-- تاريخ الاستلام -->
-                <div class="col-md-6 mb-3">
+                <div class="col-md-3">
                     <label for="receipt_date" class="form-label">تاريخ الاستلام</label>
                     <input type="date" class="form-control" id="receipt_date" name="receipt_date">
                 </div>
 
-                <!-- القيمة المقدرة -->
-                <div class="col-md-6 mb-3">
+                <div class="col-md-3">
                     <label for="estimated_value" class="form-label">القيمة المقدرة (ريال)</label>
-                    <input type="number" class="form-control" id="estimated_value" name="estimated_value" 
-                           step="0.01" min="0" placeholder="0.00">
+                    <input type="number" class="form-control" id="estimated_value" name="estimated_value" step="0.01" min="0" placeholder="0.00">
                 </div>
 
-                <!-- القيمة الفعلية -->
-                <div class="col-md-6 mb-3">
+                <div class="col-md-3">
                     <label for="actual_value" class="form-label">القيمة الفعلية (ريال)</label>
-                    <input type="number" class="form-control" id="actual_value" name="actual_value" 
-                           step="0.01" min="0" placeholder="0.00">
+                    <input type="number" class="form-control" id="actual_value" name="actual_value" step="0.01" min="0" placeholder="0.00">
                 </div>
 
-                <!-- حالة الصرف -->
-                <div class="col-md-6 mb-3">
+                <!-- Row 3: Status & Notes -->
+                <div class="col-md-3">
                     <label for="disbursement_status" class="form-label">حالة الصرف</label>
                     <select class="form-select" id="disbursement_status" name="disbursement_status">
                         <option value="none">لا يوجد</option>
@@ -178,8 +189,7 @@ ob_start();
                     </select>
                 </div>
 
-                <!-- الحالة -->
-                <div class="col-md-6 mb-3">
+                <div class="col-md-3">
                     <label for="status" class="form-label">حالة أمر العمل</label>
                     <select class="form-select" id="status" name="status">
                         <option value="active">نشط</option>
@@ -189,23 +199,15 @@ ob_start();
                     </select>
                 </div>
 
-                <!-- الملاحظات -->
-                <div class="col-12 mb-3">
+                <div class="col-md-6">
                     <label for="notes" class="form-label">الملاحظات</label>
-                    <textarea class="form-control" id="notes" name="notes" rows="3" 
-                              placeholder="أدخل أي ملاحظات إضافية حول أمر العمل"></textarea>
+                    <input type="text" class="form-control" id="notes" name="notes" placeholder="أدخل أي ملاحظات إضافية...">
                 </div>
             </div>
 
-            <div class="d-flex justify-content-end gap-2">
-                <button type="button" class="btn btn-secondary" onclick="window.history.back()">
-                    <i class="fas fa-times me-1"></i>
-                    إلغاء
-                </button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-1"></i>
-                    حفظ أمر العمل
-                </button>
+            <div class="d-flex justify-content-end gap-3 mt-5 pt-4 border-top">
+                <button type="button" class="btn-cancel" onclick="window.history.back()">إلغاء</button>
+                <button type="submit" class="btn-submit">حفظ أمر العمل</button>
             </div>
         </form>
     </div>

@@ -31,6 +31,7 @@ $contractsQuery = "
     SELECT c.*,
            u.full_name as created_by_name,
            COUNT(DISTINCT wo.id) as work_orders_count,
+           (SELECT COUNT(*) FROM contract_work_items WHERE contract_id = c.id) as items_count,
            CASE 
                WHEN CURDATE() BETWEEN c.start_date AND c.end_date THEN 'current'
                WHEN CURDATE() < c.start_date THEN 'future'
@@ -153,6 +154,7 @@ ob_start();
                             <th>تاريخ البداية</th>
                             <th>تاريخ النهاية</th>
                             <th>الحالة</th>
+                            <th>البنود</th>
                             <th>أوامر العمل</th>
                             <th>الوصف</th>
                             <th>الإجراءات</th>
@@ -176,11 +178,17 @@ ob_start();
                                 <?php endif; ?>
                             </td>
                             <td>
+                                <span class="badge bg-secondary"><?= $contract['items_count'] ?? 0 ?> بند</span>
+                            </td>
+                            <td>
                                 <span class="badge bg-info"><?= $contract['work_orders_count'] ?> أمر عمل</span>
                             </td>
                             <td><?= htmlspecialchars($contract['description'] ?? '-') ?></td>
                             <td>
                                 <div class="btn-group" role="group">
+                                    <a href="work-items.php?contract_id=<?= $contract['id'] ?>" class="btn btn-sm btn-outline-primary" title="إدارة البنود">
+                                        <i class="fas fa-list"></i>
+                                    </a>
                                     <button type="button" class="btn btn-sm btn-outline-warning" 
                                             onclick="openEditModal(<?= htmlspecialchars(json_encode($contract)) ?>)" title="تعديل">
                                         <i class="fas fa-edit"></i>

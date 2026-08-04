@@ -131,8 +131,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             foreach ($_POST['materials'] as $materialData) {
                 if (!empty($materialData['material_id'])) {
-                    // جلب معلومات المادة
-                    $materialInfoStmt = $db->prepare("SELECT * FROM materials WHERE id = ?");
+                    $materialInfoStmt = $db->prepare("
+                        SELECT id, item_number, description, group_number, unit 
+                        FROM material_catalog 
+                        WHERE id = ?
+                    ");
                     $materialInfoStmt->execute([$materialData['material_id']]);
                     $materialInfo = $materialInfoStmt->fetch();
 
@@ -171,21 +174,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['works']) && is_array($_POST['works'])) {
             $workStmt = $db->prepare("
                 INSERT INTO completion_certificate_works (
-                    certificate_id, work_item_id, work_item_code, work_description,
+                    certificate_id, contract_work_item_id, work_item_code, work_description,
                     work_category, unit, estimated_quantity, quantity, unit_price, total_value, completion_percentage, notes
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
             foreach ($_POST['works'] as $workData) {
                 if (!empty($workData['work_item_id'])) {
-                    // جلب معلومات بند العمل
-                    $workInfoStmt = $db->prepare("SELECT * FROM work_items WHERE id = ?");
+                    // جلب معلومات بند العمل من العقد
+                    $workInfoStmt = $db->prepare("SELECT * FROM contract_work_items WHERE id = ?");
                     $workInfoStmt->execute([$workData['work_item_id']]);
                     $workInfo = $workInfoStmt->fetch();
 
                     if ($workInfo) {
                         $quantity = (float)($workData['quantity'] ?? 0);
-                        $unitPrice = (float)($workData['unit_price'] ?? 0);
+                        $unitPrice = (float)($workInfo['price'] ?? 0);
                         $totalValue = $quantity * $unitPrice;
 
                         $workStmt->execute([
@@ -222,12 +225,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // جلب قوائم البيانات المطلوبة
-$materialsStmt = $db->prepare("SELECT m.id, m.item_number, mc.description, mc.unit, mc.group_number FROM materials m LEFT JOIN material_catalog mc ON m.item_number = mc.item_number WHERE m.is_active = 1 ORDER BY m.item_number");
+$materialsStmt = $db->prepare("SELECT id, item_number, description, unit, group_number FROM material_catalog ORDER BY item_number");
 $materialsStmt->execute();
 $materials = $materialsStmt->fetchAll();
 
-$workItemsStmt = $db->prepare("SELECT id, item_number, description, unit, standard_price FROM work_items WHERE is_active = 1 ORDER BY item_number");
-$workItemsStmt->execute();
+$workItemsStmt = $db->prepare("
+    SELECT cwi.id, cwi.item_number, cwi.description, cwi.unit, cwi.price 
+    FROM contract_work_items cwi
+    JOIN work_orders wo ON wo.contract_id = cwi.contract_id
+    WHERE wo.id = ? AND cwi.is_active = 1 
+    ORDER BY cwi.item_number
+");
+$workItemsStmt->execute([$certificate['work_order_id']]);
 $workItems = $workItemsStmt->fetchAll();
 
 // تحديد المحتوى
@@ -271,7 +280,7 @@ ob_start();
         </div>
     <?php endif; ?>
 
-    <form method="POST" id="editCertificateForm">
+    <form method="POST" id="editCertificateForm" hx-boost="false">
         <!-- معلومات أمر العمل -->
         <div class="card mb-4">
             <div class="card-header">
@@ -437,6 +446,8 @@ ob_start();
                                 <th style="width: 80px;">الوحدة</th>
                                 <th style="width: 80px;">المقايسة</th>
                                 <th style="width: 80px;">الكمية</th>
+                                <th style="width: 80px;">السعر</th>
+                                <th style="width: 80px;">الإجمالي</th>
                                 <th style="width: 80px;">نسبة الإنجاز</th>
                                 <th style="width: 80px;">إجراءات</th>
                             </tr>
@@ -542,21 +553,36 @@ ob_start();
 
 <script>
 // بيانات المواد والأعمال الحالية
-const existingMaterials = <?= json_encode($certificateMaterials) ?>;
-const existingWorks = <?= json_encode($certificateWorks) ?>;
-const materialsData = <?= json_encode($materials) ?>;
-const workItemsData = <?= json_encode($workItems) ?>;
+var existingMaterials = <?= json_encode($certificateMaterials) ?>;
+var existingWorks = <?= json_encode($certificateWorks) ?>;
+var materialsData = <?= json_encode($materials) ?>;
+var workItemsData = <?= json_encode($workItems) ?>;
 
 // متغيرات العدادات
-let materialRowCounter = 0;
-let workRowCounter = 0;
+var materialRowCounter = 0;
+var workRowCounter = 0;
 
-// تحميل البيانات عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', function() {
+// دالة التهيئة الشاملة
+function initializeAll() {
+    // التحقق من وجود العناصر الأساسية في DOM قبل التهيئة
+    const formElement = document.getElementById('editCertificateForm');
+    if (!formElement) {
+        // العناصر لم تُحمل بعد، إعادة المحاولة بعد تأخير بسيط
+        setTimeout(initializeAll, 100);
+        return;
+    }
     loadExistingData();
     setupSearchFunctionality();
     updateTotals();
-});
+}
+
+// تهيئة البحث عند تحميل الصفحة أو عند التنقل عبر HTMX
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeAll);
+} else {
+    // تأخير بسيط لضمان جاهزية DOM عند التحميل عبر HTMX
+    setTimeout(initializeAll, 50);
+}
 
 // إضافة CSS للبحث السريع
 const searchStyles = `
@@ -747,9 +773,10 @@ function addMaterialRowWithData(materialData) {
                     <option value="">اختر المادة</option>
                     ${materialsData.map(material =>
                         `<option value="${material.id}"
-                            data-description="${material.description || ''}"
-                            data-unit="${material.unit || ''}"
-                            data-group="${material.group_number || ''}"
+                            data-code="${String(material.item_number || '').replace(/"/g, '&quot;')}"
+                            data-description="${String(material.description || '').replace(/"/g, '&quot;')}"
+                            data-unit="${String(material.unit || '').replace(/"/g, '&quot;')}"
+                            data-group="${String(material.group_number || '').replace(/"/g, '&quot;')}"
                             ${material.id == materialData.material_id ? 'selected' : ''}>${material.item_number}</option>`
                     ).join('')}
                 </select>
@@ -807,9 +834,10 @@ function addWorkRowWithData(workData) {
                     <option value="">اختر العمل</option>
                     ${workItemsData.map(workItem =>
                         `<option value="${workItem.id}"
-                            data-description="${workItemc.description || ''}"
-                            data-unit="${workItemc.unit || ''}"
-                            data-price="${workItem.standard_price || 0}"
+                            data-code="${String(workItem.item_number || '').replace(/"/g, '&quot;')}"
+                            data-description="${String(workItem.description || '').replace(/"/g, '&quot;')}"
+                            data-unit="${String(workItem.unit || '').replace(/"/g, '&quot;')}"
+                            data-price="${String(workItem.price || 0).replace(/"/g, '&quot;')}"
                             ${workItem.id == workData.work_item_id ? 'selected' : ''}>${workItem.item_number}</option>`
                     ).join('')}
                 </select>
@@ -819,7 +847,15 @@ function addWorkRowWithData(workData) {
         <td><span class="work-description">${workData.work_description || workData.work_item_description || '-'}</span></td>
         <td><span class="work-unit">${workData.unit || '-'}</span></td>
         <td><input type="number" name="works[${workRowCounter}][estimated_quantity]" class="form-control form-control-sm" step="0.001" min="0" value="${workData.estimated_quantity || workData.quantity || 0}" placeholder="المقايسة"></td>
-        <td><input type="number" name="works[${workRowCounter}][quantity]" class="form-control form-control-sm" step="0.001" min="0" value="${workData.quantity || 0}" required></td>
+        <td><input type="number" name="works[${workRowCounter}][quantity]" class="form-control form-control-sm" step="0.001" min="0" value="${workData.quantity || 0}" required oninput="calculateWorkTotal(this)"></td>
+        <td>
+            <input type="hidden" name="works[${workRowCounter}][unit_price]" value="${workData.unit_price || foundWorkItem?.price || 0}">
+            <span class="work-price">${workData.unit_price || foundWorkItem?.price || 0}</span>
+        </td>
+        <td>
+            <input type="hidden" name="works[${workRowCounter}][total_value]" class="work-total-hidden" value="${workData.total_value || ((workData.quantity || 0) * (workData.unit_price || foundWorkItem?.price || 0)) || 0}">
+            <span class="work-total fw-bold text-primary">${workData.total_value || ((workData.quantity || 0) * (workData.unit_price || foundWorkItem?.price || 0)) || 0}</span>
+        </td>
         <td><input type="number" name="works[${workRowCounter}][completion_percentage]" class="form-control form-control-sm" step="0.1" min="0" max="100" value="${workData.completion_percentage || 100}"></td>
         <td>
             <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeWorkRow(this)">
@@ -833,7 +869,15 @@ function addWorkRowWithData(workData) {
     // تحديث الوصف والسعر إذا كان بند العمل محدد
     if (foundWorkItem && workData.work_item_id) {
         const descriptionSpan = row.querySelector('.work-description');
-    // تم إزالة حسابات الأسعار
+        if (descriptionSpan) {
+            descriptionSpan.textContent = foundWorkItem.description;
+        }
+        const priceSpan = row.querySelector('.work-price');
+        if (priceSpan) {
+            priceSpan.textContent = foundWorkItem.price;
+        }
+    }
+    
     updateTotals();
 }
 
@@ -973,8 +1017,8 @@ function searchMaterialInRow(input, rowIndex) {
     }
 
     const filteredMaterials = materialsData.filter(material =>
-        material.item_number.toLowerCase().includes(searchTerm) ||
-        material.description.toLowerCase().includes(searchTerm)
+        String(material.item_number || '').toLowerCase().includes(searchTerm) ||
+        String(material.description || '').toLowerCase().includes(searchTerm)
     );
 
     console.log('Filtered materials:', filteredMaterials.length);
@@ -1032,8 +1076,8 @@ function searchWorkInRow(input, rowIndex) {
     }
 
     const filteredWorks = workItemsData.filter(work =>
-        work.item_number.toLowerCase().includes(searchTerm) ||
-        work.description.toLowerCase().includes(searchTerm)
+        String(work.item_number || '').toLowerCase().includes(searchTerm) ||
+        String(work.description || '').toLowerCase().includes(searchTerm)
     );
 
     console.log('Filtered works:', filteredWorks.length);
@@ -1126,9 +1170,28 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// تم إزالة calculateWorkTotal
+// حساب إجمالي العمل
+function calculateWorkTotal(input) {
+    const row = input.closest('tr');
+    const quantityInput = row.querySelector('input[name*="[quantity]"]');
+    const priceInput = row.querySelector('input[name*="[unit_price]"]');
+    const totalSpan = row.querySelector('.work-total');
+    const totalHidden = row.querySelector('.work-total-hidden');
 
-// تحديث الإجماليات
+    if (quantityInput && priceInput && totalSpan && totalHidden) {
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        const total = quantity * price;
+
+        totalSpan.textContent = total.toFixed(2);
+        totalHidden.value = total.toFixed(2);
+
+        // تحديث الإجماليات العامة
+        updateTotals();
+    }
+}
+
+// تحديث الإجماليات العامة
 function updateTotals() {
     // حساب عدد المواد
     const materialsCount = document.querySelectorAll('#materialsTableBody tr:not(#noMaterialsRow)').length;
@@ -1149,8 +1212,8 @@ function setupSearchFunctionality() {
         if (query.length < 2) return;
 
         const filteredMaterials = materialsData.filter(material =>
-            material.item_number.toLowerCase().includes(query) ||
-            (material.description && material.description.toLowerCase().includes(query))
+            String(material.item_number || '').toLowerCase().includes(query) ||
+            String(material.description || '').toLowerCase().includes(query)
         );
 
         filteredMaterials.slice(0, 10).forEach(material => {
@@ -1195,8 +1258,8 @@ function setupSearchFunctionality() {
         if (query.length < 2) return;
 
         const filteredWorks = workItemsData.filter(work =>
-            work.item_number.toLowerCase().includes(query) ||
-            (work.description && work.description.toLowerCase().includes(query))
+            String(work.item_number || '').toLowerCase().includes(query) ||
+            String(work.description || '').toLowerCase().includes(query)
         );
 
         filteredWorks.slice(0, 10).forEach(work => {
