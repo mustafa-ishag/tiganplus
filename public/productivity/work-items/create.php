@@ -531,6 +531,8 @@ function initializeWorkOrderSearch() {
         const selectedOrder = workOrdersData.find(wo => wo.id == hiddenInput.value);
         if (selectedOrder) {
             searchInput.value = `${selectedOrder.work_order_number} - ${selectedOrder.branch_name}`;
+            // جلب بنود الأعمال المرتبطة بعقد أمر العمل المختار مسبقاً
+            loadContractWorkItems(hiddenInput.value);
         }
     }
 
