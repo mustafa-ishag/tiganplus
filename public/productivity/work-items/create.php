@@ -135,7 +135,7 @@ if ($preselectedWorkOrderId) {
     $preselectedStmt = $db->prepare("
         SELECT wo.id, wo.work_order_number, b.name as branch_name, wo.estimated_value
         FROM work_orders wo
-        JOIN branches b ON wo.branch_id = b.id
+        LEFT JOIN branches b ON wo.branch_id = b.id
         WHERE wo.id = ?
     ");
     $preselectedStmt->execute([$preselectedWorkOrderId]);

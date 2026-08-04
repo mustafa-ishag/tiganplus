@@ -97,7 +97,7 @@ if ($work_order_id) {
     $workOrderStmt = $db->prepare("
         SELECT wo.*, b.name as branch_name
         FROM work_orders wo
-        JOIN branches b ON wo.branch_id = b.id
+        LEFT JOIN branches b ON wo.branch_id = b.id
         WHERE wo.id = ?
     ");
     $workOrderStmt->execute([$work_order_id]);
@@ -136,7 +136,7 @@ ob_start();
         </div>
         <div>
             <?php if (hasPermission('productivity_work_items_create')): ?>
-            <a href="create.php<?= $selectedWorkOrder ? '?work_order_id=' . $selectedWorkOrder['id'] : '' ?>" class="btn btn-primary">
+            <a href="create.php<?= $selectedWorkOrder ? '?work_order_id=' . $selectedWorkOrder['id'] . '&t=' . time() : '?t=' . time() ?>" class="btn btn-primary">
                 <i class="fas fa-plus"></i> إضافة بند إنتاجية
             </a>
             <?php endif; ?>
