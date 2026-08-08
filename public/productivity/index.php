@@ -66,6 +66,9 @@ ob_start();
             لوحة تحكم الإنتاجية
         </h1>
         <div class="btn-group" role="group">
+            <a href="<?= path('productivity/work-orders/index.php') ?>" class="btn btn-info btn-sm">
+                <i class="fas fa-list"></i> قائمة أوامر العمل
+            </a>
             <?php if (hasPermission('productivity_work_items_create')): ?>
                 <a href="work-items/create.php" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> إضافة بند إنتاجية
