@@ -122,16 +122,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // التحقق من عدم تجاوز الكمية المتبقية
     if (!empty($formData['work_item_id']) && $formData['quantity_completed'] > 0) {
-        $selectedItem = null;
-        foreach ($workItems as $item) {
-            if ($item['id'] == $formData['work_item_id']) {
-                $selectedItem = $item;
-                break;
-            }
-        }
-        
-        if ($selectedItem && $formData['quantity_completed'] > $selectedItem['remaining_quantity']) {
-            $errors[] = 'الكمية المنجزة (' . $formData['quantity_completed'] . ') تتجاوز الكمية المتبقية (' . $selectedItem['remaining_quantity'] . ')';
+        if ($preselectedWorkItem && $formData['quantity_completed'] > $preselectedWorkItem['remaining_quantity']) {
+            $errors[] = 'الكمية المنجزة (' . $formData['quantity_completed'] . ') تتجاوز الكمية المتبقية (' . $preselectedWorkItem['remaining_quantity'] . ')';
         }
     }
     
