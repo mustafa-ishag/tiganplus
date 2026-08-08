@@ -250,15 +250,14 @@ class ProductivityApproval
         try {
             $sql = "
                 SELECT pdl.*, pwi.target_quantity, pwi.unit_price,
-                       wo.work_order_number, wi.item_number, wi.description as work_item_description,
-                       wi.unit, b.name as branch_name, u.full_name as created_by_name,
+                       wo.work_order_number, pwi.work_item_description,
+                       pwi.unit, b.name as branch_name, u.full_name as created_by_name,
                        (pdl.quantity_completed * pwi.unit_price) as calculated_value
                 FROM productivity_daily_logs pdl
                 JOIN productivity_work_items pwi ON pdl.work_item_id = pwi.id
                 JOIN work_orders wo ON pwi.work_order_id = wo.id
-                JOIN work_items wi ON pwi.work_item_id = wi.id
-                JOIN branches b ON wo.branch_id = b.id
-                JOIN users u ON pdl.created_by = u.id
+                LEFT JOIN branches b ON wo.branch_id = b.id
+                LEFT JOIN users u ON pdl.created_by = u.id
                 WHERE pdl.status = 'submitted'
                 AND EXISTS (
                     SELECT 1 FROM productivity_approvers pa
@@ -534,10 +533,9 @@ class ProductivityApproval
                 SELECT COUNT(*)
                 FROM productivity_daily_logs pdl
                 JOIN productivity_work_items pwi ON pdl.work_item_id = pwi.id
-                JOIN work_orders wo ON pwi.work_order_id = wo.id
-                JOIN work_items wi ON pwi.work_item_id = wi.id
-                JOIN branches b ON wo.branch_id = b.id
-                JOIN users u ON pdl.created_by = u.id
+                LEFT JOIN work_orders wo ON pwi.work_order_id = wo.id
+                LEFT JOIN branches b ON wo.branch_id = b.id
+                LEFT JOIN users u ON pdl.created_by = u.id
                 JOIN productivity_approvers pa ON (
                     (pa.branch_id IS NULL OR pa.branch_id = wo.branch_id) AND
                     (pa.department = 'all' OR
@@ -555,7 +553,7 @@ class ProductivityApproval
 
             // تطبيق الفلاتر
             if (!empty($filters['search'])) {
-                $sql .= " AND (wo.work_order_number LIKE ? OR wi.description LIKE ? OR wi.item_number LIKE ?)";
+                $sql .= " AND (wo.work_order_number LIKE ? OR pwi.work_item_description LIKE ? OR pwi.contract_work_item_id LIKE ?)";
                 $searchTerm = '%' . $filters['search'] . '%';
                 $params[] = $searchTerm;
                 $params[] = $searchTerm;
@@ -595,15 +593,14 @@ class ProductivityApproval
         try {
             $sql = "
                 SELECT pa.*, pdl.quantity_completed, pdl.log_date,
-                       wo.work_order_number, wi.item_number, wi.description as work_item_description,
-                       wi.unit, b.name as branch_name, u.full_name as approver_name
+                       wo.work_order_number, pwi.contract_work_item_id as item_number, pwi.work_item_description,
+                       pwi.unit, b.name as branch_name, u.full_name as approver_name
                 FROM productivity_approvals pa
                 JOIN productivity_daily_logs pdl ON pa.daily_log_id = pdl.id
                 JOIN productivity_work_items pwi ON pdl.work_item_id = pwi.id
-                JOIN work_orders wo ON pwi.work_order_id = wo.id
-                JOIN work_items wi ON pwi.work_item_id = wi.id
-                JOIN branches b ON wo.branch_id = b.id
-                JOIN users u ON pa.approver_id = u.id
+                LEFT JOIN work_orders wo ON pwi.work_order_id = wo.id
+                LEFT JOIN branches b ON wo.branch_id = b.id
+                LEFT JOIN users u ON pa.approver_id = u.id
                 WHERE 1=1
             ";
 
@@ -631,7 +628,7 @@ class ProductivityApproval
             }
 
             if (!empty($filters['search'])) {
-                $sql .= " AND (wo.work_order_number LIKE ? OR wi.description LIKE ? OR wi.item_number LIKE ?)";
+                $sql .= " AND (wo.work_order_number LIKE ? OR pwi.work_item_description LIKE ? OR pwi.contract_work_item_id LIKE ?)";
                 $searchTerm = '%' . $filters['search'] . '%';
                 $params[] = $searchTerm;
                 $params[] = $searchTerm;
@@ -664,10 +661,9 @@ class ProductivityApproval
                 FROM productivity_approvals pa
                 JOIN productivity_daily_logs pdl ON pa.daily_log_id = pdl.id
                 JOIN productivity_work_items pwi ON pdl.work_item_id = pwi.id
-                JOIN work_orders wo ON pwi.work_order_id = wo.id
-                JOIN work_items wi ON pwi.work_item_id = wi.id
-                JOIN branches b ON wo.branch_id = b.id
-                JOIN users u ON pa.approver_id = u.id
+                LEFT JOIN work_orders wo ON pwi.work_order_id = wo.id
+                LEFT JOIN branches b ON wo.branch_id = b.id
+                LEFT JOIN users u ON pa.approver_id = u.id
                 WHERE 1=1
             ";
 
@@ -695,7 +691,7 @@ class ProductivityApproval
             }
 
             if (!empty($filters['search'])) {
-                $sql .= " AND (wo.work_order_number LIKE ? OR wi.description LIKE ? OR wi.item_number LIKE ?)";
+                $sql .= " AND (wo.work_order_number LIKE ? OR pwi.work_item_description LIKE ? OR pwi.contract_work_item_id LIKE ?)";
                 $searchTerm = '%' . $filters['search'] . '%';
                 $params[] = $searchTerm;
                 $params[] = $searchTerm;
