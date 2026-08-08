@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $db = getDB();
         $duplicateCheck = $db->prepare("
             SELECT COUNT(*) FROM productivity_work_items 
-            WHERE work_order_id = ? AND work_item_id = ?
+            WHERE work_order_id = ? AND contract_work_item_id = ?
         ");
         $duplicateCheck->execute([$formData['work_order_id'], $formData['work_item_id']]);
         
