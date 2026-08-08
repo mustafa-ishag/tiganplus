@@ -477,59 +477,25 @@ ob_start();
 </style>
 
 <script>
-// بيانات أوامر العمل وبنود الأعمال للبحث السريع
-const workOrdersData = <?= json_encode($workOrders) ?>;
 let workItemsData = []; // سيتم تعبئتها عبر AJAX
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('تهيئة البحث السريع');
+    console.log('تهيئة البحث السريع للبنود');
 
-    // تهيئة البحث السريع
-    initializeQuickSearch();
+    // تهيئة البحث في بنود الأعمال
+    initializeWorkItemSearch();
+
+    // جلب بنود الأعمال المرتبطة بعقد أمر العمل المختار مسبقاً
+    const hiddenInput = document.getElementById('work_order_id');
+    if (hiddenInput && hiddenInput.value) {
+        loadContractWorkItems(hiddenInput.value);
+    }
 
     // تهيئة عناصر النموذج
     initializeFormElements();
 });
 
-// دالة تهيئة البحث السريع
-function initializeQuickSearch() {
-    // تهيئة البحث في أوامر العمل
-    initializeWorkOrderSearch();
 
-    // تهيئة البحث في بنود الأعمال
-    initializeWorkItemSearch();
-}
-
-// تهيئة البحث في أوامر العمل
-function initializeWorkOrderSearch() {
-    const searchInput = document.getElementById('work_order_search');
-    const dropdown = document.getElementById('work_order_dropdown');
-    const hiddenInput = document.getElementById('work_order_id');
-
-    // إذا كان هناك قيمة محددة مسبقاً، اعرضها وجلب البنود
-    if (hiddenInput && hiddenInput.value) {
-        const selectedOrder = workOrdersData.find(wo => wo.id == hiddenInput.value);
-        if (selectedOrder) {
-            if (searchInput) searchInput.value = `${selectedOrder.work_order_number} - ${selectedOrder.branch_name}`;
-        }
-        // جلب بنود الأعمال المرتبطة بعقد أمر العمل المختار مسبقاً دائماً
-        loadContractWorkItems(hiddenInput.value);
-    }
-
-    if (!searchInput || !dropdown || !hiddenInput) return;
-
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        searchWorkOrders(searchTerm, dropdown, hiddenInput, searchInput);
-    });
-
-    // إخفاء القائمة عند النقر خارجها
-    document.addEventListener('click', function(e) {
-        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
-            dropdown.classList.remove('show');
-        }
-    });
-}
 
 // تهيئة البحث في بنود الأعمال
 function initializeWorkItemSearch() {
@@ -560,40 +526,7 @@ function initializeWorkItemSearch() {
     });
 }
 
-// دالة البحث في أوامر العمل
-function searchWorkOrders(searchTerm, dropdown, hiddenInput, searchInput) {
-    if (searchTerm.length < 2) {
-        dropdown.innerHTML = '';
-        dropdown.classList.remove('show');
-        return;
-    }
 
-    // فلترة أوامر العمل
-    const filteredOrders = workOrdersData.filter(order =>
-        order.work_order_number.toLowerCase().includes(searchTerm) ||
-        order.branch_name.toLowerCase().includes(searchTerm)
-    );
-
-    if (filteredOrders.length === 0) {
-        dropdown.innerHTML = `
-            <div class="dropdown-item-text text-center text-muted py-3">
-                <i class="fas fa-search me-1"></i>
-                لا توجد أوامر عمل تطابق البحث
-            </div>
-        `;
-    } else {
-        dropdown.innerHTML = filteredOrders.map(order => `
-            <a href="#" class="dropdown-item search-result-item"
-               onclick="selectWorkOrder(${order.id}, '${order.work_order_number}', '${order.branch_name}'); return false;">
-                <div class="item-number">${order.work_order_number}</div>
-                <div class="item-description">${order.branch_name}</div>
-                <div class="item-details">القيمة المقدرة: ${parseFloat(order.estimated_value).toLocaleString('ar-SA')} ريال</div>
-            </a>
-        `).join('');
-    }
-
-    dropdown.classList.add('show');
-}
 
 // دالة البحث في بنود الأعمال
 function searchWorkItems(searchTerm, dropdown, hiddenInput, searchInput) {
@@ -630,21 +563,7 @@ function searchWorkItems(searchTerm, dropdown, hiddenInput, searchInput) {
     dropdown.classList.add('show');
 }
 
-// دالة اختيار أمر العمل
-function selectWorkOrder(id, workOrderNumber, branchName) {
-    const searchInput = document.getElementById('work_order_search');
-    const hiddenInput = document.getElementById('work_order_id');
-    const dropdown = document.getElementById('work_order_dropdown');
 
-    searchInput.value = `${workOrderNumber} - ${branchName}`;
-    hiddenInput.value = id;
-    dropdown.classList.remove('show');
-
-    // جلب بنود الأعمال المرتبطة بعقد أمر العمل
-    loadContractWorkItems(id);
-
-    console.log('تم اختيار أمر العمل:', workOrderNumber);
-}
 
 // جلب بنود العقد الخاص بأمر العمل
 function loadContractWorkItems(workOrderId) {
