@@ -127,7 +127,7 @@ ob_start();
                     <?= htmlspecialchars($selectedWorkOrder['notes']) ?>
                 </p>
                 <div class="mt-2">
-                    <a href="<?= path('work-orders/index.php') ?>" class="btn btn-sm btn-outline-secondary">
+                    <a href="<?= path('productivity/work-orders/index.php') ?>" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-arrow-right me-2"></i>
                         العودة لأوامر العمل
                     </a>
@@ -135,9 +135,9 @@ ob_start();
             <?php endif; ?>
         </div>
         <div>
-            <?php if (hasPermission('productivity_work_items_create')): ?>
-            <a href="create.php<?= $selectedWorkOrder ? '?work_order_id=' . $selectedWorkOrder['id'] . '&t=' . time() : '?t=' . time() ?>" class="btn btn-primary">
-                <i class="fas fa-plus"></i> إضافة بند إنتاجية
+            <?php if (hasPermission('productivity_work_items_create') && $selectedWorkOrder): ?>
+            <a href="create.php?work_order_id=<?= $selectedWorkOrder['id'] ?>&t=<?= time() ?>" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> إضافة بند إنتاجية
             </a>
             <?php endif; ?>
         </div>
@@ -363,9 +363,9 @@ ob_start();
                                     
                                     <?php if (hasPermission('productivity_daily_logs_create')): ?>
                                     <a href="../daily-logs/create.php?work_item_id=<?= $item['id'] ?>" 
-                                       class="btn btn-sm btn-outline-success" 
-                                       title="تسجيل إنتاجية">
-                                        <i class="fas fa-plus"></i>
+                                       class="btn btn-sm btn-success" 
+                                       title="تسجيل إنتاجية يومية">
+                                        <i class="fas fa-plus me-1"></i> تسجيل إنتاجية
                                     </a>
                                     <?php endif; ?>
                                     

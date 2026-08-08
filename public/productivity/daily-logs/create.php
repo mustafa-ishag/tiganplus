@@ -35,12 +35,16 @@ ob_start();
 
 $db = getDB();
 
-// الحصول على معرف بند العمل (إذا تم تمريره)
-$preselectedWorkItemId = $_GET['work_item_id'] ?? null;
-$preselectedWorkItem = null;
+// الحصول على معرف بند العمل (مطلوب)
+$preselectedWorkItemId = $_GET['work_item_id'] ?? ($_POST['work_item_id'] ?? null);
 
-// جلب بنود الإنتاجية النشطة
-$workItemsQuery = "
+if (!$preselectedWorkItemId) {
+    header('Location: ' . path('productivity/work-orders/index.php?error=missing_work_item'));
+    exit();
+}
+
+// جلب بيانات البند المحدد
+$workItemStmt = $db->prepare("
     SELECT 
         pwi.id,
         pwi.work_item_description,
@@ -57,30 +61,15 @@ $workItemsQuery = "
     JOIN work_orders wo ON pwi.work_order_id = wo.id
     LEFT JOIN branches b ON wo.branch_id = b.id
     LEFT JOIN work_order_types wot ON wo.work_order_type_id = wot.id
-    WHERE pwi.status = 'active'
-";
+    WHERE pwi.id = ? AND pwi.status = 'active'
+");
 
-// تطبيق فلتر الفرع إذا لم يكن لدى المستخدم صلاحية عرض جميع الفروع
-$workItemsParams = [];
-if (!hasPermission('productivity_daily_logs_view_all_branches') && isset($_SESSION['branch_id'])) {
-    $workItemsQuery .= " AND wo.branch_id = ?";
-    $workItemsParams[] = $_SESSION['branch_id'];
-}
+$workItemStmt->execute([$preselectedWorkItemId]);
+$preselectedWorkItem = $workItemStmt->fetch(PDO::FETCH_ASSOC);
 
-$workItemsQuery .= " ORDER BY wo.work_order_number, pwi.id";
-
-$workItemsStmt = $db->prepare($workItemsQuery);
-$workItemsStmt->execute($workItemsParams);
-$workItems = $workItemsStmt->fetchAll(PDO::FETCH_ASSOC);
-
-// البحث عن البند المحدد مسبقاً
-if ($preselectedWorkItemId) {
-    foreach ($workItems as $item) {
-        if ($item['id'] == $preselectedWorkItemId) {
-            $preselectedWorkItem = $item;
-            break;
-        }
-    }
+if (!$preselectedWorkItem) {
+    header('Location: ' . path('productivity/work-orders/index.php?error=invalid_work_item'));
+    exit();
 }
 
 // معالجة النموذج
@@ -318,19 +307,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label class="form-label">بند الإنتاجية <span class="text-danger">*</span></label>
-                        <select class="form-select" name="work_item_id" required <?= $preselectedWorkItem ? 'readonly' : '' ?>>
-                            <option value="">اختر بند الإنتاجية</option>
-                            <?php foreach ($workItems as $item): ?>
-                                <option value="<?= $item['id'] ?>" 
-                                        <?= $formData['work_item_id'] == $item['id'] ? 'selected' : '' ?>
-                                        data-remaining="<?= $item['remaining_quantity'] ?>"
-                                        data-unit="<?= htmlspecialchars($item['unit'] ?? '') ?>">
-                                    <?= htmlspecialchars($item['work_order_number'] ?? '') ?> -
-                                    <?= htmlspecialchars(substr($item['work_item_description'] ?? '', 0, 50)) ?>...
-                                    (متبقي: <?= number_format($item['remaining_quantity'], 3) ?> <?= htmlspecialchars($item['unit'] ?? '') ?>)
-                                </option>
-                            <?php endforeach; ?>
+                        <label class="form-label">بند الإنتاجية</label>
+                        <div class="p-2 border rounded bg-light">
+                            <strong><?= htmlspecialchars($preselectedWorkItem['work_item_description'] ?? '') ?></strong>
+                        </div>
+                        <input type="hidden" name="work_item_id" value="<?= htmlspecialchars($preselectedWorkItem['id']) ?>">
+                        
+                        <!-- عناصر مخفية لعمل سكريبت الجافاسكربت الخاص بالحد الأقصى للكمية -->
+                        <select name="_work_item_id_hidden" style="display:none;" id="hiddenWorkItemSelect">
+                            <option value="<?= $preselectedWorkItem['id'] ?>" selected 
+                                    data-remaining="<?= $preselectedWorkItem['remaining_quantity'] ?>"
+                                    data-unit="<?= htmlspecialchars($preselectedWorkItem['unit'] ?? '') ?>">
+                            </option>
                         </select>
                     </div>
                 </div>
@@ -429,7 +417,7 @@ $pageJS = '
 <script>
 $(document).ready(function() {
     // تحديث معلومات البند عند الاختيار
-    $("select[name=\'work_item_id\']").on("change", function() {
+    $("#hiddenWorkItemSelect").on("change", function() {
         var selectedOption = $(this).find("option:selected");
         var remaining = selectedOption.data("remaining") || 0;
         var unit = selectedOption.data("unit") || "وحدة";
@@ -442,7 +430,7 @@ $(document).ready(function() {
     });
     
     // تحديث المعلومات عند تحميل الصفحة
-    $("select[name=\'work_item_id\']").trigger("change");
+    $("#hiddenWorkItemSelect").trigger("change");
     
     // تفعيل التحقق من صحة النموذج
     $(".needs-validation").on("submit", function(e) {

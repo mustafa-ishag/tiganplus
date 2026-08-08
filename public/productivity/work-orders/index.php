@@ -421,16 +421,8 @@ ob_start();
                                         <?php if (hasPermission('productivity_work_items_view')): ?>
                                         <a href="<?= path('productivity/work-items/index.php?work_order_id=' . $workOrder['id']) ?>"
                                            class="btn btn-sm btn-primary"
-                                           title="عرض بنود الإنتاجية">
-                                            <i class="fas fa-tasks"></i>
-                                        </a>
-                                        <?php endif; ?>
-
-                                        <?php if (hasPermission('productivity_work_items_create')): ?>
-                                        <a href="<?= path('productivity/work-items/create.php?work_order_id=' . $workOrder['id']) ?>"
-                                           class="btn btn-sm btn-success"
-                                           title="إضافة بند إنتاجية">
-                                            <i class="fas fa-plus"></i>
+                                           title="إدارة بنود الأعمال">
+                                            <i class="fas fa-tasks me-1"></i> إدارة بنود الأعمال
                                         </a>
                                         <?php endif; ?>
                                     </div>

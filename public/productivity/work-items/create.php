@@ -103,44 +103,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// جلب أوامر العمل النشطة
-$db = getDB();
-$workOrdersQuery = "
-    SELECT wo.id, wo.work_order_number, b.name as branch_name, wo.estimated_value
-    FROM work_orders wo
-    JOIN branches b ON wo.branch_id = b.id
-    WHERE wo.status = 'active'
-";
+// التحقق من أمر العمل المحدد مسبقاً (مطلوب)
+$preselectedWorkOrderId = $_GET['work_order_id'] ?? ($_POST['work_order_id'] ?? null);
 
-// تطبيق فلتر الفرع حسب الصلاحيات
-$workOrdersParams = [];
-if (!hasPermission('productivity_daily_logs_view_all_branches') && isset($_SESSION['branch_id'])) {
-    $workOrdersQuery .= " AND wo.branch_id = ?";
-    $workOrdersParams[] = $_SESSION['branch_id'];
+if (!$preselectedWorkOrderId) {
+    header('Location: ' . path('productivity/work-orders/index.php?error=missing_work_order'));
+    exit();
 }
 
-$workOrdersQuery .= " ORDER BY wo.work_order_number";
+$db = getDB();
+$preselectedStmt = $db->prepare("
+    SELECT wo.id, wo.work_order_number, b.name as branch_name, wo.estimated_value
+    FROM work_orders wo
+    LEFT JOIN branches b ON wo.branch_id = b.id
+    WHERE wo.id = ?
+");
+$preselectedStmt->execute([$preselectedWorkOrderId]);
+$preselectedWorkOrder = $preselectedStmt->fetch(PDO::FETCH_ASSOC);
 
-$workOrdersStmt = $db->prepare($workOrdersQuery);
-$workOrdersStmt->execute($workOrdersParams);
-$workOrders = $workOrdersStmt->fetchAll(PDO::FETCH_ASSOC);
+if (!$preselectedWorkOrder) {
+    header('Location: ' . path('productivity/work-orders/index.php?error=invalid_work_order'));
+    exit();
+}
 
 // بنود الأعمال سيتم جلبها عبر AJAX بناءً على العقد
 $workItems = [];
-
-// التحقق من أمر العمل المحدد مسبقاً
-$preselectedWorkOrderId = $_GET['work_order_id'] ?? null;
-$preselectedWorkOrder = null;
-if ($preselectedWorkOrderId) {
-    $preselectedStmt = $db->prepare("
-        SELECT wo.id, wo.work_order_number, b.name as branch_name, wo.estimated_value
-        FROM work_orders wo
-        LEFT JOIN branches b ON wo.branch_id = b.id
-        WHERE wo.id = ?
-    ");
-    $preselectedStmt->execute([$preselectedWorkOrderId]);
-    $preselectedWorkOrder = $preselectedStmt->fetch(PDO::FETCH_ASSOC) ?: null;
-}
 
 // بدء تخزين المحتوى
 ob_start();
@@ -213,20 +200,6 @@ ob_start();
                                 </span>
                                 <input type="hidden" id="work_order_search" value="<?= htmlspecialchars($preselectedWorkOrder['work_order_number']) ?> - <?= htmlspecialchars($preselectedWorkOrder['branch_name']) ?>">
                             </div>
-                        <?php else: ?>
-                            <!-- بحث عن أمر العمل -->
-                            <div class="work-order-search-container position-relative">
-                                <input type="text" class="form-control" id="work_order_search"
-                                       placeholder="ابحث عن أمر العمل برقم الأمر أو اسم الفرع..."
-                                       autocomplete="off">
-                                <div id="work_order_dropdown" class="dropdown-menu w-100" style="max-height: 300px; overflow-y: auto;">
-                                    <!-- سيتم عرض نتائج البحث هنا -->
-                                </div>
-                            </div>
-                            <small class="form-text text-muted">
-                                <i class="fas fa-search me-1"></i>
-                                ابدأ الكتابة للبحث السريع في أوامر العمل
-                            </small>
                         <?php endif; ?>
                         
                         <input type="hidden" id="work_order_id" name="work_order_id" value="<?= htmlspecialchars($formData['work_order_id']) ?>" required>
