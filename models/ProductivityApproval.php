@@ -389,10 +389,10 @@ class ProductivityApproval
             $stmt->execute([$approverId]);
 
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            $maxLimit = $result['max_limit'] ?? 0;
+            $maxLimit = $result['max_limit'];
 
-            // إذا كان الحد NULL فهذا يعني لا يوجد حد أقصى
-            return $maxLimit === null || $approvalValue <= $maxLimit;
+            // إذا كان الحد NULL أو 0 فهذا يعني لا يوجد حد أقصى
+            return $maxLimit === null || (float)$maxLimit == 0 || $approvalValue <= $maxLimit;
         } catch (Exception $e) {
             error_log("Error checking approval limits: " . $e->getMessage());
             return false;
