@@ -250,7 +250,7 @@ class ProductivityApproval
         try {
             $sql = "
                 SELECT pdl.*, pwi.target_quantity, pwi.unit_price,
-                       wo.work_order_number, pwi.work_item_description,
+                       wo.work_order_number, pwi.contract_work_item_id as item_number, pwi.work_item_description,
                        pwi.unit, b.name as branch_name, u.full_name as created_by_name,
                        (pdl.quantity_completed * pwi.unit_price) as calculated_value
                 FROM productivity_daily_logs pdl
