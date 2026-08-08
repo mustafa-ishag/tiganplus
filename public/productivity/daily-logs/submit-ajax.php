@@ -93,8 +93,8 @@ try {
         throw new Exception('الكمية المنجزة مطلوبة ويجب أن تكون أكبر من صفر');
     }
     
-    if (empty($log['workers_count']) || $log['workers_count'] <= 0) {
-        throw new Exception('عدد العمال مطلوب ويجب أن يكون أكبر من صفر');
+    if (empty($log['workers_count']) || $log['workers_count'] < 0) {
+        throw new Exception('عدد العمال يجب أن يكون صفر أو أكبر');
     }
     
     // إرسال السجل للاعتماد

@@ -55,20 +55,22 @@ $workItemsQuery = "
         wot.type_code
     FROM productivity_work_items pwi
     JOIN work_orders wo ON pwi.work_order_id = wo.id
-    JOIN branches b ON wo.branch_id = b.id
+    LEFT JOIN branches b ON wo.branch_id = b.id
     LEFT JOIN work_order_types wot ON wo.work_order_type_id = wot.id
     WHERE pwi.status = 'active'
 ";
 
 // تطبيق فلتر الفرع إذا لم يكن لدى المستخدم صلاحية عرض جميع الفروع
-if (!hasPermission('productivity_daily_logs_view_all_branches')) {
-    $workItemsQuery .= " AND wo.branch_id = " . $_SESSION['branch_id'];
+$workItemsParams = [];
+if (!hasPermission('productivity_daily_logs_view_all_branches') && isset($_SESSION['branch_id'])) {
+    $workItemsQuery .= " AND wo.branch_id = ?";
+    $workItemsParams[] = $_SESSION['branch_id'];
 }
 
 $workItemsQuery .= " ORDER BY wo.work_order_number, pwi.id";
 
 $workItemsStmt = $db->prepare($workItemsQuery);
-$workItemsStmt->execute();
+$workItemsStmt->execute($workItemsParams);
 $workItems = $workItemsStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // البحث عن البند المحدد مسبقاً
@@ -160,33 +162,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // إذا لم توجد أخطاء، قم بالحفظ
     if (empty($errors)) {
         try {
-            $insertSql = "
-                INSERT INTO productivity_daily_logs (
-                    work_item_id, log_date, quantity_completed, notes,
-                    equipment_used, workers_count, weather_condition,
-                    status, created_by, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, 'submitted', ?, NOW())
-            ";
-
-            $insertStmt = $db->prepare($insertSql);
-            $insertStmt->execute([
-                $formData['work_item_id'],
-                $formData['log_date'],
-                $formData['quantity_completed'],
-                $formData['work_description'] . "\n\n" . $formData['notes'], // دمج الوصف والملاحظات
-                $formData['equipment_used'],
-                $formData['crew_size'],
-                $formData['weather_conditions'],
-                $_SESSION['user_id']
-            ]);
+            $dailyLogModel = new ProductivityDailyLog();
             
-            // إعادة التوجيه إلى صفحة تفاصيل البند أو قائمة السجلات
-            if ($preselectedWorkItemId) {
-                header('Location: ' . path('productivity/work-items/view.php?id=' . $preselectedWorkItemId . '&success=log_created'));
+            // تجهيز بيانات النموذج بالحقول المطلوبة
+            $logData = [
+                'work_item_id' => $formData['work_item_id'],
+                'log_date' => $formData['log_date'],
+                'quantity_completed' => $formData['quantity_completed'],
+                'work_hours' => 0, // الحقل غير مستخدم حالياً في النموذج
+                'workers_count' => $formData['crew_size'] > 0 ? $formData['crew_size'] : 1,
+                'equipment_used' => $formData['equipment_used'] ?: null,
+                'weather_condition' => !empty($formData['weather_conditions']) ? $formData['weather_conditions'] : null,
+                'work_quality' => 'good',
+                'obstacles' => null,
+                'notes' => trim(
+                    (!empty($formData['work_description']) ? "وصف العمل: " . $formData['work_description'] : '') .
+                    (!empty($formData['notes']) ? "\n\nملاحظات: " . $formData['notes'] : '')
+                ) ?: null,
+                'status' => 'submitted',
+                'created_by' => $_SESSION['user_id']
+            ];
+            
+            $newId = $dailyLogModel->create($logData);
+            
+            if ($newId) {
+                // إعادة التوجيه إلى صفحة تفاصيل البند أو قائمة السجلات
+                if ($preselectedWorkItemId) {
+                    header('Location: ' . path('productivity/work-items/view.php?id=' . $preselectedWorkItemId . '&success=log_created'));
+                } else {
+                    header('Location: ' . path('productivity/daily-logs/index.php?success=log_created'));
+                }
+                exit();
             } else {
-                header('Location: ' . path('productivity/daily-logs/index.php?success=log_created'));
+                $errors[] = 'حدث خطأ أثناء حفظ السجل';
             }
-            exit();
             
         } catch (Exception $e) {
             $errors[] = 'حدث خطأ أثناء حفظ السجل: ' . $e->getMessage();

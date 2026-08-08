@@ -110,6 +110,46 @@ try {
     $result = $approvalModel->approve($logId, $_SESSION['user_id'], $comments, $approvalValue);
     
     if ($result) {
+        // تحديث إحصائيات بند الإنتاجية بعد الاعتماد
+        try {
+            $workItemId = $log['work_item_id'];
+            
+            // حساب إجمالي الكمية المعتمدة لهذا البند
+            $statsStmt = $db->prepare("
+                SELECT 
+                    COALESCE(SUM(quantity_completed), 0) as total_approved
+                FROM productivity_daily_logs
+                WHERE work_item_id = ? AND status = 'approved'
+            ");
+            $statsStmt->execute([$workItemId]);
+            $totalApproved = floatval($statsStmt->fetchColumn());
+            
+            // جلب الكمية المستهدفة
+            $targetStmt = $db->prepare("SELECT target_quantity FROM productivity_work_items WHERE id = ?");
+            $targetStmt->execute([$workItemId]);
+            $targetQuantity = floatval($targetStmt->fetchColumn());
+            
+            $remaining = max(0, $targetQuantity - $totalApproved);
+            $progress = $targetQuantity > 0 ? round(($totalApproved / $targetQuantity) * 100, 2) : 0;
+            
+            $updateStmt = $db->prepare("
+                UPDATE productivity_work_items 
+                SET actual_quantity_completed = ?,
+                    remaining_quantity = ?,
+                    progress_percentage = ?,
+                    status = CASE 
+                        WHEN ? >= target_quantity THEN 'completed'
+                        WHEN ? > 0 THEN 'active'
+                        ELSE status
+                    END,
+                    updated_at = NOW()
+                WHERE id = ?
+            ");
+            $updateStmt->execute([$totalApproved, $remaining, $progress, $totalApproved, $totalApproved, $workItemId]);
+        } catch (Exception $statsError) {
+            error_log("Error updating work item stats after approval: " . $statsError->getMessage());
+        }
+        
         // تنظيف output buffer وإرسال الاستجابة
         ob_clean();
         echo json_encode([

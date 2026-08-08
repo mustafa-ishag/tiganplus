@@ -58,7 +58,7 @@ $sql = "
         COALESCE(pwi.unit, cwi.unit) as unit
     FROM productivity_work_items pwi
     JOIN work_orders wo ON pwi.work_order_id = wo.id
-    JOIN branches b ON wo.branch_id = b.id
+    LEFT JOIN branches b ON wo.branch_id = b.id
     LEFT JOIN work_order_types wot ON wo.work_order_type_id = wot.id
     LEFT JOIN contract_work_items cwi ON pwi.contract_work_item_id = cwi.id
     WHERE pwi.id = ?
@@ -97,23 +97,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'notes' => trim($_POST['notes'] ?? '')
     ];
     
-    // التحقق من صحة البيانات
-    if ($formData['target_quantity'] <= 0) {
-        $errors[] = 'الكمية المستهدفة يجب أن تكون أكبر من صفر';
-    }
+    // التحقق من صحة البيانات باستخدام النموذج
+    $workItemModel = new ProductivityWorkItem();
+    $errors = $workItemModel->validate($formData, true);
     
-    if ($formData['unit_price'] <= 0) {
-        $errors[] = 'سعر الوحدة يجب أن يكون أكبر من صفر';
-    }
-    
-    if (empty($formData['start_date'])) {
-        $errors[] = 'تاريخ البداية مطلوب';
-    }
-    
-    if (empty($formData['target_end_date'])) {
-        $errors[] = 'تاريخ الانتهاء المستهدف مطلوب';
-    }
-    
+    // التحقق من التواريخ (اختياري، لكن إذا تم إدخالها يجب أن تكون منطقية)
     if (!empty($formData['start_date']) && !empty($formData['target_end_date'])) {
         if (strtotime($formData['target_end_date']) <= strtotime($formData['start_date'])) {
             $errors[] = 'تاريخ الانتهاء يجب أن يكون بعد تاريخ البداية';
@@ -124,7 +112,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         try {
             $totalValue = $formData['target_quantity'] * $formData['unit_price'];
-            $remainingQuantity = $formData['target_quantity'] - $item['actual_quantity_completed'];
+            $remainingQuantity = max(0, $formData['target_quantity'] - ($item['actual_quantity_completed'] ?? 0));
+            
+            // إضافة الحقول المحسوبة إلى بيانات التحديث
+            $formData['actual_end_date'] = $item['actual_end_date'] ?? null;
             
             $updateSql = "
                 UPDATE productivity_work_items 
@@ -148,11 +139,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $formData['unit_price'],
                 $totalValue,
                 $remainingQuantity,
-                $formData['start_date'],
-                $formData['target_end_date'],
+                $formData['start_date'] ?: null,
+                $formData['target_end_date'] ?: null,
                 $formData['status'],
                 $formData['priority'],
-                $formData['notes'],
+                $formData['notes'] ?: null,
                 $itemId
             ]);
             

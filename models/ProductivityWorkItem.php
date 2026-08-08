@@ -22,19 +22,43 @@ class ProductivityWorkItem
     public function create($data)
     {
         try {
+            // جلب وصف ووحدة بند العقد الأصلي
+            $contractWorkItemId = $data['work_item_id'];
+            $workItemDescription = null;
+            $unit = null;
+            
+            if ($contractWorkItemId) {
+                $wiStmt = $this->db->prepare("SELECT description, unit FROM contract_work_items WHERE id = ?");
+                $wiStmt->execute([$contractWorkItemId]);
+                $wiData = $wiStmt->fetch(PDO::FETCH_ASSOC);
+                if ($wiData) {
+                    $workItemDescription = $wiData['description'];
+                    $unit = $wiData['unit'];
+                }
+            }
+            
+            // حساب القيمة الإجمالية والكمية المتبقية
+            $totalValue = ($data['target_quantity'] ?? 0) * ($data['unit_price'] ?? 0);
+            $remainingQuantity = $data['target_quantity'] ?? 0;
+            
             $sql = "
                 INSERT INTO productivity_work_items (
-                    work_order_id, contract_work_item_id, target_quantity, unit_price,
+                    work_order_id, contract_work_item_id, work_item_description, unit,
+                    target_quantity, unit_price, total_value, remaining_quantity,
                     start_date, target_end_date, status, priority, notes, created_by
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ";
             
             $stmt = $this->db->prepare($sql);
             $result = $stmt->execute([
                 $data['work_order_id'],
-                $data['work_item_id'],
+                $contractWorkItemId,
+                $workItemDescription,
+                $unit,
                 $data['target_quantity'],
                 $data['unit_price'],
+                $totalValue,
+                $remainingQuantity,
                 $data['start_date'] ?? null,
                 $data['target_end_date'] ?? null,
                 $data['status'] ?? 'active',
@@ -116,9 +140,9 @@ class ProductivityWorkItem
                        wi.unit, b.name as branch_name, u.full_name as created_by_name
                 FROM productivity_work_items pwi
                 JOIN work_orders wo ON pwi.work_order_id = wo.id
-                JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
-                JOIN branches b ON wo.branch_id = b.id
-                JOIN users u ON pwi.created_by = u.id
+                LEFT JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
+                LEFT JOIN branches b ON wo.branch_id = b.id
+                LEFT JOIN users u ON pwi.created_by = u.id
                 WHERE pwi.id = ?
             ";
             
@@ -148,8 +172,8 @@ class ProductivityWorkItem
                            ELSE 0 
                        END as completion_percentage
                 FROM productivity_work_items pwi
-                JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
-                JOIN users u ON pwi.created_by = u.id
+                LEFT JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
+                LEFT JOIN users u ON pwi.created_by = u.id
                 LEFT JOIN productivity_daily_logs pdl ON pwi.id = pdl.work_item_id 
                     AND pdl.status = 'approved'
                 WHERE pwi.work_order_id = ?
@@ -197,9 +221,9 @@ class ProductivityWorkItem
                        END as completion_percentage
                 FROM productivity_work_items pwi
                 JOIN work_orders wo ON pwi.work_order_id = wo.id
-                JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
-                JOIN branches b ON wo.branch_id = b.id
-                JOIN users u ON pwi.created_by = u.id
+                LEFT JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
+                LEFT JOIN branches b ON wo.branch_id = b.id
+                LEFT JOIN users u ON pwi.created_by = u.id
                 LEFT JOIN productivity_daily_logs pdl ON pwi.id = pdl.work_item_id 
                     AND pdl.status = 'approved'
                 WHERE 1=1
@@ -259,7 +283,7 @@ class ProductivityWorkItem
                 SELECT COUNT(DISTINCT pwi.id) as total
                 FROM productivity_work_items pwi
                 JOIN work_orders wo ON pwi.work_order_id = wo.id
-                JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
+                LEFT JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
                 WHERE 1=1
             ";
             

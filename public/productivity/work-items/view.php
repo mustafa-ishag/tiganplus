@@ -54,7 +54,7 @@ $sql = "
         wot.description as work_order_type_name,
         wi.item_number,
         wi.description as original_description,
-        wi.standard_price,
+        wi.price as standard_price,
         wi.unit as original_unit,
         u.username as created_by_name,
         -- استخدام وصف البند من productivity_work_items أولاً، ثم من contract_work_items كبديل
@@ -62,7 +62,7 @@ $sql = "
         COALESCE(pwi.unit, wi.unit) as unit
     FROM productivity_work_items pwi
     JOIN work_orders wo ON pwi.work_order_id = wo.id
-    JOIN branches b ON wo.branch_id = b.id
+    LEFT JOIN branches b ON wo.branch_id = b.id
     LEFT JOIN work_order_types wot ON wo.work_order_type_id = wot.id
     LEFT JOIN contract_work_items wi ON pwi.contract_work_item_id = wi.id
     LEFT JOIN users u ON pwi.created_by = u.id
@@ -117,28 +117,8 @@ $progressPercentage = $item['target_quantity'] > 0 ? ($totalApprovedQuantity / $
 $remainingQuantity = $item['target_quantity'] - $totalApprovedQuantity;
 $completedValue = $totalApprovedQuantity * $item['unit_price'];
 
-// تحديث نسبة الإنجاز في قاعدة البيانات
-$updateStmt = $db->prepare("
-    UPDATE productivity_work_items 
-    SET 
-        actual_quantity_completed = ?,
-        remaining_quantity = ?,
-        progress_percentage = ?,
-        status = CASE 
-            WHEN ? >= target_quantity THEN 'completed'
-            WHEN ? > 0 THEN 'active'
-            ELSE status
-        END
-    WHERE id = ?
-");
-$updateStmt->execute([
-    $totalApprovedQuantity,
-    $remainingQuantity,
-    $progressPercentage,
-    $totalApprovedQuantity,
-    $totalApprovedQuantity,
-    $itemId
-]);
+// ملاحظة: تم نقل تحديث الإحصائيات إلى عمليات الاعتماد بدلاً من صفحة العرض
+// لأن GET requests يجب ألا تعدّل قاعدة البيانات
 
 // تحديد لون شريط التقدم
 $progressClass = $progressPercentage >= 100 ? 'success' : 
