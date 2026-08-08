@@ -262,7 +262,7 @@ class ProductivityApproval
                 AND EXISTS (
                     SELECT 1 FROM productivity_approvers pa
                     WHERE pa.user_id = ? AND pa.is_active = 1
-                    AND (pa.branch_id IS NULL OR pa.branch_id = wo.branch_id)
+                    AND (pa.branch_id IS NULL OR pa.branch_id = 0 OR pa.branch_id = wo.branch_id)
                     AND (pa.department = 'all' OR pa.department = wo.department)
                     AND CURDATE() BETWEEN pa.effective_from AND COALESCE(pa.effective_to, '9999-12-31')
                 )
@@ -347,7 +347,7 @@ class ProductivityApproval
             $sql = "
                 SELECT pa.approval_level
                 FROM productivity_approvers pa
-                JOIN work_orders wo ON (pa.branch_id IS NULL OR pa.branch_id = wo.branch_id)
+                JOIN work_orders wo ON (pa.branch_id IS NULL OR pa.branch_id = 0 OR pa.branch_id = wo.branch_id)
                 WHERE pa.user_id = ? AND wo.id = ? AND pa.is_active = 1
                 AND (pa.department = 'all' OR pa.department = wo.department)
                 AND CURDATE() BETWEEN pa.effective_from AND COALESCE(pa.effective_to, '9999-12-31')
@@ -499,7 +499,7 @@ class ProductivityApproval
                 SELECT DISTINCT u.id, u.full_name, pa.approval_level, pa.max_amount_limit
                 FROM users u
                 JOIN productivity_approvers pa ON u.id = pa.user_id
-                JOIN work_orders wo ON (pa.branch_id IS NULL OR pa.branch_id = wo.branch_id)
+                JOIN work_orders wo ON (pa.branch_id IS NULL OR pa.branch_id = 0 OR pa.branch_id = wo.branch_id)
                 WHERE wo.id = ? AND pa.is_active = 1 AND u.status = 'active'
                 AND (pa.department = 'all' OR pa.department = wo.department)
                 AND CURDATE() BETWEEN pa.effective_from AND COALESCE(pa.effective_to, '9999-12-31')
@@ -537,7 +537,7 @@ class ProductivityApproval
                 LEFT JOIN branches b ON wo.branch_id = b.id
                 LEFT JOIN users u ON pdl.created_by = u.id
                 JOIN productivity_approvers pa ON (
-                    (pa.branch_id IS NULL OR pa.branch_id = wo.branch_id) AND
+                    (pa.branch_id IS NULL OR pa.branch_id = 0 OR pa.branch_id = wo.branch_id) AND
                     (pa.department = 'all' OR
                      (pa.department = 'connections' AND wo.department = 'connections') OR
                      (pa.department = 'projects' AND wo.department = 'projects'))
